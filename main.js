@@ -14,13 +14,13 @@ expressApp.use(express.static(path.join(__dirname, "frontend/build")));
 
 const port = 8080;
 
-const teacher_model = require("./backend/Models/Teacher/TeacherModel");
-const user_model = require("./backend/Models/LoginUsers/LoginModel");
-const student_model = require("./backend/Models/Student/StudentModel");
-const subject_model = require("./backend/Models/Subject/SubjectModel");
-const subject_student_model = require("./backend/Models/Subject/studentsubject");
-const test_model = require("./backend/Models/Test/TestModel");
-const result_model = require("./backend/Models/Result/RseultModel");
+const teacher_model = require("./backend/Models/TeacherModel");
+const user_model = require("./backend/Models/LoginModel");
+const student_model = require("./backend/Models/StudentModel");
+const subject_model = require("./backend/Models/SubjectModel");
+const subject_student_model = require("./backend/Models/studentsubject");
+const test_model = require("./backend/Models/TestModel");
+const result_model = require("./backend/Models/RseultModel");
 
 expressApp.use("/", user_model);
 expressApp.use("/", teacher_model);
@@ -39,7 +39,7 @@ function createWindow() {
     height: 770,
     minWidth: 950,
     title: "Result Management System",
-    icon: path.join(__dirname, 'icon.ico'),
+    icon: path.join(__dirname, "icon.ico"),
     webPreferences: {
       devTools: false,
       OS: "Windows",
