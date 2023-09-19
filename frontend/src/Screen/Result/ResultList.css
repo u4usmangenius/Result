@@ -1,0 +1,232 @@
+/* Set a fixed width for input elements within table cells */
+.result-table td input[type="text"] {
+  width: 100%;
+  height: 30px;
+  box-sizing: border-box;
+}
+
+.result-list-container {
+  margin: 27px;
+  overflow-y: auto;
+}
+/* Search Bar */
+.result-search-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  height: 40px;
+  border: 1px solid #ccc;
+  width: 371px;
+  padding: 5px;
+}
+
+/* Adjust the width of the input field and select */
+.result-search-bar .result-category {
+  width: 30%;
+  flex: 1 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+/* Adjust the width of the input field and select */
+.result-search-bar input[type="text"] {
+  flex: 2; /* Adjust the width as needed */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+  width: 160px;
+}
+.result-search-bar .result-search-bar {
+  flex: 1; /* Adjust the width as needed */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.result-search-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin-left: auto; /* Push the button to the right */
+}
+
+/* .result-search-button:hover {
+  background-color: #0056b3;
+} */
+/* Result Table */
+.result-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.result-table th,
+.result-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+
+.result-table th {
+  background-color: #f2f2f2;
+}
+
+.result-table tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.result-table tbody tr:hover {
+  background-color: #ddd;
+}
+
+/* Pagination Buttons */
+.result-pagination-button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0 5px; /* Add margin between buttons */
+}
+
+/* Disable the Prev and Next buttons */
+.result-pagination-button[disabled] {
+  background-color: #ccc !important; /* Use !important to override other styles */
+  cursor: not-allowed;
+}
+
+/* Style the active page button */
+.result-pagination-button.active {
+  background-color: #0056b3;
+}
+
+/* Style the Cancel and Save buttons */
+/* .edit-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 5px 10px;
+  margin-right: 5px;
+}
+
+.edit-button:hover {
+  background-color: #0056b3;
+} */
+
+/* Style the Save button */
+/* .save-button {
+  background-color: #28a745;
+}
+
+.save-button:hover {
+  background-color: #1e7e34;
+} */
+#result-count-btn {
+  width: 40px;
+  margin: 4px;
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+}
+/* #result-count-btn:active{
+    width: 220px;
+  } */
+.set-result-icon {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  justify-content: flex-start;
+  flex-direction: row;
+  font-size: 23px;
+}
+.save-result-icon {
+  cursor: pointer;
+}
+/* .cancel-subject-icon {
+  cursor: pointer;
+  background-color: #000;
+  color: #fff;
+  width: 29px !important;
+  height: 23px;
+  border-radius: 14px;
+}
+.cancel-subject-icon:hover {
+  background-color: rgb(185, 18, 18);
+  color: #fff;
+} */
+.edit-result-icon {
+  cursor: pointer;
+}
+.delete-result-icon {
+  cursor: pointer;
+}
+
+/* Add a media query for screens between 850px and 1000px */
+@media (min-width: 850px) and (max-width: 1000px) {
+  .result-list-container{
+    font-size: 12px !important;width: 100%; /* Set the width to 100% */
+    max-width: none; /* Remove max-width */
+    padding: 20px; /* Add some padding for spacing */
+    box-sizing: border-box; /* Include padding in the width calculation */
+    font-size: 12px !important;
+
+  }
+  .result-search-bar input[type="text"] {
+    width: 60%; /* Adjust the width as needed */
+  }
+
+  .result-search-bar .category {
+    width: 30%; /* Adjust the width as needed */
+  }
+
+  /* Style the search button */
+  .result-search-bar {
+    /* margin-left: 2px; Add some spacing */
+  }
+
+  /* Adjust the width of the Result table */
+  .result-table table {
+    width: 100%;
+  }
+
+  /* Style the pagination buttons */
+  .result-pagination-button {
+    padding: 5px 10px;
+    margin: 0 3px; /* Add some spacing between buttons */
+  }
+
+  /* Style the edit and delete buttons */
+  .edit-button,
+  .delete-result-icon {
+    font-size: 20px; /* Adjust the icon size as needed */
+    margin-right: 5px; /* Add some spacing */
+  }
+}
+.pagination{
+  margin-top: 20px;
+}
+.result-pagination-button{
+  width: 120px;
+  height: 41px;
+}
+#result-count-btn{
+  background-color: transparent;
+  border: none;
+  font-size: 25px;
+  color: #000;
+}
+.edit-result-icon{
+  color:#0067d5;
+}
+.delete-result-icon{
+  color: red;
+}

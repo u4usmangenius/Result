@@ -1,0 +1,136 @@
+.add-subject-heading {
+  margin-top: 30px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.add-subject-options {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.form-active {
+  background-color: #007bff;
+  color: #fff;
+  cursor: default;
+}
+
+.subject-form-row {
+  display: flex;
+  flex-direction: row;
+  /* flex-wrap: wrap; */
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 40px;
+  margin-bottom: 20px;
+}
+
+.subject-form-group {
+  flex-basis: calc(50% - 10px);
+  margin-bottom: 10px;
+}
+.subject-form-group select {
+  width: 341px !important;
+  height: 50px;
+}
+.subject-form-group input {
+  width: 330px !important;
+  height: 37px;
+}
+
+/* Add spacing between input fields in the same row */
+.subject-form-group .subject-input-type-text,
+.subject-form-group input[type="password"],
+.subject-form-group select {
+  margin-right: 20px; /* Adjust the margin-right to create a gap between input fields */
+}
+.subject-input-type-text {
+  width: 230px;
+  height: 33px;
+}
+.subject-input-select-subject {
+  width: 230px;
+  height: 39px;
+}
+.subject-input-label {
+  display: block;
+  margin-bottom: 5px;
+  text-align: left; /* Align .subject-input-labels to the left */
+}
+
+/* Add Another subject */
+.add-another-subject {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 4%;
+  margin-left: 30px;
+}
+.add-another-subject-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  font-size: 20px;
+}
+.add-another-text-icon-subject {
+  font-size: 25px;
+  margin-top: 6px;
+}
+@media (min-width: 850px) and (max-width: 1000px) {
+  .subject-form-group input,
+  .subject-form-group select {
+    width: 85% !important; /* Make the input fields full width */
+    margin-right: 0; /* Remove the margin-right for input fields */
+    height: 40% !important;
+    margin-top: -15px;
+  }
+  .subject-form-group select {
+    width: 90% !important;
+    height: 40% !important;
+    margin-right: 30px;
+    margin-top: -15px;
+  }
+  .subject-form-row {
+    flex-direction: row; /* Change the direction to column for smaller screens */
+    gap: 20px; /* Adjust the gap between form rows for better spacing */
+    /* width: 150px !important; */
+  }
+  .add-subjects-close-button {
+    /* display: flex; */
+  }
+}
+/* slected option */
+.option {
+  width: 191px;
+  height: 51px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.form-active {
+  background-color: #007bff;
+}
+.add-subjects-button {
+  background: transparent;
+  border: none;
+  text-align: center;
+  margin-top: 7px;
+  color: #fff;
+  font-size: 16px;
+}
+
+.add-subject-button{
+  height: 44px;
+}
+
+.addsubbtn {
+  height:34px ;
+}

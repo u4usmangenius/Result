@@ -1,0 +1,55 @@
+.custom-progress-bar {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  margin-top: 31px;
+}
+.custom-progress-bar h2{
+  color: #fff;
+}
+.progress-container {
+  height: 20px; /* Height of the progress bar */
+  background-color:  #4a86f5;
+  width: 91%;
+
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress {
+  display: flex;
+  height: 100%;
+}
+
+.progress-passed {
+  background-color: #00FFFF; /* Green for passed */
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.progress-failed {
+  background-color: #f44336; /* Red for failed */
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+/* Customize the text color for passed and failed */
+.progress-passed,
+.progress-failed {
+  color: #fff;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.progress-heading {
+    font-size: 18px;
+    margin: 10px 0;
+    margin-top: 40px;
+    color: #fff;
+}

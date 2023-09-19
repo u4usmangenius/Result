@@ -1,0 +1,336 @@
+body{
+}
+.dashboard-container {
+  background-color: #001231 !important;
+  /* width: 100vw; */
+  height: 170vh;
+  margin-left:-4%;
+  /* 
+  padding-left: -25%; */
+  /* position: relative;
+  margin-top: 2%; */
+  /* text-align: center; */
+  /* text-align: center; */
+}
+/* Dashboard.css */
+
+/* Dashboard Container */
+.dashboard-container {
+  padding: 20px;
+}
+
+/* Top Bar */
+.dashboard-top-bar {
+  display: flex;
+  justify-content: space-between; /* Adjust alignment */
+  align-items: center; /* Vertically align items */
+  margin-bottom: 20px;
+}
+
+/* Top Left */
+.dashboard-top-left {
+  display: flex;
+  align-items: center;
+}
+/* Add this to your CSS file */
+.dashboard-search-bar {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  padding: 5px;
+  width: 200px;
+  height: 23px;
+  background-color: #fff;
+  border-radius: 8px;
+  color: #000;
+}
+
+.dashboard-search-icon {
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  cursor: pointer;
+}
+.dashboard-search-icon .dashboard-ref-search-btn{
+  background:transparent;
+  border: none;
+  cursor: pointer;
+}
+.dashboard-search-bar input {
+  flex: 1; /* Allows the input to take up the available space */
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+/* Top Right */
+.dahboard-top-right {
+  display: flex;
+  align-items: center;
+}
+.dashboard-notification-icon-orange {
+  /* margin-right: 314px; */
+  color: #fff;
+}
+/* Profile Container (Includes Profile and Notification Icons) */
+
+/* Dashboard Heading */
+.dashboard-heading {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  color: #007bff; /* Blue color for selected text */
+  margin-top: 50px;
+  margin-bottom: 11px;
+}
+
+.dashboard-heading span {
+  margin: 0 5px;
+}
+
+/* Profile Dropdown */
+.profile-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff !important;
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 150px; /* Adjust the width as needed */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a shadow for the dropdown */
+}
+
+/* Dashboard.css */
+
+/* ... (Previous styles) */
+
+/* Profile Icon and Dropdown */
+/*
+.profile-icon {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative; /* Add position: relative */
+  /* width: 160px; /* Fixed width for the profile icon container */
+  /*
+  background-color: #fff;
+  color: #000;
+  width: 170px;
+  padding-left: 10px;
+  height: 30px;
+  border-radius: 8px;
+}
+*/
+/* Profile Icon and Dropdown */
+/* Profile Icon and Dropdown */
+/* Profile Icon and Dropdown */
+.profile-icon {
+  display: flex;
+  align-items: center; /* Vertically center-align items in the div */
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  width: 230px;
+  background-color: #fff;
+  color: #000;
+  padding-left: 10px;
+  height: 37px;
+  border-radius: 8px;
+}
+
+/* Logo Image */
+.profile-icon img {
+  max-width: 40px; /* Adjust the maximum width of your logo */
+  margin-right: 10px; /* Add some space between the logo and text */
+}
+
+/* Usman Chaudhary Text */
+.dashboard-profile-name {
+  flex: 1; /* Allow the text to take up the available space */
+  display: flex; /* Add display flex to align text and icon horizontally */
+  align-items: center; /* Vertically center-align text and icon */
+}
+
+/* Dropdown Icon */
+.dashboard-profile-name svg {
+  margin-left: 10px; /* Add some space between text and icon */
+  font-size: 20px; /* Adjust the font size to your preference */
+}
+.profile-icon.active .profile-dropdown {
+  display: block;
+  margin-right: 30px;
+
+}
+
+.dashboard-notification-icon-orange {
+  margin-right: 10px;
+  box-shadow: 0 0.5px 4px rgb(75, 73, 73); /* Box shadow for the dropdown */
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  border-radius: 50px;
+  background-color: #007bff;
+}
+/* Profile Dropdown */
+.profile-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #007bff !important; /* Background color for the dropdown */
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 150px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Box shadow for the dropdown */
+  margin-top: -1px;
+  z-index: 1; /* Ensure it's on top of other elements */
+  color: #fff; /* Text color for dropdown items */
+  opacity: 0.9; /* Transparency (adjust as needed) */
+}
+
+.profile-dropdown ul {
+  list-style: none;
+  padding: 0;
+}
+
+.profile-dropdown li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  height: 21px;
+  border-radius: 8px;
+  padding-left: 3px;
+}
+
+.profile-dropdown li svg {
+  margin-right: 8px;
+}
+
+.profile-dropdown li:hover {
+
+  background-color: #f0f0f0; /* Background color on hover */
+  color: #000;
+  
+}
+
+/* ... (Previous styles) */
+
+
+
+/* card containeer */
+/* Add this to your CSS file */
+
+/* Cards Container */
+
+/* Add this to your CSS file */
+
+/* Cards Container */
+.dashboard-cards-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px; /* Add gap between cards */
+}
+
+/* Card Styles */
+.dashboard-card {
+  flex: 1;
+  padding: 25px;
+  background-color: #4a86f5;
+  color: white;
+  text-align: center;
+  position: relative; /* Add relative positioning to the card */
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  flex-direction: column;
+}
+
+.dashboard-card-heading {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.dashboard-card-text {
+  font-size: 24px;
+  margin-bottom: 30px;
+
+}
+
+/* Info Row Styles */
+.dashboard-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: absolute;
+  bottom: 0; /* Place the info row at the bottom */
+  left: 0; /* Stretch it to the left edge */
+  right: 0; /* Stretch it to the right edge */
+  padding: 10px 20px; /* Add padding for text and icon */
+  background-color: #ade6d8; /* Background color for the info row */
+  height: 15px;
+  /* padding-top: 20px; */
+}
+
+.dashboard-info-text {
+  flex: 1;
+  font-size: 16px;
+  color: #000; /* Text color for "More Info" */
+}
+
+.dashboard-info-icon {
+  font-size: 24px;
+  color: #000; /* Icon color */
+  margin-left: 10px; /* Add some space between text and icon */
+}
+.student-progress-chart{
+  color: #fff;
+}
+@media(min-width:850px){
+  .dashboard-container{
+    margin-left: -7%;
+    padding-left: 8%;
+  }
+}
+@media(min-width:1201px){
+  .dashboard-container{
+    margin-left: -2.2%;
+    padding-left: 7%;
+  }
+}
+@media(min-width:1350px){
+  .dashboard-container{
+    margin-left: -4.2%;
+  }
+}
+@media(min-width:1500px){
+  .dashboard-container{
+    margin-left: -6.3%;
+  }
+}
+@media(min-width:1600px){
+  .dashboard-container{
+    margin-left: -7.5%;
+  }
+}
+@media(min-width:1800px){
+  .dashboard-container{
+    margin-left: -2.4%;
+  }
+}
+@media(min-width:2300px){
+  .dashboard-container{
+    margin-left: -6.4%;
+  }
+}
+@media(min-width:2500px){
+  .dashboard-container{
+    margin-left: -10.2%;
+  }
+}

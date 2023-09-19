@@ -1,0 +1,44 @@
+{
+  "name": "result",
+  "version": "1.0.0",
+  "description": "A result application built with Electron.",
+  "main": "main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "keywords": [],
+  "author": "Usman Chaudhary <usmantahir.gc.33@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^26.2.1",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "productName": "Result App",
+    "directories": {
+      "output": "Software"
+    },
+    "win": {
+      "target": {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      },
+      "icon": "icon.png",
+      "publisherName": "Usman Chaudhary"
+    }
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "electron-store": "^8.1.0",
+    "express": "^4.18.2",
+    "idb": "^7.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^3.1.2",
+    "sqlite3": "^5.1.6"
+  }
+}

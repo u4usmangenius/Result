@@ -1,0 +1,184 @@
+/* Sidebar.css */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #001231;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
+  font-weight: 500;
+  font-style: 17px;
+}
+.sidebar-row {
+  border-bottom: 0.4px solid #706e6e;
+  width: 250px;
+}
+.sidebar {
+  background-color: #001231;
+  width: 250px;
+  height: 100%;
+  padding-top: 20px;
+  color: white;
+  position: fixed;
+  /* overflow-y: auto; */
+  box-shadow: 10px 0 15px rgba(0, 0, 0, 0.5); /* Add a shadow to the right side */
+  margin-bottom: 500px;
+  z-index: 997;
+}
+
+.logo-container {
+  text-align: center;
+  margin-bottom: 57px;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
+.logo {
+  max-width: 80px;
+}
+
+.logo-heading {
+  margin-top: 10px;
+  font-size: 1.2rem;
+  text-align: center; /* Center the logo heading */
+  padding-top: 10px; /* Add padding-top to center logo and heading */
+}
+
+.nav-ul {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.nav-ul li {
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.nav-ul a {
+  text-decoration: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 10px 20px 10px 30px; /* Add left padding to align icons */
+  height: 27px;
+}
+.nav-ul a:hover {
+  /* background-color: #6f91cf; */
+  /* height: 27px;
+  border-radius: 4px;
+  width: 167px; */
+}
+.nav-ul svg {
+  margin-right: 10px;
+}
+
+#features {
+  margin-top: 71px;
+}
+
+.features-label {
+  font-weight: bold;
+}
+
+.new-feature {
+  background-color: #fff;
+  padding: 5px 10px;
+  margin-left: 40px;
+  border-radius: 20px;
+  color: #001231;
+  font-weight: 800;
+  box-shadow: 10px 0 15px rgba(0, 0, 0, 0.5); /* Add a shadow to the right side */
+}
+
+/* Remove the style to center the icons vertically */
+.nav-ul svg {
+  margin-right: 10px;
+}
+.main-container {
+  /* position: inherit;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-left: 45%; */
+  /* margin-top: 2%; */
+  position: inherit;
+  top: 0;
+  left: 20%;
+}
+.outlet {
+  position: relative;
+  margin-left: 20.5%;
+  transition: 0.2s ease-in-out;
+}
+@media (min-width: 1800px) {
+  .outlet {
+    margin-left: 15%;
+  }
+}
+@media (max-width: 1380px) {
+  .outlet {
+    margin-left: 20.8%;
+  }
+}
+@media (max-width: 1199px) {
+  .outlet {
+    margin-left: 25.9%;
+  }
+  }
+@media (max-width: 1100px) {
+  .outlet {
+    margin-left: 26.6%;
+  }
+}
+@media (max-width: 1000px) {
+  .outlet {
+    margin-left: 29.5%;
+  }
+}
+@media (max-width: 900px) {
+  .outlet {
+    margin-left: 32%;
+  }
+}
+@media (max-width: 800px) {
+  .outlet {
+    margin-left: 34%;
+  }
+}
+@media (max-width: 700px) {
+  .outlet {
+    margin-left: 36%;
+  }
+}
+/* @media (max-width: 800px) {
+  .outlet {
+    margin-left: 37%;
+  }
+} */
+@media (max-width: 641px) {
+  .sidebar {
+    padding-top: 10px;
+  }
+  .logo-container {
+    margin-bottom: 25px;
+  }
+  .nav-ul li {
+    margin-bottom: 8px;
+  }
+  .nav-ul a {
+    padding: 8px 10px 8px 15px; /* Add left padding to align icons */
+  }
+  #features {
+    margin-top: 17px;
+    margin-bottom: 5px;
+  }
+}
+/* active class */
+.active {
+  background-color: #4a86f5;
+  color: rgb(0, 0, 0) !important;
+  height: 27px;
+  border-radius: 4px;
+  width: 167px;
+}

@@ -1,0 +1,118 @@
+.add-result-heading {
+  margin-top: 30px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.add-result-options {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.form-active {
+  background-color: #007bff;
+  color: #fff;
+  cursor: default;
+}
+
+.result-form-row {
+  display: flex;
+  flex-direction: row;
+  /* flex-wrap: wrap; */
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 40px;
+  margin-bottom: 20px;
+}
+
+.result-form-group {
+  flex-basis: calc(50% - 10px);
+  margin-bottom: 10px;
+}
+.result-form-group select {
+  width: 341px !important;
+  height: 50px;
+}
+.result-form-group input {
+  width: 330px !important;
+  height: 37px;
+}
+
+/* Add spacing between input fields in the same row */
+.result-form-group .result-input-type-text,
+.result-form-group input[type="password"],
+.result-form-group select {
+  margin-right: 20px; /* Adjust the margin-right to create a gap between input fields */
+}
+.result-input-type-text{
+  width: 230px;
+  height: 33px;
+}
+/* .subject-input-select-subject{
+  width: 230px;
+  height: 39px;
+} */
+.result-input-label {
+  display: block;
+  margin-bottom: 5px;
+  text-align: left; /* Align .result-input-labels to the left */
+}
+
+/* Add Another Result */
+.add-another-result {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 4%;
+  margin-left: 30px;
+}
+.add-another-result-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  font-size: 20px;
+}
+@media (min-width: 850px) and (max-width: 1000px) {
+  .result-form-group input,
+  .result-form-group select {
+    width: 85% !important; /* Make the input fields full width */
+    margin-right: 0; /* Remove the margin-right for input fields */
+    height: 40% !important;
+    margin-top: -15px;
+  }
+  .result-form-group select {
+    width: 90% !important;
+    height: 40% !important;
+    margin-right: 30px;
+    margin-top: -15px;
+  }
+  .result-form-row {
+    flex-direction: row; /* Change the direction to column for smaller screens */
+    gap: 20px; /* Adjust the gap between form rows for better spacing */
+    /* width: 150px !important; */
+  }
+  .add-teachers-close-button {
+    /* display: flex; */
+  }
+}
+.add-result-button button{
+  border: navajowhite;
+  background: transparent;
+  color: #fff;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  cursor: pointer;
+  margin-top: 6px;
+}
+.add-result-button{
+  height: 36px;
+}

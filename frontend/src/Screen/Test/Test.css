@@ -1,0 +1,36 @@
+body {
+  background-color: #cdd;
+  background-color: #fff;
+  color: #000;
+}
+.test-container {
+  margin-top: -2%;
+}
+.test-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* To align the button to the right */
+  margin-bottom: 20px;
+  margin-top: 15px;
+}
+
+.add-test-button {
+  background-color: #007bff; /* Blue background color */
+  color: #fff;
+  border: none;
+  padding: 10px 20px; /* Adjust padding as needed */
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-right: 5%;
+  width: 170px;
+  margin-right: 20px;
+  border-radius: 14px;
+  height: 44px;
+}
+
+.add-test-button:hover {
+  background-color: #0056b3; /* Darker blue color on hover */
+}
+
+/* ... (Rest of your styles) */
