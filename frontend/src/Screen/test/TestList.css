@@ -7,6 +7,7 @@
 
 .test-list-container {
   margin: 27px;
+  margin-right: 71px;
   overflow-y: auto;
 }
 /* Search Bar */
@@ -15,9 +16,16 @@
   align-items: center;
   margin-bottom: 20px;
   height: 40px;
-  border: 1px solid #ccc;
+  border: none;
   width: 371px;
-  padding: 5px;
+  padding: 5px;}
+.test-search-bar{
+  flex: 1; /* Adjust the width as needed */
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+
 }
 
 /* Adjust the width of the input field and select */
@@ -25,18 +33,22 @@
   width: 30%;
   flex: 1 1;
   padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border:none;
+  border-right: 0.4px solid #bbb;
+  border-radius: -40px;
   margin-right: 10px;
+  background: transparent;
 }
 /* Adjust the width of the input field and select */
 .test-search-bar input[type="text"] {
   flex: 2; /* Adjust the width as needed */
   padding: 10px;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
+  border: none;
+  background: transparent;
   border-radius: 4px;
   margin-right: 10px;
-  width: 160px;
+  width: 10px;
 }
 .test-search-bar .test-search-bar {
   flex: 1; /* Adjust the width as needed */
@@ -68,7 +80,6 @@
 
 .test-table th,
 .test-table td {
-  border: 1px solid #ccc;
   padding: 10px;
   text-align: left;
 }

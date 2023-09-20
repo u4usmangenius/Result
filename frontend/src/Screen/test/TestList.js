@@ -198,7 +198,7 @@ const TestList = ({ openAddtestsModal, closeAddtestsModal }) => {
         <input
           type="text"
           className="subject-text-input"
-          placeholder="Search"
+          placeholder="Search for a test"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           ref={inputRef}

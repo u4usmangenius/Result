@@ -44,7 +44,6 @@ const StudentProgressChart = () => {
   return (
     <>
       <div className="student-progress-chart">
-        <h2>Student Progress Chart</h2>
         <ReactApexChart
           options={chartOptions}
           series={chartSeries}

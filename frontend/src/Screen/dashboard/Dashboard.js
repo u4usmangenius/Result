@@ -113,16 +113,12 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        <div className="dashboard-heading">
-          <span className="dashboard-selected-color">Dashboard</span>
-          <span>&gt;</span>
-          <span>Statistics</span>
-        </div>
+        <div className="dashboard-heading"></div>
 
         <div className="dashboard-cards-container">
           <div className="dashboard-card">
-            <div className="dashboard-card-heading">Students</div>
-            <div className="dashboard-card-text">100</div>
+            <div className="dashboard-card-heading">Teachers</div>
+            <div className="dashboard-card-text">4</div>
             <div className="dashboard-info-row">
               <div className="dashboard-info-text">More Info</div>
               <div className="dashboard-info-icon">
@@ -133,7 +129,7 @@ const Dashboard = () => {
 
           <div className="dashboard-card">
             <div className="dashboard-card-heading">Students</div>
-            <div className="dashboard-card-text">100</div>
+            <div className="dashboard-card-text">2</div>
             <div className="dashboard-info-row">
               <div className="dashboard-info-text">More Info</div>
               <div className="dashboard-info-icon">
@@ -144,7 +140,7 @@ const Dashboard = () => {
 
           <div className="dashboard-card">
             <div className="dashboard-card-heading">Students</div>
-            <div className="dashboard-card-text">100</div>
+            <div className="dashboard-card-text">19</div>
             <div className="dashboard-info-row">
               <div className="dashboard-info-text">More Info</div>
               <div className="dashboard-info-icon">

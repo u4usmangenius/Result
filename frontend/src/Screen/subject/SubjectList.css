@@ -7,6 +7,7 @@
 
 .subject-list-container {
   margin: 27px;
+  margin-right: 71px;
   overflow-y: auto;
 }
 /* Search Bar */
@@ -15,7 +16,7 @@
   align-items: center;
   margin-bottom: 20px;
   height: 40px;
-  border: 1px solid #ccc;
+  border: none;
   width: 371px;
   padding: 5px;
 }
@@ -25,23 +26,34 @@
   width: 30%;
   flex: 1 1;
   padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: none;
+  border-right: 0.4px solid #bbb;
+  border-radius: -40px;
   margin-right: 10px;
+  background: transparent;
 }
 /* Adjust the width of the input field and select */
 .subject-search-bar input[type="text"] {
   flex: 2; /* Adjust the width as needed */
   padding: 10px;
+  /* border: 1px solid #ccc; */
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  margin-right: 10px;
+  width: 10px;
+}
+.subject-search-bar {
+  flex: 1; /* Adjust the width as needed */
+  padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
   margin-right: 10px;
-  width: 160px;
 }
 .subject-search-bar .subject-search-bar {
   flex: 1; /* Adjust the width as needed */
   padding: 10px;
-  border: 1px solid #ccc;
+  border: none;
   border-radius: 4px;
   margin-right: 10px;
 }
@@ -56,7 +68,7 @@
   margin-left: auto; /* Push the button to the right */
 }
 
-.subject    -search-button:hover {
+.subject -search-button:hover {
   background-color: #0056b3;
 }
 /* Subject Table */
@@ -68,7 +80,6 @@
 
 .subject-table th,
 .subject-table td {
-  border: 1px solid #ccc;
   padding: 10px;
   text-align: left;
 }
@@ -172,13 +183,13 @@
 
 /* Add a media query for screens between 850px and 1000px */
 @media (min-width: 850px) and (max-width: 1000px) {
-  .subject-list-container{
-    font-size: 12px !important;width: 100%; /* Set the width to 100% */
+  .subject-list-container {
+    font-size: 12px !important;
+    width: 100%; /* Set the width to 100% */
     max-width: none; /* Remove max-width */
     padding: 20px; /* Add some padding for spacing */
     box-sizing: border-box; /* Include padding in the width calculation */
     font-size: 12px !important;
-
   }
   .subject-search-bar input[type="text"] {
     width: 60%; /* Adjust the width as needed */

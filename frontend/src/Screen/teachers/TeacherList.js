@@ -215,7 +215,7 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
 
         <input
           type="text"
-          placeholder="Search"
+          placeholder="Search for a teacher "
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           ref={inputRef}

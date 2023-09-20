@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
-import Sidebar from "./Components/Sidebar/Sidebar";
 import PrivateComponent from "./Components/Privatecomponent/PrivateComponent";
 import Home from "./Screen/home/Home";
 import Dashboard from "./Screen/dashboard/Dashboard";
@@ -17,6 +16,7 @@ import Result from "./Screen/result/Result";
 import Setting from "./Screen/setting/Setting";
 import Reports from "./Screen/reports/Reports";
 import Features from "./Screen/features/Features";
+import Sidebar from "./components/Sidebar/Sidebar";
 function App() {
   const [auth, setAuth] = useState(localStorage.getItem("bearer token"));
   useEffect(() => {

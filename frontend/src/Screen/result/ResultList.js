@@ -229,7 +229,7 @@ const ResultList = ({ openAddresultsModal, closeAddresultsModal }) => {
         <input
           type="text"
           className="subject-text-input"
-          placeholder="Search"
+          placeholder="Search for a result"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           ref={inputRef}

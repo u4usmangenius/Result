@@ -195,7 +195,7 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
         <input
           type="text"
           className="subject-text-input"
-          placeholder="Search"
+          placeholder="Search for a subject"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           ref={inputRef}

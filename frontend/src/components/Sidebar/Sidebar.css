@@ -2,7 +2,7 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #001231;
+  /* background-color: #081228; */
   font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
     "Lucida Sans", Arial, sans-serif;
   font-weight: 500;
@@ -13,14 +13,16 @@ body {
   width: 250px;
 }
 .sidebar {
-  background-color: #001231;
+  background-color: rgb(2, 10, 24) ;
   width: 250px;
   height: 100%;
   padding-top: 20px;
   color: white;
+  font-weight: 500;
+  font-size: 17px;
   position: fixed;
   /* overflow-y: auto; */
-  box-shadow: 10px 0 15px rgba(0, 0, 0, 0.5); /* Add a shadow to the right side */
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.5); /* Add a shadow to the right side */
   margin-bottom: 500px;
   z-index: 997;
 }
@@ -59,7 +61,7 @@ body {
   color: white;
   display: flex;
   align-items: center;
-  padding: 10px 20px 10px 30px; /* Add left padding to align icons */
+  padding: 10px 20px 10px 36px; /* Add left padding to align icons */
   height: 27px;
 }
 .nav-ul a:hover {
@@ -177,7 +179,6 @@ body {
 /* active class */
 .active {
   background-color: #4a86f5;
-  color: rgb(0, 0, 0) !important;
   height: 27px;
   border-radius: 4px;
   width: 167px;
