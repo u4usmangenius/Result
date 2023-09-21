@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db/Sqlite").db;
 const crypto = require("crypto"); // Import the crypto module
+const { verifyToken } = require("./authMiddleware");
 
-router.post("/api/results", (req, res) => {
+router.post("/api/results",verifyToken, (req, res) => {
   const { userName, TestName, ObtainedMarks } = req.body;
 
   // Check if userName, TestName, and ObtainedMarks are provided in the request body
@@ -99,7 +100,7 @@ router.post("/api/results", (req, res) => {
 });
 
 // get result data
-router.get("/api/results", (req, res) => {
+router.get("/api/results",verifyToken, (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 5;
   const filter = req.query.filter || "";
@@ -159,7 +160,7 @@ router.get("/api/results", (req, res) => {
   });
 });
 // Update Result Api
-router.put("/api/results/:testId", (req, res) => {
+router.put("/api/results/:testId",verifyToken, (req, res) => {
   const resultId = req.params.testId;
   const {
     fullName,
@@ -247,7 +248,7 @@ router.put("/api/results/:testId", (req, res) => {
   });
 });
 // delete result
-router.delete("/api/results/:resultId", (req, res) => {
+router.delete("/api/results/:resultId",verifyToken, (req, res) => {
   const resultId = req.params.resultId;
 
   // Check if the test with the specified ID exists

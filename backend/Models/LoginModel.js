@@ -5,8 +5,6 @@ const router = express.Router();
 const db = require("../db/Sqlite").db;
 const jwtKey = "3L@#$@!^#$#sd###$";
 const { verifyToken } = require("./authMiddleware");
-// router.get("/usmanusman",(req, res) => {
-//   res.status(200).send("Usman");
 
 router.post("/api/login", async (req, res) => {
   const { username, password } = req.body;

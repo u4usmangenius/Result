@@ -1,12 +1,13 @@
-  import React, { useState } from "react";
+import React, { createContext, useState } from "react";
 import "./Teacher.css";
 import AddTeachers from "./AddTeachers";
 import Modal from "../model/Modal.js";
 import TeacherList from "./TeacherList";
 import Header from "../header/Header";
-
+export const TeachersContext = createContext(); // Create the context
 const Teachers = () => {
   const [isAddTeachersModalOpen, setIsAddTeachersModalOpen] = useState(false);
+  const [teachersData, setTeachersData] = useState([]);
 
   const openAddTeachersModal = () => {
     setIsAddTeachersModalOpen(true);
@@ -15,9 +16,11 @@ const Teachers = () => {
   const closeAddTeachersModal = () => {
     setIsAddTeachersModalOpen(false);
   };
-
+  const addNewTeacher = (newTeacher) => {
+    setTeachersData([...teachersData, newTeacher]);
+  };
   return (
-    <>
+    <TeachersContext.Provider value={{ teachersData, addNewTeacher }}>
       <Header />
       <div className="teachers-container">
         <div className="teachers-header-row">
@@ -39,7 +42,7 @@ const Teachers = () => {
         openAddTeachersModal={openAddTeachersModal}
         closeAddTeachersModal={closeAddTeachersModal}
       />
-    </>
+    </TeachersContext.Provider>
   );
 };
 

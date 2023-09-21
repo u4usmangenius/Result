@@ -20,10 +20,14 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [totalPages, setTotalPages] = useState(1); // Track total number of pages
-  const getCurrentPageData = () => {
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return filteredTeachers.slice(startIndex, endIndex);
+  
+  useEffect(()=>{
+
+    navigate("/sidebar/studens")
+    navigate("/sidebar/teachers")
+  },[])
+  const showAlert = (message) => {
+    Swal.fire(message);
   };
   const showConfirm = (message) => {
     return Swal.fire({
@@ -68,10 +72,18 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
       });
   }, [currentPage, rowsPerPage, selectedFilter, searchText]);
 
+    const getCurrentPageData = () => {
+    
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    console.log("filtered tachrs.slice")
+    console.log(filteredTeachers.slice(startIndex,endIndex))
+    return filteredTeachers.slice(startIndex, endIndex);
+  };
+
   // useEffect(() => {
   //   setSearchText(""); // Reset searchText when currentPage changes
   // }, [currentPage]);
-
   const handleEdit = (teacher) => {
     setShowEditModal(true);
     setEditingTeacher(teacher);
@@ -104,17 +116,36 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
             response.data,
             ...prevTeachers.slice(editedTeacherIndex + 1),
           ]);
-
           const updatedTeachers = [...teachers];
           updatedTeachers[editedTeacherIndex] = response.data;
 
           // Update the state with the updated teachers array
-          
+
           setTeachers(updatedTeachers);
           setShowEditModal(false); // Close the edit modal after a successful edit
-          navigate("/sidebar/dashboard");
-          navigate("/sidebar/teachers");
-          console.log(updatedTeachers);
+
+          axios
+            .get(
+              `http://localhost:8080/api/teachers?page=${currentPage}&pageSize=${rowsPerPage}&filter=${selectedFilter}&search=${searchText}`,
+              { headers }
+            )
+            .then((response) => {
+              if (currentPage === 1) {
+                setTeachers(response.data.teachers);
+              } else {
+                // Append the data to the existing teachers list
+                setTeachers((prevTeachers) => [
+                  ...prevTeachers,
+                  ...response.data.teachers,
+                ]);
+              }
+              setTotalPages(response.data.totalPages);
+              setLoading(false);
+            })
+            .catch((error) => {
+              console.error("Error fetching teachers:", error);
+              setLoading(false);
+            });
         }
       })
       .catch((error) => {
@@ -189,7 +220,6 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
         teacher.fullName?.toLowerCase().includes(searchTextLower) ||
         teacher.subject?.toLowerCase().includes(searchTextLower) ||
         teacher.gender?.toLowerCase().includes(searchTextLower) ||
-        teacher.userName?.toLowerCase().includes(searchTextLower) ||
         teacher.phone?.toLowerCase().includes(searchTextLower)
       );
     } else {
@@ -209,7 +239,6 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
           <option value="fullName">Name</option>
           <option value="subject">Subject</option>
           <option value="gender">Gender</option>
-          <option value="userName">Username</option>
           <option value="phone">Phone Number</option>
         </select>
 
@@ -239,7 +268,6 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
               <tr>
                 <th>Name</th>
                 <th>Subject</th>
-                <th>Username</th>
                 <th>Gender</th>
                 <th>Phone Number</th>
                 <th>Actions</th>
@@ -250,12 +278,11 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
                 <tr key={teacher.teacherId}>
                   <td>{teacher.fullName}</td>
                   <td>{teacher.subject}</td>
-                  <td>{teacher.userName}</td>
                   <td>{teacher.gender}</td>
                   <td>{teacher.phone}</td>
                   <td className="set-teacher-icon">
                     <div
-                      onClick={() => handleEdit(teacher)}
+                      onClick = {() => handleEdit(teacher)}
                       className="edit-teacher-icon"
                     >
                       <BiEditAlt className="edit-teacher-icon" />

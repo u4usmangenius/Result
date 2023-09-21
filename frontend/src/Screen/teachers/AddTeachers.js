@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./AddTeachers.css";
 import { IoMdAddCircle } from "react-icons/io";
 import Papa from "papaparse"; // Import PapaParse library
@@ -12,10 +12,9 @@ const AddTeachers = ({ onClose }) => {
   const [teacherData, setTeacherData] = useState([]);
   const [editingIndex, setEditingIndex] = useState(-1);
   const [multiplerowbtn, setmultiplerowbtn] = useState(false);
+  const [subjectOptions, setSubjectOptions] = useState([]);
   const [formData, setFormData] = useState({
     fullName: "",
-    userName: "",
-    password: "",
     phone: "",
     gender: "Select Gender",
     subject: "Select Subject",
@@ -36,7 +35,30 @@ const AddTeachers = ({ onClose }) => {
       return result.isConfirmed;
     });
   };
+  // getting subjects from subject module
+  useEffect(() => {
+    // Fetch subjects from your backend API
+    const fetchSubjects = async () => {
+      const token = localStorage.getItem("bearer token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+      try {
+        const response = await axios.get("http://localhost:8080/api/subjects", {
+          headers,
+        });
+        if (response.status === 200) {
+          // Extract the subjects array from the response
+          const { subjects } = response.data;
+          setSubjectOptions(subjects); // Set subjects in the state
+        }
+      } catch (error) {
+        console.error("Error fetching subjects:", error);
+      }
+    };
 
+    fetchSubjects(); // Call the fetchSubjects function when the component mounts
+  }, []);
   const addTeacherToBackend = async (teacher) => {
     try {
       const token = localStorage.getItem("bearer token");
@@ -80,9 +102,7 @@ const AddTeachers = ({ onClose }) => {
           const singleRowData = parsedData[0];
           setFormData({
             fullName: singleRowData["fullName"] || "",
-            userName: singleRowData["userName"] || "",
             phone: singleRowData["phone"] || "",
-            password: singleRowData["password"] || "",
             gender: singleRowData["gender"] || "Select Gender",
             subject: singleRowData["subject"] || "Select Subject",
           });
@@ -101,9 +121,7 @@ const AddTeachers = ({ onClose }) => {
     });
   };
   const handleMultiRowUpload = async () => {
-    const confirmed = await showConfirm(
-      `Continue to Insert All Teachers?`
-    );
+    const confirmed = await showConfirm(`Continue to Insert All Teachers?`);
 
     if (confirmed) {
       try {
@@ -151,8 +169,6 @@ const AddTeachers = ({ onClose }) => {
           showAlert("Teacher updated successfully");
           setFormData({
             fullName: "",
-            userName: "",
-            password: "",
             phone: "",
             gender: "Select Gender",
             subject: "Select Subject",
@@ -164,8 +180,6 @@ const AddTeachers = ({ onClose }) => {
       } else {
         if (
           formData.fullName === "" ||
-          formData.userName === "" ||
-          formData.password === "" ||
           formData.phone === "" ||
           formData.gender === "Select Gender" ||
           formData.subject === "Select Subject"
@@ -176,8 +190,6 @@ const AddTeachers = ({ onClose }) => {
         // Handle adding a new teacher
         const newTeacher = {
           fullName: formData.fullName,
-          userName: formData.userName,
-          password: formData.password,
           phone: formData.phone,
           gender: formData.gender,
           subject: formData.subject,
@@ -190,8 +202,6 @@ const AddTeachers = ({ onClose }) => {
           onClose(); // Close the form
           setFormData({
             fullName: "",
-            userName: "",
-            password: "",
             phone: "",
             gender: "Select Gender",
             subject: "Select Subject",
@@ -242,32 +252,7 @@ const AddTeachers = ({ onClose }) => {
                 }
               />
             </div>
-            <div className="add-teacher-form-group">
-              <label className="teachers-input-label">userName:</label>
-              <input
-                type="text"
-                className="teacher-text-input"
-                placeholder="userName"
-                value={formData.userName}
-                onChange={(e) =>
-                  setFormData({ ...formData, userName: e.target.value })
-                }
-              />
-            </div>
-          </div>
-          <div className="add-teacher-form-row">
-            <div className="add-teacher-form-group">
-              <label className="teachers-input-label">Password:</label>
-              <input
-                type="password"
-                className="teacher-input-password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-              />
-            </div>
+
             <div className="add-teacher-form-group">
               <label className="teachers-input-label">Phone:</label>
               <input
@@ -307,9 +292,11 @@ const AddTeachers = ({ onClose }) => {
                 }
               >
                 <option>Select Subject</option>
-                <option>Math</option>
-                <option>Science</option>
-                <option>History</option>
+                {subjectOptions.map((subject, index) => (
+                  <option key={index} value={subject.subjectName}>
+                    {subject.subjectName}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

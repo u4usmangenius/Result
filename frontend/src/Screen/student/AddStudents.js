@@ -15,9 +15,9 @@ const AddStudents = ({ onClose }) => {
   const [multiplerowbtn, setmultiplerowbtn] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
-    userName: "",
-    password: "",
-    phone: "",
+    stdRollNo: "",
+    stdPhone: "",
+    guard_Phone: "",
     gender: "Select Gender",
     className: "Select Subject",
     Batch: "",
@@ -81,9 +81,9 @@ const AddStudents = ({ onClose }) => {
           const singleRowData = parsedData[0];
           setFormData({
             fullName: singleRowData["fullName"] || "",
-            userName: singleRowData["userName"] || "",
-            phone: singleRowData["phone"] || "",
-            password: singleRowData["password"] || "",
+            stdRollNo: singleRowData["stdRollNo"] || "",
+            stdPhone: singleRowData["stdPhone"] || "",
+            guard_Phone: singleRowData["guard_Phone"] || "",
             gender: singleRowData["gender"] || "Select Gender",
             className: singleRowData["className"] || "",
             Batch: singleRowData["Batch"] || "",
@@ -149,9 +149,9 @@ const AddStudents = ({ onClose }) => {
           showAlert("student updated successfully");
           setFormData({
             fullName: "",
-            userName: "",
-            password: "",
-            phone: "",
+            stdRollNo: "",
+            stdPhone: "",
+            guard_Phone: "",
             gender: "Select Gender",
             className: "",
             Batch: "",
@@ -162,18 +162,23 @@ const AddStudents = ({ onClose }) => {
         }
       } else {
         if (
-          formData.gender === "Select Gender" ||
-          formData.subject === "Select Subject"
+          formData.fullName === "" ||
+          formData.stdRollNo === "" ||
+          formData.guard_Phone === "" ||
+          formData.stdPhone === "" ||
+          formData.Batch === "" ||
+          formData.className === "Select Class" ||
+          formData.gender === "Select Gender"
         ) {
-          showAlert("Please select a valid gender and subject.");
+          showAlert("All fields are required.");
           return; // Don't proceed if default values are selected
         }
         // Handle adding a new student
         const newstudent = {
           fullName: formData.fullName,
-          userName: formData.userName,
-          password: formData.password,
-          phone: formData.phone,
+          stdRollNo: formData.stdRollNo,
+          stdPhone: formData.stdPhone,
+          guard_Phone: formData.guard_Phone,
           gender: formData.gender,
           className: formData.className,
           Batch: formData.Batch,
@@ -186,9 +191,9 @@ const AddStudents = ({ onClose }) => {
           onClose(); // Close the form
           setFormData({
             fullName: "",
-            userName: "",
-            password: "",
-            phone: "",
+            stdRollNo: "",
+            stdPhone: "",
+            guard_Phone: "",
             gender: formData.gender,
             className: formData.className,
             Batch: formData.Batch,
@@ -228,7 +233,19 @@ const AddStudents = ({ onClose }) => {
         <form>
           <div className="add-student-form-row">
             <div className="add-student-form-group">
-              <label className="students-input-label">fullName:</label>
+              <label className="students-input-label">Roll No</label>
+              <input
+                type="text"
+                className="student-text-input"
+                placeholder="RollNo"
+                value={formData.stdRollNo}
+                onChange={(e) =>
+                  setFormData({ ...formData, stdRollNo: e.target.value })
+                }
+              />
+            </div>
+            <div className="add-student-form-group">
+              <label className="students-input-label">fullName</label>
               <input
                 type="text"
                 className="student-text-input"
@@ -239,41 +256,29 @@ const AddStudents = ({ onClose }) => {
                 }
               />
             </div>
-            <div className="add-student-form-group">
-              <label className="students-input-label">userName:</label>
-              <input
-                type="text"
-                className="student-text-input"
-                placeholder="userName"
-                value={formData.userName}
-                onChange={(e) =>
-                  setFormData({ ...formData, userName: e.target.value })
-                }
-              />
-            </div>
           </div>
           <div className="add-student-form-row">
             <div className="add-student-form-group">
-              <label className="students-input-label">Password:</label>
+              <label className="students-input-label">Phone Number </label>
               <input
-                type="password"
+                type="phone"
                 className="student-input-password"
-                placeholder="Password"
-                value={formData.password}
+                placeholder="Student Phone Number"
+                value={formData.stdPhone}
                 onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
+                  setFormData({ ...formData, stdPhone: e.target.value })
                 }
               />
             </div>
             <div className="add-student-form-group">
-              <label className="students-input-label">Phone:</label>
+              <label className="students-input-label">Guardian Phone.No</label>
               <input
                 type="text"
                 className="student-text-input"
-                placeholder="Phone"
-                value={formData.phone}
+                placeholder="Guardian Phone Number"
+                value={formData.guard_Phone}
                 onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
+                  setFormData({ ...formData, guard_Phone: e.target.value })
                 }
               />
             </div>
@@ -305,8 +310,7 @@ const AddStudents = ({ onClose }) => {
               >
                 <option>Select Class</option>
                 <option>1st Year</option>
-                <option>2st Year</option>
-                <option>3st Year</option>
+                <option>2nd Year</option>
               </select>
             </div>
           </div>

@@ -4,35 +4,61 @@ const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("Result.sqlite");
 
 // crating login user
-db.run(
-  `
-  CREATE TABLE IF NOT EXISTS user (
-    username varchar(255) PRIMARY KEY,
-    password varchar(255)
-  )
-`,
-  (err) => {
-    if (err) {
-      console.error("Error creating users table:", err);
-    }
-  }
-);
-// Logged in user credientials
+// Creating login user table
+async function createUserTable() {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `
+      CREATE TABLE IF NOT EXISTS user (
+        username varchar(255) PRIMARY KEY,
+        password varchar(255)
+      )
+    `,
+      (err) => {
+        if (err) {
+          console.error("Error creating user table:", err);
+          reject(err);
+        } else {
+          console.log("Successfully created user table");
+          resolve();
+        }
+      }
+    );
+  });
+}
+
+// Logged in user credentials
 const data = {
   username: "admin",
   password: "admin",
 };
-db.run(
-  "INSERT INTO user (username, password) VALUES (?, ?)",
-  [data.username, data.password],
-  (err) => {
-    if (err) {
-      console.error("Error creating users table:", err);
-    } else {
-      console.error({ message: "Admin user created" });
-    }
+
+async function insertUser() {
+  try {
+    await createUserTable(); // Wait for table creation to complete
+    await new Promise((resolve, reject) => {
+      db.run(
+        "INSERT INTO user (username, password) VALUES (?, ?)",
+        [data.username, data.password],
+        (err) => {
+          if (err) {
+            console.error("Error inserting user:", err);
+            reject(err);
+          } else {
+            console.log("Admin user created");
+            resolve();
+          }
+        }
+      );
+    });
+  } catch (err) {
+    console.error("Error:", err);
   }
-);
+}
+
+// Call the function to insert the user
+insertUser();
+
 // Create teachers
 db.run(
   `
@@ -41,7 +67,6 @@ db.run(
     fullName TEXT,
     subject TEXT,
     gender TEXT,
-    userName TEXT UNIQUE,
     phone TEXT,
     password TEXT
   )
@@ -59,11 +84,11 @@ db.run(
   CREATE TABLE IF NOT EXISTS students (
     studentId TEXT PRIMARY KEY,
     fullName TEXT,
-    userName TEXT UNIQUE,
+    stdRollNo TEXT UNIQUE,
     className TEXT,
     gender TEXT,
-    phone TEXT,
-    password TEXT,
+    stdPhone TEXT,
+    guard_Phone TEXT,
     Batch TEXT
   )
 `,
@@ -97,7 +122,7 @@ db.run(
     std_subjectId varchar(255) PRIMARY KEY,
     studentId TEXT,
     subjectId TEXT,
-    userName varchar(255),
+    stdRollNo varchar(255),
     userSubject varchar(255),
     FOREIGN KEY (studentId) REFERENCES students(studentId),
     FOREIGN KEY (subjectId) REFERENCES subjects(subjectId)

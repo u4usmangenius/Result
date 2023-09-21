@@ -26,12 +26,12 @@ const StudentList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
   };
   const showConfirm = (message) => {
     return Swal.fire({
-      title: 'Confirm',
+      title: "Confirm",
       text: message,
-      icon: 'question',
+      icon: "question",
       showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
     }).then((result) => {
       return result.isConfirmed;
     });
@@ -96,14 +96,39 @@ const StudentList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
           );
 
           // Create a copy of the students array with the updated student
+          setstudents((prevTeachers) => [
+            ...prevTeachers.slice(0, editedstudentIndex),
+            response.data,
+            ...prevTeachers.slice(editedstudentIndex + 1),
+          ]);
           const updatedstudents = [...students];
           updatedstudents[editedstudentIndex] = response.data;
 
           // Update the state with the updated students array
           setstudents(updatedstudents);
           setShowEditModal(false); // Close the edit modal after a successful edit
-          navigate("/sidebar/dashboard");
-          navigate("/sidebar/students");
+          axios
+            .get(
+              `http://localhost:8080/api/students?page=${currentPage}&pageSize=${rowsPerPage}&filter=${selectedFilter}&search=${searchText}`,
+              { headers }
+            )
+            .then((response) => {
+              if (currentPage === 1) {
+                setstudents(response.data.students);
+              } else {
+                // Append the data to the existing students list
+                setstudents((prevstudents) => [
+                  ...prevstudents,
+                  ...response.data.students,
+                ]);
+              }
+              setTotalPages(response.data.totalPages);
+              setLoading(false);
+            })
+            .catch((error) => {
+              console.error("Error fetching students:", error);
+              setLoading(false);
+            });
         }
       })
       .catch((error) => {
@@ -138,9 +163,11 @@ const StudentList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
         setLoading(false);
       });
   };
-  const handleDelete =async (student) => {
+  const handleDelete = async (student) => {
     // Display a confirmation dialog
-    const confirmed = await showConfirm(`Are you sure you want to delete ${student.fullName}?`);
+    const confirmed = await showConfirm(
+      `Are you sure you want to delete ${student.fullName}?`
+    );
     // Display a confirmation dialog
     if (confirmed) {
       console.log("User confirmed!");
@@ -178,8 +205,9 @@ const StudentList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
         student.fullName?.toLowerCase().includes(searchTextLower) ||
         student.subject?.toLowerCase().includes(searchTextLower) ||
         student.gender?.toLowerCase().includes(searchTextLower) ||
-        student.userName?.toLowerCase().includes(searchTextLower) ||
-        student.phone?.toLowerCase().includes(searchTextLower)
+        student.stdRollNo?.toLowerCase().includes(searchTextLower) ||
+        student.guard_Phone?.toLowerCase().includes(searchTextLower) ||
+        student.stdPhone?.toLowerCase().includes(searchTextLower)
       );
     } else {
       return student[selectedFilter]?.toLowerCase().includes(searchTextLower);
@@ -197,10 +225,10 @@ const StudentList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
           <option value="all">All</option>
           <option value="fullName">Name</option>
           <option value="className">ClassName</option>
+          <option value="stdRollNo">RollNo</option>
           <option value="gender">Gender</option>
-          <option value="userName">Username</option>
-          <option value="phone">Phone Number</option>
-          <option value="phone">Batch</option>
+          <option value="stdPhone">Std.PhoneNo</option>
+          <option value="guard_Phone">Guardian PhoneNo</option>
         </select>
 
         <input
@@ -223,11 +251,12 @@ const StudentList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
         <table>
           <thead>
             <tr>
+              <th>Roll No</th>
               <th>Name</th>
-              <th>Username</th>
               <th>ClassName</th>
+              <th>Std.PhoneNo</th>
+              <th>Guardian PhoneNor</th>
               <th>Gender</th>
-              <th>Phone Number</th>
               <th>Batch</th>
               <th>Actions</th>
             </tr>
@@ -235,11 +264,12 @@ const StudentList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
           <tbody>
             {getCurrentPageData().map((student) => (
               <tr key={student.studentId}>
+                <td>{student.stdRollNo}</td>
                 <td>{student.fullName}</td>
-                <td>{student.userName}</td>
                 <td>{student.className}</td>
+                <td>{student.stdPhone}</td>
+                <td>{student.guard_Phone}</td>
                 <td>{student.gender}</td>
-                <td>{student.phone}</td>
                 <td>{student.Batch}</td>
                 <td className="set-student-icon">
                   <div

@@ -14,7 +14,7 @@ router.get("/api/teachers",verifyToken, (req, res) => {
   const offset = (page - 1) * pageSize;
 
   let query = `
-      SELECT teacherId, fullName, subject, userName, gender, phone 
+      SELECT teacherId, fullName, subject, gender, phone 
       FROM teachers 
       WHERE 1=1`;
 
@@ -26,7 +26,6 @@ router.get("/api/teachers",verifyToken, (req, res) => {
   // } 
   if (
     filter === "fullName" ||
-    filter === "userName" ||
     filter === "subject" ||
     filter === "gender" ||
     filter === "phone"
@@ -35,9 +34,8 @@ router.get("/api/teachers",verifyToken, (req, res) => {
     params.push(`%${search}%`);
   } else if (filter === "all") {
     // Handle global search
-    query += ` AND (fullName LIKE ? OR subject LIKE ? OR userName LIKE ? OR gender LIKE ? OR phone LIKE ?)`;
+    query += ` AND (fullName LIKE ? OR subject LIKE ? OR gender LIKE ? OR phone LIKE ?)`;
     params.push(
-      `%${search}%`,
       `%${search}%`,
       `%${search}%`,
       `%${search}%`,
@@ -80,10 +78,10 @@ router.get("/api/teachers",verifyToken, (req, res) => {
 
 // Route to create a new teacher with validations
 router.post("/api/teachers",verifyToken, (req, res) => {
-  const { fullName, subject, userName, gender, phone, password } = req.body;
+  const { fullName, subject, gender, phone } = req.body;
 
   // Check if any required field is missing
-  if (!fullName || !subject || !gender || !userName || !phone || !password) {
+  if (!fullName || !subject || !gender || !phone ) {
     res
       .status(400)
       .json({ success: false, message: "All fields are required" });
@@ -92,8 +90,8 @@ router.post("/api/teachers",verifyToken, (req, res) => {
 
   const teacherId = crypto.randomUUID();
   db.run(
-    "INSERT INTO teachers (teacherId, fullName, subject, userName, gender, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [teacherId, fullName, subject, userName, gender, phone, password],
+    "INSERT INTO teachers (teacherId, fullName, subject,  gender, phone) VALUES (?, ?, ?, ?, ?)",
+    [teacherId, fullName, subject, gender, phone],
     (err) => {
       if (err) {
         console.error("Error inserting teacher:", err);
@@ -109,67 +107,66 @@ router.post("/api/teachers",verifyToken, (req, res) => {
 
 // create api for handling multiple data from frontend in array (csv)
 // Route to update a teacher by ID (excluding password)
-router.put("/api/teachers/:teacherId",verifyToken, (req, res) => {
-  const teacherId = req.params.teacherId;
-  const { fullName, subject, userName, gender, phone } = req.body;
+  router.put("/api/teachers/:teacherId",verifyToken, (req, res) => {
+    const teacherId = req.params.teacherId;
+    const { fullName, subject,  gender, phone } = req.body;
 
-  // Check if any required field is missing
-  if (!fullName || !subject || !gender || !userName || !phone) {
-    res
-      .status(400)
-      .json({ success: false, message: "All fields are required" });
-    return;
-  }
+    // Check if any required field is missing
+    if (!fullName || !subject || !gender  || !phone) {
+      res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+      return;
+    }
 
-  // Check if the teacher with the specified ID exists
-  db.get(
-    "SELECT * FROM teachers WHERE teacherId = ?",
-    [teacherId],
-    (err, row) => {
-      if (err) {
-        console.error("Error checking teacher existence:", err);
-        res
-          .status(500)
-          .json({ success: false, message: "Internal server error" });
-      } else if (!row) {
-        res.status(404).json({ success: false, message: "Teacher not found" });
-      } else {
-        // Check if the new data is different from the existing data
-        if (
-          fullName === row.fullName &&
-          subject === row.subject &&
-          userName === row.userName &&
-          gender === row.gender &&
-          phone === row.phone
-        ) {
-          res.status(400).json({
-            success: false,
-            message: "No changes detected. Teacher data remains the same",
-          });
+    // Check if the teacher with the specified ID exists
+    db.get(
+      "SELECT * FROM teachers WHERE teacherId = ?",
+      [teacherId],
+      (err, row) => {
+        if (err) {
+          console.error("Error checking teacher existence:", err);
+          res
+            .status(500)
+            .json({ success: false, message: "Internal server error" });
+        } else if (!row) {
+          res.status(404).json({ success: false, message: "Teacher not found" });
         } else {
-          // Update the teacher's information (excluding password)
-          db.run(
-            "UPDATE teachers SET fullName=?, subject=?, userName=?, gender=?, phone=? WHERE teacherId=?",
-            [fullName, subject, userName, gender, phone, teacherId],
-            (err) => {
-              if (err) {
-                console.error("Error updating teacher:", err);
-                res
-                  .status(500)
-                  .json({ success: false, message: "Internal server error" });
-              } else {
-                res.json({
-                  success: true,
-                  message: "Teacher updated successfully",
-                });
+          // Check if the new data is different from the existing data
+          if (
+            fullName === row.fullName &&
+            subject === row.subject &&
+            gender === row.gender &&
+            phone === row.phone
+          ) {
+            res.status(400).json({
+              success: false,
+              message: "No changes detected. Teacher data remains the same",
+            });
+          } else {
+            // Update the teacher's information (excluding password)
+            db.run(
+              "UPDATE teachers SET fullName=?, subject=?, gender=?, phone=? WHERE teacherId=?",
+              [fullName, subject,  gender, phone, teacherId],
+              (err) => {
+                if (err) {
+                  console.error("Error updating teacher:", err);
+                  res
+                    .status(500)
+                    .json({ success: false, message: "Internal server error" });
+                } else {
+                  res.json({
+                    success: true,
+                    message: "Teacher updated successfully",
+                  });
+                }
               }
-            }
-          );
+            );
+          }
         }
       }
-    }
-  );
-});
+    );
+  });
 // Route to delete a teacher by ID
 router.delete("/api/teachers/:teacherId",verifyToken, (req, res) => {
   const teacherId = req.params.teacherId;
@@ -224,10 +221,8 @@ router.post("/api/teachers/upload-csv",verifyToken, (req, res) => {
   const teachersToAdd = csvData.map((row) => ({
     fullName: row.fullName,
     subject: row.subject,
-    userName: row.userName,
     gender: row.gender,
     phone: row.phone,
-    password: row.password,
   }));
 
   // Now, you can add the teachers to the database
@@ -235,15 +230,13 @@ router.post("/api/teachers/upload-csv",verifyToken, (req, res) => {
     return new Promise((resolve, reject) => {
       const teacherId = crypto.randomUUID();
       db.run(
-        "INSERT INTO teachers (teacherId, fullName, subject, userName, gender, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO teachers (teacherId, fullName, subject,  gender, phone) VALUES (?, ?, ?, ?, ?)",
         [
           teacherId,
           teacher.fullName,
           teacher.subject,
-          teacher.userName,
           teacher.gender,
           teacher.phone,
-          teacher.password,
         ],
         (err) => {
           if (err) {

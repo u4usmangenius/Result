@@ -97,8 +97,26 @@ const TestList = ({ openAddtestsModal, closeAddtestsModal }) => {
           // Update the state with the updated tests array
           settests(updatedtests);
           setShowEditModal(false); // Close the edit modal after a successful edit
-          navigate("/sidebar/dashboard");
-          navigate("/sidebar/test");
+          axios
+          .get(
+            `http://localhost:8080/api/tests?page=${currentPage}&pageSize=${rowsPerPage}&filter=${selectedFilter}&search=${searchText}`,
+            { headers }
+          )
+          .then((response) => {
+            if (currentPage === 1) {
+              settests(response.data.tests);
+            } else {
+              // Append the data to the existing tests list
+              settests((prevtests) => [...prevtests, ...response.data.tests]);
+            }
+            setTotalPages(response.data.totalPages);
+            setLoading(false);
+          })
+          .catch((error) => {
+            console.error("Error fetching tests:", error);
+            setLoading(false);
+          });
+    
         }
       })
       .catch((error) => {

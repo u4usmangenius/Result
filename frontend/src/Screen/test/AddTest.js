@@ -13,7 +13,7 @@ const AddTest = ({ onClose }) => {
   const [testData, settestData] = useState([]);
   const [editingIndex, setEditingIndex] = useState(-1);
   const [multiplerowbtn, setmultiplerowbtn] = useState(false);
-  const [subjectOptions, setSubjectOptions] = useState([]); // Initialize as an empty array
+  const [subjectOptions, setSubjectOptions] = useState([]); 
   const [classnameOptions, setClassNameOptions] = useState([]);
   const [formData, setFormData] = useState({
     TestName: "",

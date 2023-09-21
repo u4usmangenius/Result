@@ -4,7 +4,7 @@ const router = express.Router();
 const { verifyToken } = require("./authMiddleware");
 const db = require("../db/Sqlite").db;
 // add subject
-router.post("/api/subjects", (req, res) => {
+router.post("/api/subjects",verifyToken, (req, res) => {
   const { subjectName, courseCode } = req.body;
 
   // Check if any required field is missing
@@ -56,7 +56,7 @@ router.post("/api/subjects", (req, res) => {
   );
 });
 // get subject // Route to get paginated subjects with validations
-router.get("/api/subjects", (req, res) => {
+router.get("/api/subjects",verifyToken, (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 5;
   const filter = req.query.filter || ""; // Get the filter query parameter
@@ -117,7 +117,7 @@ router.get("/api/subjects", (req, res) => {
   });
 });
 // update subject
-router.put("/api/subjects/:subjectId", (req, res) => {
+router.put("/api/subjects/:subjectId",verifyToken, (req, res) => {
   const subjectId = req.params.subjectId;
   const { subjectName, courseCode } = req.body;
 
@@ -173,7 +173,7 @@ router.put("/api/subjects/:subjectId", (req, res) => {
   );
 });
 // Route to delete a subject by ID
-router.delete("/api/subjects/:subjectId", (req, res) => {
+router.delete("/api/subjects/:subjectId",verifyToken, (req, res) => {
   const subjectId = req.params.subjectId;
 
   // Check if the subject with the specified ID exists

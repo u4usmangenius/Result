@@ -46,15 +46,6 @@ const   EditTeacherModal = ({ teacher, onSave, onCancel }) => {
             />
           </div>
           <div className="edit-teacher-form-group">
-            <label>Username:</label>
-            <input
-              type="text"
-              name="userName"
-              value={editedTeacher.userName}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="edit-teacher-form-group">
             <label>Gender:</label>
             <input
               type="text"

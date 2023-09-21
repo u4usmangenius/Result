@@ -4,17 +4,24 @@ const router = express.Router();
 const db = require("../db/Sqlite").db;
 const { verifyToken } = require("./authMiddleware");
 router.post("/api/students", verifyToken, (req, res) => {
-  const { fullName, className, userName, gender, phone, password, Batch } =
-    req.body;
+  const {
+    fullName,
+    className,
+    stdRollNo,
+    gender,
+    stdPhone,
+    guard_Phone,
+    Batch,
+  } = req.body;
 
   // Check if any required field is missing
   if (
     !fullName ||
     !className ||
     !gender ||
-    !userName ||
-    !phone ||
-    !password ||
+    !stdRollNo ||
+    !stdPhone ||
+    !guard_Phone ||
     !Batch
   ) {
     res
@@ -25,8 +32,17 @@ router.post("/api/students", verifyToken, (req, res) => {
 
   const studentId = crypto.randomUUID();
   db.run(
-    "INSERT INTO students (studentId, fullName, className, userName, gender, phone, password, Batch) VALUES (?, ?, ?, ?, ?, ?, ?,?)",
-    [studentId, fullName, className, userName, gender, phone, password, Batch],
+    "INSERT INTO students (studentId, fullName, className, stdRollNo, gender, stdPhone,guard_Phone,  Batch) VALUES (?, ?, ?, ?, ?, ?, ?,?)",
+    [
+      studentId,
+      fullName,
+      className,
+      stdRollNo,
+      gender,
+      stdPhone,
+      guard_Phone,
+      Batch,
+    ],
     (err) => {
       if (err) {
         console.error("Error inserting Student:", err);
@@ -49,30 +65,27 @@ router.get("/api/students", verifyToken, (req, res) => {
   const offset = (page - 1) * pageSize;
 
   let query = `
-        SELECT studentId, fullName, className, userName, gender, phone ,Batch
+        SELECT studentId, fullName, className, stdRollNo, gender,stdPhone,guard_Phone ,Batch
         FROM students 
         WHERE 1=1`;
 
   const params = [];
-
-  // if (filter === "className" || filter === "gender") {
-  //   query += ` AND ${filter} = ?`;
-  //   params.push(search);
-  // }
   if (
     filter === "fullName" ||
-    filter === "userName" ||
+    filter === "stdRollNo" ||
     filter === "className" ||
     filter === "gender" ||
     filter === "Batch" ||
-    filter === "phone"
+    filter === "guard_Phone" ||
+    filter === "stdPhone"
   ) {
     query += ` AND ${filter} LIKE ?`;
     params.push(`%${search}%`);
   } else if (filter === "all") {
     // Handle global search
-    query += ` AND (fullName LIKE ? OR className LIKE ? OR userName LIKE ? OR gender LIKE ? OR phone LIKE ? OR Batch LIKE ?)`;
+    query += ` AND (fullName LIKE ? OR className LIKE ? OR stdRollNo LIKE ? OR gender LIKE ? OR stdPhone LIKE ? OR guard_Phone LIKE ? OR Batch LIKE ?)`;
     params.push(
+      `%${search}%`,
       `%${search}%`,
       `%${search}%`,
       `%${search}%`,
@@ -81,11 +94,6 @@ router.get("/api/students", verifyToken, (req, res) => {
       `%${search}%`
     );
   }
-
-  // Do not limit the query, retrieve all matching records
-  // query += ` LIMIT ? OFFSET ?`;
-  // params.push(pageSize, offset);
-
   db.all(query, params, (err, rows) => {
     if (err) {
       console.error("Error getting students:", err);
@@ -129,10 +137,10 @@ router.post("/api/students/upload-csv", verifyToken, (req, res) => {
     fullName: row.fullName,
     className: row.className,
     Batch: row.Batch,
-    userName: row.userName,
     gender: row.gender,
-    phone: row.phone,
-    password: row.password,
+    stdPhone: row.stdPhone,
+    stdRollNo: row.stdRollNo,
+    guard_Phone: row.guard_Phone,
   }));
 
   // Now, you can add the multiple students to the database
@@ -140,15 +148,15 @@ router.post("/api/students/upload-csv", verifyToken, (req, res) => {
     return new Promise((resolve, reject) => {
       const studentId = crypto.randomUUID();
       db.run(
-        "INSERT INTO students (studentId, fullName, className, userName, gender, phone, password,Batch) VALUES (?, ?, ?, ?, ?, ?, ?,?)",
+        "INSERT INTO students (studentId, fullName, className, stdRollNo, gender, stdPhone,guardPhone,Batch) VALUES (?, ?, ?, ?, ?, ?, ?,?)",
         [
           studentId,
           student.fullName,
           student.className,
-          student.userName,
+          student.stdRollNo,
           student.gender,
-          student.phone,
-          student.password,
+          student.stdPhone,
+          student.guard_Phone,
           student.Batch,
         ],
         (err) => {
@@ -178,10 +186,26 @@ router.post("/api/students/upload-csv", verifyToken, (req, res) => {
 // Route to update a student by ID (excluding password)
 router.put("/api/students/:studentId", verifyToken, (req, res) => {
   const studentId = req.params.studentId;
-  const { fullName, className, userName, gender, phone, Batch } = req.body;
+  const {
+    fullName,
+    className,
+    stdRollNo,
+    gender,
+    stdPhone,
+    Batch,
+    guard_Phone,
+  } = req.body;
 
   // Check if any required field is missing
-  if (!fullName || !className || !gender || !userName || !phone || !Batch) {
+  if (
+    !fullName ||
+    !className ||
+    !gender ||
+    !stdRollNo ||
+    !stdPhone ||
+    !Batch ||
+    !guard_Phone
+  ) {
     res
       .status(400)
       .json({ success: false, message: "All fields are required" });
@@ -205,10 +229,11 @@ router.put("/api/students/:studentId", verifyToken, (req, res) => {
         if (
           fullName === row.fullName &&
           className === row.subject &&
-          userName === row.userName &&
+          stdRollNo === row.stdRollNo &&
           gender === row.gender &&
           Batch === row.gender &&
-          phone === row.phone
+          guard_Phone === row.guard_Phone &&
+          stdPhone === row.stdPhone
         ) {
           res.status(400).json({
             success: false,
@@ -217,8 +242,17 @@ router.put("/api/students/:studentId", verifyToken, (req, res) => {
         } else {
           // Update the student's information (excluding password)
           db.run(
-            "UPDATE students SET fullName=?, className=?, userName=?, gender=?, phone=?, Batch=? WHERE studentId=?",
-            [fullName, className, userName, gender, phone, Batch, studentId],
+            "UPDATE students SET fullName=?, className=?, stdRollNo=?, gender=?,stdPhone=?, guard_Phone=?, Batch=? WHERE studentId=?",
+            [
+              fullName,
+              className,
+              stdRollNo,
+              gender,
+              stdPhone,
+              guard_Phone,
+              Batch,
+              studentId,
+            ],
             (err) => {
               if (err) {
                 console.error("Error updating student:", err);
@@ -239,7 +273,7 @@ router.put("/api/students/:studentId", verifyToken, (req, res) => {
   );
 });
 // Route to delete a student by ID
-router.delete("/api/students/:studentId",verifyToken, (req, res) => {
+router.delete("/api/students/:studentId", verifyToken, (req, res) => {
   const studentId = req.params.studentId;
 
   // Check if the student with the specified ID exists

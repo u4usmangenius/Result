@@ -46,11 +46,11 @@ const EditStudentModal = ({ student, onSave, onCancel }) => {
             />
           </div>
           <div className="edit-student-form-group">
-            <label>Username:</label>
+            <label>Roll No:</label>
             <input
               type="text"
-              name="userName"
-              value={editedStudent.userName}
+              name="stdRollNo"
+              value={editedStudent.stdRollNo}
               onChange={handleInputChange}
             />
           </div>
@@ -64,11 +64,20 @@ const EditStudentModal = ({ student, onSave, onCancel }) => {
             />
           </div>
           <div className="edit-student-form-group">
-            <label>Phone Number:</label>
+            <label>Student Phone.No:</label>
             <input
               type="text"
-              name="phone"
-              value={editedStudent.phone}
+              name="stdPhone"
+              value={editedStudent.stdPhone}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="edit-student-form-group">
+            <label>Guardian Phone.No:</label>
+            <input
+              type="text"
+              name="guard_Phone"
+              value={editedStudent.guard_Phone}
               onChange={handleInputChange}
             />
           </div>

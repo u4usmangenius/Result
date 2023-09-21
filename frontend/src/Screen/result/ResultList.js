@@ -23,19 +23,19 @@ const ResultList = ({ openAddresultsModal, closeAddresultsModal }) => {
   const navigate = useNavigate();
   const [totalPages, setTotalPages] = useState(1); // Track total number of pages
 
-
   const showConfirm = (message) => {
     return Swal.fire({
-      title: 'Confirm',
+      title: "Confirm",
       text: message,
-      icon: 'question',
+      icon: "question",
       showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
     }).then((result) => {
       return result.isConfirmed;
     });
-  };  const getCurrentPageData = () => {
+  };
+  const getCurrentPageData = () => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     return filteredresults.slice(startIndex, endIndex);
@@ -111,6 +111,28 @@ const ResultList = ({ openAddresultsModal, closeAddresultsModal }) => {
           navigate("/sidebar/dashboard");
           navigate("/sidebar/result");
         }
+        axios
+          .get(
+            `http://localhost:8080/api/results?page=${currentPage}&pageSize=${rowsPerPage}&filter=${selectedFilter}&search=${searchText}`,
+            { headers }
+          )
+          .then((response) => {
+            if (currentPage === 1) {
+              setresults(response.data.results);
+            } else {
+              // Append the data to the existing results list
+              setresults((prevresults) => [
+                ...prevresults,
+                ...response.data.results,
+              ]);
+            }
+            setTotalPages(response.data.totalPages);
+            setLoading(false);
+          })
+          .catch((error) => {
+            console.error("Error fetching results:", error);
+            setLoading(false);
+          });
       })
       .catch((error) => {
         console.error("Error editing result:", error);
@@ -144,8 +166,10 @@ const ResultList = ({ openAddresultsModal, closeAddresultsModal }) => {
         setLoading(false);
       });
   };
-  const handleDelete =async (result) => {
-    const confirmed = await showConfirm(`Are you sure you want to delete ${result.fullName}?`);
+  const handleDelete = async (result) => {
+    const confirmed = await showConfirm(
+      `Are you sure you want to delete ${result.fullName}?`
+    );
     // Display a confirmation dialog
     if (confirmed) {
       console.log("User confirmed!");

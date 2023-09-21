@@ -14,6 +14,7 @@ const AddSubjects = ({ onClose }) => {
   const [editingIndex, setEditingIndex] = useState(-1);
   const [multiplerowbtn, setmultiplerowbtn] = useState(false);
   const [subjectOptions, setSubjectOptions] = useState([]); // Initialize as an empty array
+  const [rollnoOption, setRollnoOption] = useState([]); // Initialize as an empty array
   const showAlert = (message) => {
     Swal.fire(message);
   };
@@ -32,6 +33,7 @@ const AddSubjects = ({ onClose }) => {
         if (response.status === 200) {
           // Extract the subjects array from the response
           const { subjects } = response.data;
+          console.log("subject", subjects);
           setSubjectOptions(subjects); // Set subjects in the state
         }
       } catch (error) {
@@ -42,10 +44,35 @@ const AddSubjects = ({ onClose }) => {
 
     fetchSubjects(); // Call the fetchSubjects function when the component mounts
   }, []);
+  useEffect(() => {
+    // Fetch subjects from your backend API
+    const fetchRollNo = async () => {
+      const token = localStorage.getItem("bearer token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+      try {
+        const response = await axios.get("http://localhost:8080/api/students", {
+          headers,
+        });
+        if (response.status === 200) {
+          // Extract the roll number from the response
+          const { students } = await response.data;
+          setRollnoOption(students);
+        }
+      } catch (error) {
+        console.error("Error fetching roll number:", error);
+        showAlert("Error fetching roll number:", error);
+        return;
+      }
+    };
+
+    fetchRollNo(); // Call the fetchRollNo function when the component mounts
+  }, []);
   const [formData, setFormData] = useState({
     subjectName: "",
     courseCode: "",
-    userName: "",
+    stdRollNo: "",
     userSubject: "",
   });
   const addUsersubjectToBackend = async (subject) => {
@@ -114,7 +141,7 @@ const AddSubjects = ({ onClose }) => {
           setFormData({
             subjectName: singleRowData["subjectName"] || "",
             courseCode: singleRowData["courseCode"] || "",
-            userName: singleRowData["userName"] || "",
+            stdRollNo: singleRowData["stdRollNo"] || "",
             userSubject: singleRowData["userSubject"] || "",
           });
           setSelectedOption("manually");
@@ -135,7 +162,7 @@ const AddSubjects = ({ onClose }) => {
     try {
       // Handle adding a new subject
       const newsubject = {
-        userName: formData.userName,
+        stdRollNo: formData.stdRollNo,
         userSubject: formData.userSubject,
       };
 
@@ -145,11 +172,32 @@ const AddSubjects = ({ onClose }) => {
         showAlert("subject added successfully");
         onClose(); // Close the form
         setFormData({
-          userName: "",
+          stdRollNo: "",
           userSubject: "",
         });
+        const token = localStorage.getItem("bearer token");
+        const headers = {
+          Authorization: `${token}`,
+        };
+        try {
+          const response = await axios.get(
+            "http://localhost:8080/api/students",
+            {
+              headers,
+            }
+          );
+          if (response.status === 200) {
+            // Extract the roll number from the response
+            const { students } = await response.data;
+            setRollnoOption(students);
+          }
+        } catch (error) {
+          console.error("Error fetching roll number:", error);
+          showAlert("Error fetching roll number:", error);
+          return;
+        }
       } else {
-        showAlert("Subject Already exist.");
+        showAlert("Failed to Add Subject.");
       }
     } catch (error) {
       console.error("Error handling submit:", error);
@@ -201,6 +249,27 @@ const AddSubjects = ({ onClose }) => {
             subjectName: "",
             courseCode: "",
           });
+          const token = localStorage.getItem("bearer token");
+          const headers = {
+            Authorization: `${token}`,
+          };
+          try {
+            const response = await axios.get(
+              "http://localhost:8080/api/students",
+              {
+                headers,
+              }
+            );
+            if (response.status === 200) {
+              // Extract the roll number from the response
+              const { students } = await response.data;
+              setRollnoOption(students);
+            }
+          } catch (error) {
+            console.error("Error fetching roll number:", error);
+            showAlert("Error fetching roll number:", error);
+            return;
+          }
         } else {
           showAlert("Failed to add subject. Please try again.");
         }
@@ -235,7 +304,7 @@ const AddSubjects = ({ onClose }) => {
         <form>
           <div className="subject-form-row">
             <div className="form-group">
-              <label className="subject-input-label">Subject Name:</label>
+              <label className="subject-input-label">Subject Name</label>
               <input
                 type="text"
                 className="subject-input-type-text"
@@ -247,11 +316,11 @@ const AddSubjects = ({ onClose }) => {
               />
             </div>
             <div className="form-group">
-              <label className="subject-input-label">Course Code:</label>
+              <label className="subject-input-label">Course Code</label>
               <input
                 type="text"
                 className="subject-input-type-text"
-                placeholder="User Name"
+                placeholder="Course Code"
                 value={formData.courseCode}
                 onChange={(e) =>
                   setFormData({ ...formData, courseCode: e.target.value })
@@ -263,19 +332,27 @@ const AddSubjects = ({ onClose }) => {
       ) : (
         <div className="subject-form-row">
           <div className="form-group">
-            <label className="subject-input-label">User Name:</label>
-            <input
+            <label className="subject-input-label">Roll No</label>
+            <select
               type="text"
               className="subject-input-type-text"
               placeholder="User Name"
-              value={formData.userName}
+              value={formData.stdRollNo}
               onChange={(e) =>
-                setFormData({ ...formData, userName: e.target.value })
+                setFormData({ ...formData, stdRollNo: e.target.value })
               }
-            />
+            >
+              <option>Select Roll No</option>
+              {rollnoOption &&
+                rollnoOption.map((student) => (
+                  <option key={student.stdRollNo} value={student.stdRollNo}>
+                    {student.stdRollNo}
+                  </option>
+                ))}
+            </select>
           </div>
           <div className="form-group">
-            <label className="subject-input-label">Subject:</label>
+            <label className="subject-input-label">Subject</label>
             <select
               value={formData.userSubject}
               className="subject-input-select-subject"
@@ -301,8 +378,8 @@ const AddSubjects = ({ onClose }) => {
           Add Another
         </div>
         {/* Add subject Button */}
-        <div className="add-subject-button addsubbtn">
-          <button className="add-subjects-button" onClick={handleSubmit}>
+        <div className="add-subject-button addsubbtn" onClick={handleSubmit}>
+          <button className="add-subjects-button">
             {editingIndex !== -1 ? "Save Edit" : "Add Subjects"}
           </button>
         </div>

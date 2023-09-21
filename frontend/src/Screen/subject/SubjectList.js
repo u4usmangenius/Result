@@ -26,12 +26,12 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
   };
   const showConfirm = (message) => {
     return Swal.fire({
-      title: 'Confirm',
+      title: "Confirm",
       text: message,
-      icon: 'question',
+      icon: "question",
       showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
     }).then((result) => {
       return result.isConfirmed;
     });
@@ -102,8 +102,28 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
           // Update the state with the updated subjects array
           setsubjects(updatedsubjects);
           setShowEditModal(false); // Close the edit modal after a successful edit
-          navigate("/sidebar/dashboard");
-          navigate("/sidebar/subject");
+          axios
+            .get(
+              `http://localhost:8080/api/subjects?page=${currentPage}&pageSize=${rowsPerPage}&filter=${selectedFilter}&search=${searchText}`,
+              { headers }
+            )
+            .then((response) => {
+              if (currentPage === 1) {
+                setsubjects(response.data.subjects);
+              } else {
+                // Append the data to the existing subjects list
+                setsubjects((prevsubjects) => [
+                  ...prevsubjects,
+                  ...response.data.subjects,
+                ]);
+              }
+              setTotalPages(response.data.totalPages);
+              setLoading(false);
+            })
+            .catch((error) => {
+              console.error("Error fetching subjects:", error);
+              setLoading(false);
+            });
         }
       })
       .catch((error) => {
@@ -138,7 +158,9 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
       });
   };
   const handleDelete = async (subject) => {
-    const confirmed = await showConfirm(`Are you sure you want to delete ${subject.fullName}?`);
+    const confirmed = await showConfirm(
+      `Are you sure you want to delete ${subject.fullName}?`
+    );
     if (confirmed) {
       console.log("User confirmed!");
       // User confirmed, send DELETE request to the backend
