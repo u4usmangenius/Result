@@ -9,6 +9,17 @@ const cors = require("cors");
 const expressApp = require("./server");
 
 expressApp.use(cors());
+expressApp.use(
+  cors({
+    allowedHeaders: "Authorization, Content-Type", // Add other headers if needed
+  })
+);
+expressApp.use(
+  cors({
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+  })
+);
+
 expressApp.use(bodyParser.json());
 expressApp.use(express.static(path.join(__dirname, "frontend/build")));
 

@@ -1,226 +1,80 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect } from "react";
 import "./StudentList.css";
-import { IoMdEdit, IoMdTrash } from "react-icons/io";
-import { BiEditAlt, BiSave } from "react-icons/bi";
-import EditStudentModal from "./EditedStudentModel";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { MdCancelPresentation } from "react-icons/md";
+import { IoMdTrash } from "react-icons/io";
+import { BiEditAlt } from "react-icons/bi";
+import { observer } from "mobx-react";
 import Swal from "sweetalert2";
-const StudentList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 5;
-  const [searchText, setSearchText] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("all");
-  const inputRef = useRef(null);
-  const [students, setstudents] = useState([]);
-  const [showEditModal, setShowEditModal] = useState(false); // Manage edit modal visibility
-  const [editingstudent, setEditingstudent] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const [totalPages, setTotalPages] = useState(1); // Track total number of pages
-  const getCurrentPageData = () => {
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return filteredstudents.slice(startIndex, endIndex);
-  };
-  const showConfirm = (message) => {
-    return Swal.fire({
-      title: "Confirm",
-      text: message,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes",
-      cancelButtonText: "No",
-    }).then((result) => {
-      return result.isConfirmed;
-    });
-  };
-  useEffect(() => {
-    const token = localStorage.getItem("bearer token");
-    const headers = {
-      Authorization: `${token}`,
-    };
-    setLoading(true);
-    axios
-      .get(
-        `http://localhost:8080/api/students?page=${currentPage}&pageSize=${rowsPerPage}&filter=${selectedFilter}&search=${searchText}`,
-        { headers }
-      )
-      .then((response) => {
-        if (currentPage === 1) {
-          setstudents(response.data.students);
-        } else {
-          // Append the data to the existing students list
-          setstudents((prevstudents) => [
-            ...prevstudents,
-            ...response.data.students,
-          ]);
-        }
-        setTotalPages(response.data.totalPages);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching students:", error);
-        setLoading(false);
-      });
-  }, [currentPage, rowsPerPage, selectedFilter, searchText]);
+import { studentsStore } from "../../store/studentsStore/studentsStore";
+import LoadingSpinner from "../../components/loaders/Spinner";
+import EditStudentModal from "./EditedStudentModel";
 
-  // useEffect(() => {
-  //   setSearchText(""); // Reset searchText when currentPage changes
-  // }, [currentPage]);
+const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      studentsStore.setLoading(true);
+      try {
+        await studentsStore.fetchData();
+        studentsStore.setDataNotFound(false);
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        studentsStore.setDataNotFound(true);
+      } finally {
+        studentsStore.setLoading(false);
+      }
+    };
+    // Fetch data when the component mounts
+    fetchData();
+  }, []);
+
+  const showAlert = (message) => {
+    Swal.fire(message);
+  };
 
   const handleEdit = (student) => {
-    setShowEditModal(true);
-    setEditingstudent(student);
+    studentsStore.handleEdit(student);
   };
 
   const handleSaveEdit = (editedstudent) => {
-    // Send a PUT request to edit the student data on the backend
-    const token = localStorage.getItem("bearer token");
-    const headers = {
-      Authorization: `${token}`,
-    };
-    axios
-      .put(
-        `http://localhost:8080/api/students/${editedstudent.studentId}`,
-        editedstudent,
-        { headers }
-      )
-      .then((response) => {
-        // Update the student in the state based on the response from the server
-        if (response.status === 200) {
-          // Find the index of the edited student in the students array
-          const editedstudentIndex = students.findIndex(
-            (t) => t.studentId === editedstudent.studentId
-          );
-
-          // Create a copy of the students array with the updated student
-          setstudents((prevTeachers) => [
-            ...prevTeachers.slice(0, editedstudentIndex),
-            response.data,
-            ...prevTeachers.slice(editedstudentIndex + 1),
-          ]);
-          const updatedstudents = [...students];
-          updatedstudents[editedstudentIndex] = response.data;
-
-          // Update the state with the updated students array
-          setstudents(updatedstudents);
-          setShowEditModal(false); // Close the edit modal after a successful edit
-          axios
-            .get(
-              `http://localhost:8080/api/students?page=${currentPage}&pageSize=${rowsPerPage}&filter=${selectedFilter}&search=${searchText}`,
-              { headers }
-            )
-            .then((response) => {
-              if (currentPage === 1) {
-                setstudents(response.data.students);
-              } else {
-                // Append the data to the existing students list
-                setstudents((prevstudents) => [
-                  ...prevstudents,
-                  ...response.data.students,
-                ]);
-              }
-              setTotalPages(response.data.totalPages);
-              setLoading(false);
-            })
-            .catch((error) => {
-              console.error("Error fetching students:", error);
-              setLoading(false);
-            });
-        }
-      })
-      .catch((error) => {
-        console.error("Error editing student:", error);
-      });
+    studentsStore.handleSaveEdit(editedstudent);
   };
 
   const handleCancelEdit = () => {
-    setShowEditModal(false);
-    setEditingstudent(null);
+    studentsStore.handleCancelEdit();
   };
-  const fetchDataFromBackend = (page) => {
-    setLoading(true);
-    const token = localStorage.getItem("bearer token");
-    const headers = {
-      Authorization: `${token}`,
-    };
 
-    axios
-      .get(
-        `http://localhost:8080/api/students?page=${page}&pageSize=${rowsPerPage}`,
-        { headers }
-      )
-      .then((response) => {
-        setstudents(response.data.students);
-        setTotalPages(response.data.totalPages);
-        setCurrentPage(page);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching students:", error);
-        setLoading(false);
-      });
+  const handleDelete = (student) => {
+    studentsStore.handleDelete(student);
   };
-  const handleDelete = async (student) => {
-    // Display a confirmation dialog
-    const confirmed = await showConfirm(
-      `Are you sure you want to delete ${student.fullName}?`
-    );
-    // Display a confirmation dialog
-    if (confirmed) {
-      console.log("User confirmed!");
-      // User confirmed, send DELETE request to the backend
-      const token = localStorage.getItem("bearer token");
-      const headers = {
-        Authorization: `${token}`,
-      };
 
-      axios
-        .delete(`http://localhost:8080/api/students/${student.studentId}`, {
-          headers,
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            // student deleted successfully, update the state
-            const updatedstudents = students.filter(
-              (t) => t.studentId !== student.studentId
-            );
-            setstudents(updatedstudents);
-            fetchDataFromBackend(1);
-          } else {
-            console.error("Error deleting student:", response.data.message);
-          }
-        })
-        .catch((error) => {
-          console.error("Error deleting student:", error);
-        });
+  const handleSearch = () => {
+    studentsStore.setCurrentPage(1); // Reset currentPage to 1 when searching
+    studentsStore.fetchData(); // Fetch data with updated search criteria
+  };
+
+  const handlePrevPage = () => {
+    if (studentsStore.currentPage > 1) {
+      studentsStore.setCurrentPage(studentsStore.currentPage - 1);
+      studentsStore.fetchData();
     }
   };
-  const filteredstudents = students.filter((student) => {
-    const searchTextLower = searchText?.toLowerCase();
-    if (selectedFilter === "all") {
-      return (
-        student.fullName?.toLowerCase().includes(searchTextLower) ||
-        student.subject?.toLowerCase().includes(searchTextLower) ||
-        student.gender?.toLowerCase().includes(searchTextLower) ||
-        student.stdRollNo?.toLowerCase().includes(searchTextLower) ||
-        student.guard_Phone?.toLowerCase().includes(searchTextLower) ||
-        student.stdPhone?.toLowerCase().includes(searchTextLower)
-      );
-    } else {
-      return student[selectedFilter]?.toLowerCase().includes(searchTextLower);
+
+  const handleNextPage = () => {
+    if (
+      studentsStore.currentPage < studentsStore.totalPages &&
+      !studentsStore.loading
+    ) {
+      studentsStore.setCurrentPage(studentsStore.currentPage + 1);
+      studentsStore.fetchData();
     }
-  });
+  };
 
   return (
     <div className="student-list-container">
       <div className="student-search-bar">
         <select
           className="student-category"
-          value={selectedFilter}
-          onChange={(e) => setSelectedFilter(e.target.value)}
+          value={studentsStore.selectedFilter}
+          onChange={(e) => studentsStore.setSelectedFilter(e.target.value)}
         >
           <option value="all">All</option>
           <option value="fullName">Name</option>
@@ -233,81 +87,85 @@ const StudentList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
 
         <input
           type="text"
-          placeholder="Search for a student"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          ref={inputRef}
+          placeholder="Search for a student "
+          value={studentsStore.searchText}
+          onChange={(e) => studentsStore.setSearchText(e.target.value)}
         />
-        <button
-          className="student-search-button"
-          onClick={() => {
-            setCurrentPage(1); // Reset currentPage to 1 when searching
-          }}
-        >
+        <button className="student-search-button" onClick={handleSearch}>
           Search
         </button>
       </div>
+
       <div className="student-student-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Roll No</th>
-              <th>Name</th>
-              <th>ClassName</th>
-              <th>Std.PhoneNo</th>
-              <th>Guardian PhoneNor</th>
-              <th>Gender</th>
-              <th>Batch</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {getCurrentPageData().map((student) => (
-              <tr key={student.studentId}>
-                <td>{student.stdRollNo}</td>
-                <td>{student.fullName}</td>
-                <td>{student.className}</td>
-                <td>{student.stdPhone}</td>
-                <td>{student.guard_Phone}</td>
-                <td>{student.gender}</td>
-                <td>{student.Batch}</td>
-                <td className="set-student-icon">
-                  <div
-                    onClick={() => handleEdit(student)}
-                    className="edit-student-icon"
-                  >
-                    <BiEditAlt className="edit-student-icon" />
-                  </div>
-                  <IoMdTrash
-                    onClick={() => handleDelete(student)}
-                    className="delete-student-icon"
-                  />
-                </td>
+        {studentsStore.loading ? (
+          <LoadingSpinner />
+        ) : studentsStore.dataNotFound ? (
+          <div>No data found</div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Roll No</th>
+                <th>Name</th>
+                <th>ClassName</th>
+                <th>Std.PhoneNo</th>
+                <th>Guardian PhoneNor</th>
+                <th>Gender</th>
+                <th>Batch</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {studentsStore.filteredstudents.map((student) => (
+                <tr key={student.studentId}>
+                  <td>{student.stdRollNo}</td>
+                  <td>{student.fullName}</td>
+                  <td>{student.className}</td>
+                  <td>{student.stdPhone}</td>
+                  <td>{student.guard_Phone}</td>
+                  <td>{student.gender}</td>
+                  <td>{student.Batch}</td>
+                  <td className="set-student-icon">
+                    <div
+                      onClick={() => handleEdit(student)}
+                      className="edit-student-icon"
+                    >
+                      <BiEditAlt className="edit-student-icon" />
+                    </div>
+                    <IoMdTrash
+                      onClick={() => handleDelete(student)}
+                      className="delete-student-icon"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <div className="pagination-header">
+          <button
+            className="pagination-button"
+            onClick={handlePrevPage}
+            disabled={studentsStore.currentPage === 1 || studentsStore.loading}
+          >
+            Prev
+          </button>
+          <div className="page-count">{studentsStore.currentPage}</div>
+          <button
+            className="pagination-button"
+            onClick={handleNextPage}
+            disabled={
+              studentsStore.currentPage === studentsStore.totalPages ||
+              studentsStore.loading
+            }
+          >
+            Next
+          </button>
+        </div>{" "}
       </div>
-      <div className="pagination-header">
-        <button
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="pagination-button"
-        >
-          Prev
-        </button>
-        <div className="page-count">{currentPage}</div>
-        <button
-          onClick={() => setCurrentPage(currentPage + 1)}
-          className="pagination-button"
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </button>
-      </div>{" "}
-      {showEditModal && (
+      {studentsStore.showEditModal && (
         <EditStudentModal
-          student={editingstudent}
+          student={studentsStore.editingstudent}
           onSave={handleSaveEdit}
           onCancel={handleCancelEdit}
         />
@@ -316,4 +174,4 @@ const StudentList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
   );
 };
 
-export default StudentList;
+export default observer(StudentList);

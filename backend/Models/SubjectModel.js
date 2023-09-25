@@ -4,7 +4,7 @@ const router = express.Router();
 const { verifyToken } = require("./authMiddleware");
 const db = require("../db/Sqlite").db;
 // add subject
-router.post("/api/subjects",verifyToken, (req, res) => {
+router.post("/api/subjects", verifyToken, (req, res) => {
   const { subjectName, courseCode } = req.body;
 
   // Check if any required field is missing
@@ -56,37 +56,31 @@ router.post("/api/subjects",verifyToken, (req, res) => {
   );
 });
 // get subject // Route to get paginated subjects with validations
-router.get("/api/subjects",verifyToken, (req, res) => {
+router.get("/api/subjects", verifyToken, (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const pageSize = parseInt(req.query.pageSize) || 5;
+  const pageSize = parseInt(req.query.pageSize) || 5; // Get the pageSize query parameter
   const filter = req.query.filter || ""; // Get the filter query parameter
   const search = req.query.search || ""; // Get the search query parameter
 
   const offset = (page - 1) * pageSize;
 
   let query = `
-        SELECT subjectId, subjectName, courseCode 
-        FROM subjects
-        WHERE 1=1`;
+    SELECT subjectId, subjectName, courseCode 
+    FROM subjects
+    WHERE 1=1`;
 
   const params = [];
 
-  // if (filter === "subject" || filter === "gender") {
-  //   query += ` AND ${filter} = ?`;
-  //   params.push(search);
-  // }
   if (filter === "subjectName" || filter === "courseCode") {
     query += ` AND ${filter} LIKE ?`;
     params.push(`%${search}%`);
   } else if (filter === "all") {
-    // Handle global search
-    query += ` AND (subjectName LIKE ? OR courseCode LIKE ? )`;
+    query += ` AND (subjectName LIKE ? OR courseCode LIKE ?)`;
     params.push(`%${search}%`, `%${search}%`);
   }
 
-  // Do not limit the query, retrieve all matching records
-  // query += ` LIMIT ? OFFSET ?`;
-  // params.push(pageSize, offset);
+  query += ` LIMIT ? OFFSET ?`; // Add LIMIT and OFFSET clauses
+  params.push(pageSize, offset);
 
   db.all(query, params, (err, rows) => {
     if (err) {
@@ -105,19 +99,19 @@ router.get("/api/subjects",verifyToken, (req, res) => {
           const totalCount = row.count;
           const totalPages = Math.ceil(totalCount / pageSize);
 
-          // Calculate the slice of results for the current page
-          const startIndex = offset;
-          const endIndex = Math.min(startIndex + pageSize, rows.length);
-          const pageResults = rows.slice(startIndex, endIndex);
-
-          res.json({ success: true, subjects: pageResults, totalPages });
+          res.json({
+            success: true,
+            subjects: rows,
+            totalPages,
+            rowsPerPage: pageSize,
+          }); // Include rowsPerPage in the response
         }
       });
     }
   });
 });
 // update subject
-router.put("/api/subjects/:subjectId",verifyToken, (req, res) => {
+router.put("/api/subjects/:subjectId", verifyToken, (req, res) => {
   const subjectId = req.params.subjectId;
   const { subjectName, courseCode } = req.body;
 
@@ -173,7 +167,7 @@ router.put("/api/subjects/:subjectId",verifyToken, (req, res) => {
   );
 });
 // Route to delete a subject by ID
-router.delete("/api/subjects/:subjectId",verifyToken, (req, res) => {
+router.delete("/api/subjects/:subjectId", verifyToken, (req, res) => {
   const subjectId = req.params.subjectId;
 
   // Check if the subject with the specified ID exists

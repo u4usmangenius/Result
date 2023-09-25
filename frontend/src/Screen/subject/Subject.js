@@ -6,14 +6,14 @@ import SubjectList from "./SubjectList";
 import AddSubjects from "./AddSubjects";
 
 const Subject = () => {
-  const [isAddStudentsModalOpen, setIsAddStudentsModalOpen] = useState(false);
+  const [isPopupOpen,setPopupOpen] = useState(false);
 
   const openAddStudentsModal = () => {
-    setIsAddStudentsModalOpen(true);
+    setPopupOpen(true);
   };
 
   const closeAddStudentsModal = () => {
-    setIsAddStudentsModalOpen(false);
+    setPopupOpen(false);
   };
 
   return (
@@ -31,7 +31,7 @@ const Subject = () => {
         </div>
       </div>
 
-      <Modal isOpen={isAddStudentsModalOpen} onClose={closeAddStudentsModal}>
+      <Modal isOpen={isPopupOpen} onClose={closeAddStudentsModal}>
         <AddSubjects onClose={closeAddStudentsModal} />
       </Modal>
 

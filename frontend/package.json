@@ -17,6 +17,7 @@
     "ffmpeg-static": "^5.2.0",
     "font-awesome": "^4.7.0",
     "mobx": "^6.10.2",
+    "mobx-react": "^9.0.1",
     "mobx-react-lite": "^4.0.4",
     "node-rtsp-stream": "^0.0.9",
     "papaparse": "^5.4.1",

@@ -1,220 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { observer } from "mobx-react";
 import "./AddTeachers.css";
 import { IoMdAddCircle } from "react-icons/io";
-import Papa from "papaparse"; // Import PapaParse library
-import Swal from "sweetalert2";
-import axios from "axios";
-const AddTeachers = ({ onClose }) => {
-  const [showAddButton, setShowAddButton] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 8;
-  const [selectedOption, setSelectedOption] = useState("manually");
-  const [teacherData, setTeacherData] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(-1);
-  const [multiplerowbtn, setmultiplerowbtn] = useState(false);
-  const [subjectOptions, setSubjectOptions] = useState([]);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
-    gender: "Select Gender",
-    subject: "Select Subject",
-  });
+import { addTeacherStore } from "../../store/teachersStore/AddTeacherStore";
 
-  const showAlert = (message) => {
-    Swal.fire(message);
-  };
-  const showConfirm = (message) => {
-    return Swal.fire({
-      title: "Confirm",
-      text: message,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes",
-      cancelButtonText: "No",
-    }).then((result) => {
-      return result.isConfirmed;
-    });
-  };
+const AddTeachers = ({ onClose }) => {
+  const {
+    selectedOption,
+    teacherData,
+    multiplerowbtn,
+    formData,
+    subjectOptions,
+    handleOptionChange,
+    handleFileUpload,
+    handleMultiRowUpload,
+    handleSubmit,
+    showAlert,
+  } = addTeacherStore; // Use MobX store
+
   // getting subjects from subject module
   useEffect(() => {
-    // Fetch subjects from your backend API
-    const fetchSubjects = async () => {
-      const token = localStorage.getItem("bearer token");
-      const headers = {
-        Authorization: `${token}`,
-      };
-      try {
-        const response = await axios.get("http://localhost:8080/api/subjects", {
-          headers,
-        });
-        if (response.status === 200) {
-          // Extract the subjects array from the response
-          const { subjects } = response.data;
-          setSubjectOptions(subjects); // Set subjects in the state
-        }
-      } catch (error) {
-        console.error("Error fetching subjects:", error);
-      }
-    };
-
-    fetchSubjects(); // Call the fetchSubjects function when the component mounts
+    addTeacherStore.fetchSubjects(); // Call the fetchSubjects action from MobX store
   }, []);
-  const addTeacherToBackend = async (teacher) => {
-    try {
-      const token = localStorage.getItem("bearer token");
-      const headers = {
-        Authorization: `${token}`,
-      };
-
-      const response = await axios.post(
-        "http://localhost:8080/api/teachers",
-        teacher,
-        { headers }
-      );
-
-      if (response.status === 200) {
-        return true; // Teacher added successfully
-      } else {
-        return false; // Failed to add teacher
-      }
-    } catch (error) {
-      console.error("Error adding teacher:", error);
-      return false; // Error occurred while adding teacher
-    }
-  };
-
-  const handleOptionChange = (option) => {
-    setSelectedOption(option);
-    setShowAddButton(false);
-    setmultiplerowbtn(false);
-  };
-
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (result) => {
-        const parsedData = result.data;
-
-        if (parsedData.length === 1) {
-          const singleRowData = parsedData[0];
-          setFormData({
-            fullName: singleRowData["fullName"] || "",
-            phone: singleRowData["phone"] || "",
-            gender: singleRowData["gender"] || "Select Gender",
-            subject: singleRowData["subject"] || "Select Subject",
-          });
-          setSelectedOption("manually");
-          setShowAddButton(false);
-        } else if (parsedData.length > 1) {
-          setTeacherData(parsedData);
-          setSelectedOption("import-csv");
-          setShowAddButton(false);
-          setmultiplerowbtn(true);
-        } else {
-          showAlert("The CSV file is empty.");
-          setShowAddButton(false);
-        }
-      },
-    });
-  };
-  const handleMultiRowUpload = async () => {
-    const confirmed = await showConfirm(`Continue to Insert All Teachers?`);
-
-    if (confirmed) {
-      try {
-        const token = localStorage.getItem("bearer token");
-        const headers = {
-          Authorization: `${token}`,
-        };
-
-        const response = await axios.post(
-          "http://localhost:8080/api/teachers/upload-csv",
-          { csvData: teacherData },
-          {
-            headers,
-          }
-        );
-
-        if (response.status === 200) {
-          showAlert("Teachers uploaded successfully");
-          // Optionally, you can clear the teacherData state if needed
-          setTeacherData([]);
-        } else {
-          showAlert("Failed to upload teachers. Please try again.");
-        }
-      } catch (error) {
-        console.error("Error uploading teachers:", error);
-        showAlert("An error occurred while processing the request.");
-      }
-    }
-  };
-  const handleSubmit = async () => {
-    try {
-      if (editingIndex !== -1) {
-        // Handle editing existing teacher
-        const updatedTeacherData = [...teacherData];
-        const updatedTeacher = {
-          ...formData,
-          id: updatedTeacherData[editingIndex].id,
-        };
-        updatedTeacherData[editingIndex] = updatedTeacher;
-        setTeacherData(updatedTeacherData);
-
-        const success = await addTeacherToBackend(updatedTeacher);
-
-        if (success) {
-          showAlert("Teacher updated successfully");
-          setFormData({
-            fullName: "",
-            phone: "",
-            gender: "Select Gender",
-            subject: "Select Subject",
-          });
-          setEditingIndex(-1);
-        } else {
-          showAlert("Failed to update teacher. Please try again.");
-        }
-      } else {
-        if (
-          formData.fullName === "" ||
-          formData.phone === "" ||
-          formData.gender === "Select Gender" ||
-          formData.subject === "Select Subject"
-        ) {
-          showAlert("Please fill all fields.");
-          return; // Don't proceed if default values are selected
-        }
-        // Handle adding a new teacher
-        const newTeacher = {
-          fullName: formData.fullName,
-          phone: formData.phone,
-          gender: formData.gender,
-          subject: formData.subject,
-        };
-
-        const success = await addTeacherToBackend(newTeacher);
-
-        if (success) {
-          showAlert("Teacher added successfully");
-          onClose(); // Close the form
-          setFormData({
-            fullName: "",
-            phone: "",
-            gender: "Select Gender",
-            subject: "Select Subject",
-          });
-        } else {
-          showAlert("Failed to add teacher. Please try again.");
-        }
-      }
-    } catch (error) {
-      console.error("Error handling submit:", error);
-      showAlert("An error occurred while processing the request.");
-    }
-  };
 
   return (
     <div className="add-teachers-content">
@@ -248,7 +55,7 @@ const AddTeachers = ({ onClose }) => {
                 placeholder="fullName"
                 value={formData.fullName}
                 onChange={(e) =>
-                  setFormData({ ...formData, fullName: e.target.value })
+                  addTeacherStore.setFormData("fullName", e.target.value)
                 }
               />
             </div>
@@ -261,7 +68,7 @@ const AddTeachers = ({ onClose }) => {
                 placeholder="Phone"
                 value={formData.phone}
                 onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
+                  addTeacherStore.setFormData("phone", e.target.value)
                 }
               />
             </div>
@@ -273,7 +80,7 @@ const AddTeachers = ({ onClose }) => {
                 className="teachers-input-select"
                 value={formData.gender}
                 onChange={(e) =>
-                  setFormData({ ...formData, gender: e.target.value })
+                  addTeacherStore.setFormData("gender", e.target.value)
                 }
               >
                 <option>Select Gender</option>
@@ -288,7 +95,7 @@ const AddTeachers = ({ onClose }) => {
                 className="teachers-input-select"
                 value={formData.subject}
                 onChange={(e) =>
-                  setFormData({ ...formData, subject: e.target.value })
+                  addTeacherStore.setFormData("subject", e.target.value)
                 }
               >
                 <option>Select Subject</option>
@@ -309,8 +116,12 @@ const AddTeachers = ({ onClose }) => {
             </div>
             {/* Add Teacher Button */}
             <div className="add-teacher-button">
-              <button className="add-teachers-button" onClick={handleSubmit}>
-                {editingIndex !== -1 ? "Save Edit" : "Add Teacher"}
+              <button className="add-teachers-button" 
+              onClick={handleSubmit}
+              >
+                {addTeacherStore.editingIndex !== -1
+                  ? "Save Edit"
+                  : "Add Teacher"}
               </button>
             </div>
           </div>
@@ -334,29 +145,43 @@ const AddTeachers = ({ onClose }) => {
           )}
         </div>
       )}
-      {showAddButton && teacherData.length > rowsPerPage && (
-        <div className="pagination">
-          <button
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={
-              currentPage === Math.ceil(teacherData.length / rowsPerPage)
-            }
-          >
-            Next
-          </button>
-        </div>
-      )}
-      {showAddButton && (
+      {addTeacherStore.showAddButton &&
+        teacherData.length > addTeacherStore.rowsPerPage && (
+          <div className="pagination">
+            <button
+              onClick={() =>
+                addTeacherStore.setCurrentPage(addTeacherStore.currentPage - 1)
+              }
+              disabled={addTeacherStore.currentPage === 1}
+            >
+              Previous
+            </button>
+            <button
+              onClick={() =>
+                addTeacherStore.setCurrentPage(addTeacherStore.currentPage + 1)
+              }
+              disabled={
+                addTeacherStore.currentPage ===
+                Math.ceil(teacherData.length / addTeacherStore.rowsPerPage)
+              }
+            >
+              Next
+            </button>
+          </div>
+        )}
+      {addTeacherStore.showAddButton && (
         <div className="add-another-teacher-teacher">
           <div className="add-teacher-button">
-            <button className="add-teachers-button" onClick={handleSubmit}>
-              {editingIndex !== -1 ? "Save Edit" : "Add Teacher"}
+            <button
+              className="add-teachers-button"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+            >
+              {addTeacherStore.editingIndex !== -1
+                ? "Save Edit"
+                : "Add Teacher"}
             </button>
           </div>
         </div>
@@ -365,4 +190,4 @@ const AddTeachers = ({ onClose }) => {
   );
 };
 
-export default AddTeachers;
+export default observer(AddTeachers); // Wrap the component with the observer from mobx-react
