@@ -1,10 +1,13 @@
-import { makeObservable, observable, action } from "mobx";
+import { makeObservable, observable, action, toJS } from "mobx";
 import Swal from "sweetalert2"; // Import Swal (SweetAlert)
 import axios from "axios";
 import Papa from "papaparse";
 import { studentsStore } from "./studentsStore";
+import { validations } from "../../helper.js/StudentsValidationStore";
 
 class AddStudentStore {
+  selectedSubjects = [];
+  subjectsToSend = [];
   showAddButton = false;
   currentPage = 1;
   rowsPerPage = 8;
@@ -19,11 +22,32 @@ class AddStudentStore {
     stdPhone: "",
     guard_Phone: "",
     gender: "Select Gender",
-    className: "Select Subject",
+    className: "Select Class",
     Batch: "",
+    Subject1: "",
+    Subject2: "",
+    Subject3: "",
+    Subject4: "",
+    Subject5: "",
+    Subject6: "",
   };
+  clearFormFields() {
+    this.formData.fullName = "";
+    this.formData.stdRollNo = "";
+    this.formData.stdPhone = "";
+    this.formData.guard_Phone = "";
+    this.formData.gender = "Select Gender";
+    this.formData.className = "Select Class";
+    this.formData.Batch = "";
+    validations.errors.Name = false;
+    validations.errors.rollNo = false;
+    validations.errors.gender = false;
+    validations.errors.className = false;
+    validations.errors.Batch = false;
+  }
 
   constructor() {
+    this.selectedSubjects = [];
     this.studentData = [];
     makeObservable(this, {
       handleOptionChange: action.bound, // Bind the action
@@ -35,11 +59,13 @@ class AddStudentStore {
       multiplerowbtn: observable,
       subjectOptions: observable,
       formData: observable,
-      //   handleOptionChange: action,
+      selectedSubjects: observable,
+      toggleSubjectSelection: action,
       handleFileUpload: action,
       handleMultiRowUpload: action,
       handleSubmit: action,
-      showAlert: action, // Add the showAlert action
+      showAlert: action,
+      clearFormFields: action,
       fetchSubjects: action,
     });
   }
@@ -49,6 +75,20 @@ class AddStudentStore {
     Swal.fire(message);
   }
 
+  toggleSubjectSelection(subjectName) {
+    if (this.selectedSubjects.includes(subjectName)) {
+      this.selectedSubjects.splice(
+        this.selectedSubjects.indexOf(subjectName),
+        1
+      );
+    } else {
+      if (this.selectedSubjects.length < 6) {
+        this.selectedSubjects.push(subjectName);
+      } else {
+        this.showAlert("You can only select up to 6 subjects.");
+      }
+    }
+  }
   handleOptionChange(option) {
     this.selectedOption = option;
     this.showAddButton = false;
@@ -57,6 +97,7 @@ class AddStudentStore {
   setFormData(field, value) {
     this.formData[field] = value;
   }
+
   async showConfirm(message) {
     try {
       const result = await Swal.fire({
@@ -115,6 +156,7 @@ class AddStudentStore {
         }
       } else {
         // Handle adding a new student
+        console.log("one student one", studentData);
         const response = await axios.post(
           "http://localhost:8080/api/students",
           studentData,
@@ -158,6 +200,12 @@ class AddStudentStore {
             "className",
             "guard_Phone",
             "Batch",
+            "Subject1",
+            "Subject2",
+            "Subject3",
+            "Subject4",
+            "Subject5",
+            "Subject6",
           ];
           const csvFields = Object.keys(singleRowData);
 
@@ -170,15 +218,25 @@ class AddStudentStore {
               gender: singleRowData["gender"] || "Select Gender",
               className: singleRowData["className"] || "",
               Batch: singleRowData["Batch"] || "",
+              Subject1: singleRowData["Subject1"] || "",
+              Subject2: singleRowData["Subject2"] || "",
+              Subject3: singleRowData["Subject3"] || "",
+              Subject4: singleRowData["Subject4"] || "",
+              Subject5: singleRowData["Subject5"] || "",
+              Subject6: singleRowData["Subject6"] || "",
             };
-            this.selectedOption = "manually";
+            this.selectedOption = "import-csv";
             this.showAddButton = false;
-            this.multiplerowbtn = false;
+            this.showAddButton = false;
+            this.multiplerowbtn = true;
           } else {
             this.showAlert("CSV fields do not match the expected fields.");
           }
-        } else if (parsedData.length > 1) {
+        }
+        if (parsedData.length > 0) {
+          console.log(" USMNANSANSSNASNANSNASNASSANS");
           this.studentData.replace(parsedData); // Use replace to update the observable array
+          console.log(" USMNANSANSSNASNANSNASNASSANS", this.studentData);
           //   this.studentData = parsedData;
           this.selectedOption = "import-csv";
           this.showAddButton = false;
@@ -214,14 +272,46 @@ class AddStudentStore {
           return;
         }
 
+        const plainArray = this.studentData.map((item) =>
+          Object.assign({}, item)
+        );
+        console.log(`"""""""""""""""""first"""""""""""""""""`, plainArray);
+        const formattedArray = plainArray.map((item) => {
+          const subjects = [];
+          // Extract subject fields from the item and create an array
+          for (let i = 1; i <= 6; i++) {
+            const subjectField = `Subject${i}`;
+            if (item[subjectField]) {
+              subjects.push(item[subjectField]);
+            }
+          }
+
+          // Create a new object in the desired format
+          return {
+            fullName: item.fullName || "",
+            stdRollNo: item.stdRollNo || "",
+            stdPhone: item.stdPhone || "",
+            guard_Phone: item.guard_Phone || "",
+            gender: item.gender || "Select Gender",
+            className: item.className || "",
+            Batch: item.Batch || "",
+            subjects: subjects, // Assign the subjects array
+          };
+        });
+        console.log("formattedArray===>", formattedArray);
         const response = await axios.post(
           "http://localhost:8080/api/students/upload-csv",
-          { csvData: this.studentData },
+          { csvData: formattedArray },
+          // { csvData: this.studentData },
           {
             headers,
           }
         );
+        console.log("************************************");
+        console.log("this.studentData", this.studentData);
+        console.log("************************************");
 
+        console.log("************************************");
         if (response.status === 200) {
           const { success, message } = response.data;
 
@@ -255,6 +345,7 @@ class AddStudentStore {
         }
       } catch (error) {
         console.error("Error uploading students:", error);
+
         this.showAlert("An error occurred while processing the request.");
       }
     }
@@ -305,11 +396,16 @@ class AddStudentStore {
           this.showAlert("Failed to update student. Please try again.");
         }
       } else {
+        this.subjectsToSend = toJS(this.selectedSubjects);
+        // console.log("sasd'", this.subjectsToSend);
+
+        if (this.subjectsToSend.length !== 6) {
+          this.showAlert("Please select exactly 6 subjects.");
+          return;
+        }
         if (
           this.formData.fullName === "" ||
           this.formData.stdRollNo === "" ||
-          this.formData.guard_Phone === "" ||
-          this.formData.stdPhone === "" ||
           this.formData.Batch === "" ||
           this.formData.className === "Select Class" ||
           this.formData.gender === "Select Gender"
@@ -317,7 +413,13 @@ class AddStudentStore {
           this.showAlert("Please fill all fields.");
           return; // Don't proceed if default values are selected
         }
-        // Handle adding a new student
+        if (this.formData.stdPhone === "") {
+          this.formData.stdPhone = "-";
+        }
+        if (this.formData.guard_Phone === "") {
+          this.formData.guard_Phone = "-";
+        }
+
         const newstudent = {
           fullName: this.formData.fullName,
           stdRollNo: this.formData.stdRollNo,
@@ -326,6 +428,7 @@ class AddStudentStore {
           gender: this.formData.gender,
           className: this.formData.className,
           Batch: this.formData.Batch,
+          subjects: this.subjectsToSend,
         };
 
         const success = await this.addstudentToBackend(newstudent);
@@ -342,6 +445,15 @@ class AddStudentStore {
             className: this.formData.className,
             Batch: this.formData.Batch,
           };
+          this.selectedSubjects = [];
+          this.clearFormFields();
+          validations.errors.Name = false;
+          validations.errors.stdRollNo = false;
+          validations.errors.stdPhone = false;
+          validations.errors.guard_Phone = false;
+          validations.errors.gender = false;
+          validations.errors.className = false;
+          validations.errors.Batch = false;
           const fetchData = async () => {
             studentsStore.setLoading(true);
             try {

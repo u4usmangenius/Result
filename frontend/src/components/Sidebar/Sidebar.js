@@ -1,4 +1,4 @@
-import logo from "../../assests/logo.jpeg"; // Replace with your logo image URL
+  import logo from "../../assests/logo.png"; // Replace with your logo image URL
 import "./Sidebar.css";
 import React from "react";
 import { FaCheckCircle } from "react-icons/fa";
@@ -21,7 +21,7 @@ const Sidebar = () => {
       <div className="sidebar">
         <div className="logo-container">
           <img src={logo} alt="Logo" className="logo" />
-          <h1 className="logo-heading">Result System</h1>
+          {/* <h1 className="logo-heading">Result System</h1> */}
           {/* Result Database */}
         </div>
         <span className="sidebar-row"></span>

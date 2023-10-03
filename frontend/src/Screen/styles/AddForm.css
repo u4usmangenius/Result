@@ -1,0 +1,218 @@
+.add-form-heading {
+  margin-top: 30px;
+  text-align: left;
+  margin-bottom: 20px;
+  /* padding-left: 30px; */
+}
+
+.addForm-container-option {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.addForm-container-option:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+.addForm-form-active {
+  background-color: #007bff;
+  color: #fff;
+  cursor: default;
+}
+/* .addForm-text-input {
+  margin-right: 20px;
+  width: 100%;
+  padding: 5px;
+} */
+.add-form-options {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+.form-active {
+  background-color: #007bff;
+  color: #fff;
+  cursor: default;
+}
+
+.add-form-row {
+  display: flex;
+  flex-direction: row;
+  /* flex-wrap: wrap; */
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 40px;
+  margin-bottom: 20px;
+  /* padding-left: 31px; */
+}
+
+.subject-form-group {
+  flex-basis: calc(50% - 10px);
+  margin-bottom: 10px;
+}
+.subject-form-group select {
+  width: 341px !important;
+  height: 50px;
+}
+.subject-form-group input {
+  width: 330px !important;
+  height: 37px;
+}
+
+/* Add spacing between input fields in the same row */
+.subject-form-group .addForm-input-type-text,
+.subject-form-group select {
+  margin-right: 20px;
+}
+.addForm-input-type-text {
+  outline: none;
+  width: 230px;
+  height: 33px;
+  text-transform: capitalize;
+}
+.subject-input-select-subject {
+  outline: none;
+  width: 230px;
+  height: 39px;
+}
+.addForm-input-label {
+  display: block;
+  margin-bottom: 5px;
+  text-align: left; /* Align .addForm-input-labels to the left */
+  outline: none;
+}
+
+/* Add Another subject */
+.addForm-another-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 4%;
+  /* margin-left: 30px; */
+}
+.select-addForm-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 5px;
+  margin-bottom: 17px;
+  /* height: 44px; */
+  /* overflow-y: auto;
+  overflow-x: hidden; */
+}
+
+.addForm-h3 {
+  font-size: 21px;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;  
+}
+.addForm-list-enlist {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  /* width: 470px; */
+  position: relative;
+}
+
+.add-another-form-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  font-size: 15px;
+  cursor: pointer;
+}
+.add-another-text-icon-btn {
+  font-size: 20px;
+  margin-top: 6px;
+}
+/* slected option */
+.option {
+  width: 191px;
+  height: 51px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.form-active {
+  background-color: #007bff;
+}
+.add-form-button {
+  border-radius: 5px;
+  height: 44px;
+}
+.add-Forms-button{
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    outline: none;
+}
+.add-subject-button{
+    border-radius: 5px !important;
+}
+.add-form-button {
+  background-color: #007bff;
+  border: none;
+  text-align: center;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  outline: none;
+  height: 37px;
+  border-radius: 5px;
+  padding: 3px;
+  width: 111px;
+  /* margin-top: 10px; */
+}
+.addForm-import-csv-btn{
+    margin-top: 10px;
+}
+.addForm-input-select {
+  outline: none;
+  width: 238px;
+  height: 39px;
+  text-transform: capitalize;
+
+  
+}
+/* import button  */
+.addForm-import-button {
+  display: flex;
+}
+.addForm-import-button::file-selector-button {
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.addForm-import-button:hover::file-selector-button {
+  background-color: #0056b3;
+}
+
+.addForm-list-content {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  align-items: center;
+  margin-right: 30px;
+  margin-bottom: 10px;
+  outline: none;
+}
+.addForm-list-checkbox {
+  width: 20px;
+  height: 15px;
+  outline: red;
+}

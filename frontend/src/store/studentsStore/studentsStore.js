@@ -25,6 +25,7 @@ class StudentsStore {
       totalPages: observable,
       loading: observable,
       filteredstudents: computed,
+      handleSearch:action,
       setCurrentPage: action,
       setSearchText: action,
       setSelectedFilter: action,
@@ -55,6 +56,38 @@ class StudentsStore {
   setDataNotFound(dataNotFound) {
     this.dataNotFound = dataNotFound;
   }
+  handleSearch = async () => {
+    try {
+      this.setLoading(true);
+      const token = localStorage.getItem("bearer token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+
+      const response = await axios.post(
+        "http://localhost:8080/api/students/search",
+        {
+          searchText: this.searchText,
+          selectedFilter: this.selectedFilter,
+        },
+        {
+          headers,
+        }
+      );
+
+      if (response.data.success) {
+        this.students = response.data.students;
+      } else {
+        console.error("Error searching teachers:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error searching teachers:", error);
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
+ 
   async fetchData() {
     try {
       this.setLoading(true);
@@ -62,13 +95,21 @@ class StudentsStore {
       const headers = {
         Authorization: `${token}`,
       };
-      const response = await axios.get(
-        `http://localhost:8080/api/students?page=${this.currentPage}&pageSize=${this.rowsPerPage}&filter=${this.selectedFilter}&search=${this.searchText}`,
+      const response = await axios.post(
+        "http://localhost:8080/api/student",
+        {
+          page: this.currentPage,
+          pageSize: this.rowsPerPage,
+          filter: this.selectedFilter,
+          search: this.searchText,
+          sortColumn: "fullName", // Default sorting column
+          sortOrder: "asc", // Default sorting order (ascending)
+        },
         { headers }
       );
 
       if (this.currentPage === 1) {
-          this.students = response.data.students;
+        this.students = response.data.students;
       } else {
         this.students = [];
         this.students = [...this.students, ...response.data.students];
@@ -141,6 +182,7 @@ class StudentsStore {
         this.students = this.students.filter(
           (t) => t.studentId !== student.studentId
         );
+        this.fetchData();
       } catch (error) {
         console.error("Error deleting student:", error);
       }
@@ -169,11 +211,13 @@ class StudentsStore {
           student.subject?.toLowerCase().includes(searchTextLower) ||
           student.gender?.toLowerCase().includes(searchTextLower) ||
           student.stdRollNo?.toLowerCase().includes(searchTextLower) ||
-          student.guard_Phone?.toLowerCase().includes(searchTextLower) ||  
+          student.guard_Phone?.toLowerCase().includes(searchTextLower) ||
           student.stdPhone?.toLowerCase().includes(searchTextLower)
         );
       } else {
-        return student[this.selectedFilter]?.toLowerCase().includes(searchTextLower);
+        return student[this.selectedFilter]
+          ?.toLowerCase()
+          .includes(searchTextLower);
       }
     });
   }

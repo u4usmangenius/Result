@@ -3,6 +3,150 @@ const crypto = require("crypto");
 const router = express.Router();
 const { verifyToken } = require("./authMiddleware");
 const db = require("../db/Sqlite").db;
+// search data api
+// Router to search and paginate subjects with validations
+router.post("/api/subjects/search", verifyToken, (req, res) => {
+  const { searchText, selectedFilter, sortColumn, sortOrder } = req.body;
+  const page = parseInt(req.body.page) || 1;
+  const pageSize = parseInt(req.body.pageSize) || 5;
+  const filter = req.body.filter || "";
+  const search = req.body.search || "";
+  const offset = (page - 1) * pageSize;
+
+  let query = `
+    SELECT subjectId, subjectName, courseCode
+    FROM subjects
+    WHERE 1=1`;
+
+  const params = [];
+  if (selectedFilter === "subjectName" || selectedFilter === "courseCode") {
+    query += ` AND ${selectedFilter} LIKE ?`;
+    params.push(`%${searchText}%`);
+  } else {
+    query += ` AND (subjectName LIKE ? OR courseCode LIKE ?)`;
+    params.push(`%${searchText}%`, `%${searchText}%`);
+  }
+
+  // Add sorting to the query if sortColumn and sortOrder are provided
+  if (sortColumn && sortOrder) {
+    query += ` ORDER BY ${sortColumn} ${sortOrder}`;
+  }
+
+  db.all(query, params, (err, rows) => {
+    if (err) {
+      console.error("Error searching and sorting subjects:", err);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    } else {
+      db.get("SELECT COUNT(*) as count FROM subjects", (err, row) => {
+        if (err) {
+          console.error("Error getting subject count:", err);
+          res
+            .status(500)
+            .json({ success: false, message: "Internal server error" });
+        } else {
+          const totalCount = row.count;
+          const totalPages = Math.ceil(totalCount / pageSize);
+
+          // Calculate the slice of results for the current page
+          const startIndex = offset;
+          const endIndex = Math.min(startIndex + pageSize, rows.length);
+          const pageResults = rows.slice(startIndex, endIndex);
+
+          res.json({
+            success: true,
+            subjects: pageResults,
+            totalPages,
+            sortColumn,
+            sortOrder,
+          });
+        }
+      });
+    }
+  });
+});
+// Router to get paginated subjects with validations
+router.post("/api/subject", verifyToken, (req, res) => {
+  const page = parseInt(req.body.page) || 1;
+  const pageSize = parseInt(req.body.pageSize) || 5;
+  const filter = req.body.filter || "";
+  const search = req.body.search || "";
+  const sortColumn = req.body.sortColumn || "subjectName"; // Default sorting column
+  const sortOrder = req.body.sortOrder || "asc"; // Default sorting order (ascending)
+  const offset = (page - 1) * pageSize;
+
+  let query = `
+        SELECT subjectId, subjectName, courseCode
+        FROM subjects
+        WHERE 1=1`;
+
+  const params = [];
+  if (filter === "subjectName" || filter === "courseCode") {
+    query += ` AND ${filter} LIKE ?`;
+    params.push(`%${search}%`);
+  } else if (filter === "all") {
+    // Handle global search
+    query += ` AND (subjectName LIKE ? OR courseCode LIKE ?)`;
+    params.push(`%${search}%`, `%${search}%`);
+  }
+
+  // Add sorting to the query
+  query += ` ORDER BY ${sortColumn} ${sortOrder}`;
+
+  db.all(query, params, (err, rows) => {
+    if (err) {
+      console.error("Error getting subjects:", err);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    } else {
+      db.get("SELECT COUNT(*) as count FROM subjects", (err, row) => {
+        if (err) {
+          console.error("Error getting subject count:", err);
+          res
+            .status(500)
+            .json({ success: false, message: "Internal server error" });
+        } else {
+          const totalCount = row.count;
+          const totalPages = Math.ceil(totalCount / pageSize);
+
+          // Calculate the slice of results for the current page
+          const startIndex = offset;
+          const endIndex = Math.min(startIndex + pageSize, rows.length);
+          const pageResults = rows.slice(startIndex, endIndex);
+
+          res.json({
+            success: true,
+            subjects: pageResults,
+            totalPages,
+            sortColumn,
+            sortOrder,
+          });
+        }
+      });
+    }
+  });
+});
+
+// get all subjects for showing in drop down in teachers and students without pagination
+router.get("/api/subjects", verifyToken, (req, res) => {
+  const query = `
+    SELECT subjectId, subjectName, courseCode
+    FROM subjects`;
+
+  db.all(query, (err, rows) => {
+    if (err) {
+      console.error("Error getting subjects:", err);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    } else {
+      res.json({ success: true, subjects: rows });
+    }
+  });
+});
+
 // add subject
 router.post("/api/subjects", verifyToken, (req, res) => {
   const { subjectName, courseCode } = req.body;
@@ -55,61 +199,7 @@ router.post("/api/subjects", verifyToken, (req, res) => {
     }
   );
 });
-// get subject // Route to get paginated subjects with validations
-router.get("/api/subjects", verifyToken, (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const pageSize = parseInt(req.query.pageSize) || 5; // Get the pageSize query parameter
-  const filter = req.query.filter || ""; // Get the filter query parameter
-  const search = req.query.search || ""; // Get the search query parameter
 
-  const offset = (page - 1) * pageSize;
-
-  let query = `
-    SELECT subjectId, subjectName, courseCode 
-    FROM subjects
-    WHERE 1=1`;
-
-  const params = [];
-
-  if (filter === "subjectName" || filter === "courseCode") {
-    query += ` AND ${filter} LIKE ?`;
-    params.push(`%${search}%`);
-  } else if (filter === "all") {
-    query += ` AND (subjectName LIKE ? OR courseCode LIKE ?)`;
-    params.push(`%${search}%`, `%${search}%`);
-  }
-
-  query += ` LIMIT ? OFFSET ?`; // Add LIMIT and OFFSET clauses
-  params.push(pageSize, offset);
-
-  db.all(query, params, (err, rows) => {
-    if (err) {
-      console.error("Error getting subjects:", err);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    } else {
-      db.get("SELECT COUNT(*) as count FROM subjects", (err, row) => {
-        if (err) {
-          console.error("Error getting subject count:", err);
-          res
-            .status(500)
-            .json({ success: false, message: "Internal server error" });
-        } else {
-          const totalCount = row.count;
-          const totalPages = Math.ceil(totalCount / pageSize);
-
-          res.json({
-            success: true,
-            subjects: rows,
-            totalPages,
-            rowsPerPage: pageSize,
-          }); // Include rowsPerPage in the response
-        }
-      });
-    }
-  });
-});
 // update subject
 router.put("/api/subjects/:subjectId", verifyToken, (req, res) => {
   const subjectId = req.params.subjectId;

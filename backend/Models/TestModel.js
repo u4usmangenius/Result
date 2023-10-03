@@ -4,6 +4,80 @@ const db = require("../db/Sqlite").db;
 const crypto = require("crypto"); // Import the crypto module
 const { verifyToken } = require("./authMiddleware");
 
+// search record api
+// Router to search and get paginated tests with validations
+router.post("/api/tests/search", verifyToken, (req, res) => {
+  const { searchText, selectedFilter, sortColumn, sortOrder } = req.body;
+  const page = parseInt(req.body.page) || 1;
+  const pageSize = parseInt(req.body.pageSize) || 5;
+  const filter = req.body.filter || "";
+  const search = req.body.search || "";
+  const offset = (page - 1) * pageSize;
+
+  let query = `
+    SELECT testId, TestName, SubjectName, TotalMarks, ClassName
+    FROM tests
+    WHERE 1=1`;
+
+  const params = [];
+  if (
+    selectedFilter === "TestName" ||
+    selectedFilter === "SubjectName" ||
+    selectedFilter === "TotalMarks" ||
+    selectedFilter === "ClassName"
+  ) {
+    query += ` AND ${selectedFilter} LIKE ?`;
+    params.push(`%${searchText}%`);
+  } else {
+    query += ` AND (TestName LIKE ? OR SubjectName LIKE ? OR TotalMarks LIKE ? OR ClassName LIKE ?)`;
+    params.push(
+      `%${searchText}%`,
+      `%${searchText}%`,
+      `%${searchText}%`,
+      `%${searchText}%`
+    );
+  }
+
+  // Add sorting to the query if sortColumn and sortOrder are provided
+  if (sortColumn && sortOrder) {
+    query += ` ORDER BY ${sortColumn} ${sortOrder}`;
+  }
+
+  db.all(query, params, (err, rows) => {
+    if (err) {
+      console.error("Error searching and sorting tests:", err);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    } else {
+      db.get("SELECT COUNT(*) as count FROM tests", (err, row) => {
+        if (err) {
+          console.error("Error getting test count:", err);
+          res
+            .status(500)
+            .json({ success: false, message: "Internal server error" });
+        } else {
+          const totalCount = row.count;
+          const totalPages = Math.ceil(totalCount / pageSize);
+
+          // Calculate the slice of results for the current page
+          const startIndex = offset;
+          const endIndex = Math.min(startIndex + pageSize, rows.length);
+          const pageResults = rows.slice(startIndex, endIndex);
+
+          res.json({
+            success: true,
+            tests: pageResults,
+            totalPages,
+            sortColumn,
+            sortOrder,
+          });
+        }
+      });
+    }
+  });
+});
+
 // Adding a test
 router.post("/api/tests", verifyToken, (req, res) => {
   const { SubjectName, TestName, TotalMarks, ClassName } = req.body;
@@ -89,17 +163,19 @@ router.post("/api/tests", verifyToken, (req, res) => {
 });
 
 // getting data from test
-router.get("/api/tests", verifyToken, (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const pageSize = parseInt(req.query.pageSize) || 5;
-  const filter = req.query.filter || ""; // Get the filter query parameter
-  const search = req.query.search || ""; // Get the search query parameter
-
+// Router to get paginated tests with validations
+router.post("/api/test", verifyToken, (req, res) => {
+  const page = parseInt(req.body.page) || 1;
+  const pageSize = parseInt(req.body.pageSize) || 5;
+  const filter = req.body.filter || "";
+  const search = req.body.search || "";
+  const sortColumn = req.body.sortColumn || "TestName"; // Default sorting column
+  const sortOrder = req.body.sortOrder || "asc"; // Default sorting order (ascending)
   const offset = (page - 1) * pageSize;
 
   let query = `
         SELECT testId, TestName, SubjectName, TotalMarks, ClassName 
-        FROM tests 
+        FROM tests
         WHERE 1=1`;
 
   const params = [];
@@ -113,13 +189,12 @@ router.get("/api/tests", verifyToken, (req, res) => {
     params.push(`%${search}%`);
   } else if (filter === "all") {
     // Handle global search
-    query += ` AND (TestName LIKE ?  OR SubjectName LIKE ? OR TotalMarks LIKE ? OR ClassName LIKE ?)`;
+    query += ` AND (TestName LIKE ? OR SubjectName LIKE ? OR TotalMarks LIKE ? OR ClassName LIKE ?)`;
     params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
   }
 
-  // Do not limit the query, retrieve all matching records
-  // query += ` LIMIT ? OFFSET ?`;
-  // params.push(pageSize, offset);
+  // Add sorting to the query
+  query += ` ORDER BY ${sortColumn} ${sortOrder}`;
 
   db.all(query, params, (err, rows) => {
     if (err) {
@@ -143,12 +218,19 @@ router.get("/api/tests", verifyToken, (req, res) => {
           const endIndex = Math.min(startIndex + pageSize, rows.length);
           const pageResults = rows.slice(startIndex, endIndex);
 
-          res.json({ success: true, tests: pageResults, totalPages });
+          res.json({
+            success: true,
+            tests: pageResults,
+            totalPages,
+            sortColumn,
+            sortOrder,
+          });
         }
       });
     }
   });
 });
+
 // updated tests
 router.put("/api/tests/:testId", verifyToken, (req, res) => {
   const testId = req.params.testId;
@@ -207,7 +289,7 @@ router.put("/api/tests/:testId", verifyToken, (req, res) => {
   });
 });
 // Route to delete a test by ID
-router.delete("/api/tests/:testId",verifyToken, (req, res) => {
+router.delete("/api/tests/:testId", verifyToken, (req, res) => {
   const testId = req.params.testId;
 
   // Check if the test with the specified ID exists

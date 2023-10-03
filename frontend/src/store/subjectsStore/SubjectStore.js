@@ -29,9 +29,11 @@ class SubjectStore {
       isLoading: observable,
       dataNotFound: observable,
       filteredSubjects: computed,
+      handleSearch: action,
       setCurrentPage: action,
       setSearchText: action,
       setSelectedFilter: action,
+      showAlert: action,
       fetchData: action,
       handleEdit: action,
       handleSaveEdit: action,
@@ -39,6 +41,9 @@ class SubjectStore {
       handleDelete: action,
       setLoading: action,
     });
+  }
+  showAlert(message) {
+    Swal.fire(message);
   }
 
   setCurrentPage(page) {
@@ -60,6 +65,37 @@ class SubjectStore {
     this.loading = isLoading; // Update the observable directly
   }
 
+  handleSearch = async () => {
+    try {
+      this.setLoading(true);
+      const token = localStorage.getItem("bearer token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+
+      const response = await axios.post(
+        "http://localhost:8080/api/subjects/search",
+        {
+          searchText: this.searchText,
+          selectedFilter: this.selectedFilter,
+        },
+        {
+          headers,
+        }
+      );
+
+      if (response.data.success) {
+        this.subjects = response.data.subjects;
+      } else {
+        console.error("Error searching subjects:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error searching subjects:", error);
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
   async fetchData() {
     try {
       this.setLoading(true);
@@ -67,11 +103,20 @@ class SubjectStore {
       const headers = {
         Authorization: `${token}`,
       };
-      const response = await axios.get(
-        `http://localhost:8080/api/subjects?page=${this.currentPage}&pageSize=${this.rowsPerPage}&filter=${this.selectedFilter}&search=${this.searchText}`,
+      const response = await axios.post(
+        "http://localhost:8080/api/subject",
+        {
+          page: this.currentPage,
+          pageSize: this.rowsPerPage,
+          filter: this.selectedFilter,
+          search: this.searchText,
+          sortColumn: "subjectName",
+          sortOrder: "asc",
+        },
         { headers }
       );
-     if (this.currentPage === 1) {
+
+      if (this.currentPage === 1) {
         this.subjects = response.data.subjects;
       } else {
         this.subjects = [];
@@ -114,9 +159,15 @@ class SubjectStore {
           this.subjects = updatedSubjects;
           this.showEditModal = false;
           this.fetchData();
+          this.showAlert("Updated Successfully")
+        }
+        else if(response.status===400){
+          this.showAlert("Please Update some Values");
+
         }
       })
       .catch((error) => {
+        this.showAlert("Error while Updating")
         console.error("Error editing subject:", error);
       });
   }
@@ -146,6 +197,7 @@ class SubjectStore {
         this.subjects = this.subjects.filter(
           (t) => t.subjectId !== subject.subjectId
         );
+        this.fetchData();
       } catch (error) {
         console.error("Error deleting subject:", error);
       }

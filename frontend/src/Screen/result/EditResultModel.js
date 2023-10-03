@@ -37,11 +37,11 @@ const EditResultModel = ({ result, onSave, onCancel }) => {
             />
           </div>
           <div className="edit-result-form-group">
-            <label>Username:</label>
+            <label>Roll No:</label>
             <input
               type="text"
-              name="userName"
-              value={editedresult.userName}
+              name="stdRollNo"
+              value={editedresult.stdRollNo}
               onChange={handleInputChange}
             />
           </div>

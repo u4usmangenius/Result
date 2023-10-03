@@ -26,6 +26,10 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
     fetchData();
   }, []);
 
+  const handleSort = (column, order) => {
+    teachersStore.setSort(column, order);
+    teachersStore.fetchData();
+  };
   const showAlert = (message) => {
     Swal.fire(message);
   };
@@ -47,8 +51,7 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
   };
 
   const handleSearch = () => {
-    teachersStore.setCurrentPage(1); // Reset currentPage to 1 when searching
-    teachersStore.fetchData(); // Fetch data with updated search criteria
+    teachersStore.handleSearch(); // Use handleSearchAll to search across all rows
   };
 
   const handlePrevPage = () => {
@@ -87,7 +90,14 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
           type="text"
           placeholder="Search for a teacher "
           value={teachersStore.searchText}
-          onChange={(e) => teachersStore.setSearchText(e.target.value)}
+          onChange={(e) => {
+            teachersStore.setSearchText(e.target.value);
+            if (e.target.value === "") {
+              teachersStore.fetchData(); // Retrieve original data when search input is empty
+            } else {
+              teachersStore.handleSearch(); // Trigger search as the input changes
+            }
+          }}
         />
         <button className="search-button" onClick={handleSearch}>
           Search

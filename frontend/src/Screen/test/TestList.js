@@ -31,9 +31,9 @@ const TestList = observer(() => {
   const handleDelete = (test) => {
     testStore.handleDelete(test);
   };
-
   const handlePageChange = (page) => {
     testStore.setCurrentPage(page);
+    testStore.fetchDataFromBackend();
   };
 
   const handleSearchTextChange = (text) => {
@@ -43,8 +43,9 @@ const TestList = observer(() => {
   const handleFilterChange = (filter) => {
     testStore.setSelectedFilter(filter);
   };
-
-  const getCurrentPageData = () => testStore.getCurrentPageData;
+  const handleSearch = () => {
+    testStore.handleSearch();
+  };
 
   return (
     <div className="test-list-container">
@@ -65,7 +66,14 @@ const TestList = observer(() => {
           className="subject-text-input"
           placeholder="Search for a test"
           value={testStore.searchText}
-          onChange={(e) => handleSearchTextChange(e.target.value)}
+          onChange={(e) => {
+            testStore.setSearchText(e.target.value);
+            if (e.target.value === "") {
+              testStore.fetchDataFromBackend(1);
+            } else {
+              testStore.handleSearch();
+            }
+          }}
         />
         <button
           className="test-search-button"
@@ -86,7 +94,7 @@ const TestList = observer(() => {
             </tr>
           </thead>
           <tbody>
-            {getCurrentPageData().map((test) => (
+            {testStore.filteredTests.map((test) => (
               <tr key={test.testId}>
                 <td>{test.TestName}</td>
                 <td>{test.SubjectName}</td>

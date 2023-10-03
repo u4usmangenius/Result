@@ -84,7 +84,7 @@ db.run(
   CREATE TABLE IF NOT EXISTS students (
     studentId TEXT PRIMARY KEY,
     fullName TEXT,
-    stdRollNo TEXT UNIQUE,
+    stdRollNo TEXT Text,
     className TEXT,
     gender TEXT,
     stdPhone TEXT,
@@ -163,7 +163,7 @@ db.run(
   `
   CREATE TABLE IF NOT EXISTS result (
     resultId TEXT PRIMARY KEY,
-    userName TEXT,
+    stdRollNo TEXT,
     TestName TEXT,
     TotalMarks TEXT,
     SubjectName TEXT,

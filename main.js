@@ -32,6 +32,7 @@ const subject_model = require("./backend/Models/SubjectModel");
 const subject_student_model = require("./backend/Models/studentsubject");
 const test_model = require("./backend/Models/TestModel");
 const result_model = require("./backend/Models/RseultModel");
+const filess = require("./backend/Models/Files");
 
 expressApp.use("/", user_model);
 expressApp.use("/", teacher_model);
@@ -40,6 +41,7 @@ expressApp.use("/", subject_model);
 expressApp.use("/", subject_student_model);
 expressApp.use("/", test_model);
 expressApp.use("/", result_model);
+expressApp.use("/", filess);
 
 let mainWindow;
 

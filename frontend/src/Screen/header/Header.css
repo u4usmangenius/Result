@@ -1,44 +1,59 @@
 .teachers-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: flex-end;
   height: 30px;
-  padding-right: 50px;
+  padding: 0 50px; /* Updated padding to add space on both sides */
   gap: 10px;
-  /* Adjust the gap to control spacing between items */
   color: #000;
   background-color: #fff;
-  /* background-color: #cdd; */
   padding-top: 21px;
   padding-bottom: 15px;
   margin-bottom: 30px;
   margin-left: -23%;
   box-shadow: 4px 0 8px rgba(0, 0, 0, 0.5);
-  /* Add a shadow to the right side */
   overflow: hidden;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
 }
 
-.logout-icon {
-  padding-left: 5px;
-  padding-top: 2px;
+.left-elements {
+  display: flex;
+  align-items: flex-start;
+  margin-left: 15%;
+  gap: 25px;
+  font-size: 20px;
+}
+.left-elements span {
+  cursor: pointer;
+}
+
+.right-elements {
+  display: flex;
+  align-items: center;
+  margin-right: 30px;
 }
 
 .notification-icon-orange {
   font-size: 20px;
-  margin-right: 10px;
-  /* Reduce the margin-right to align with the text */
+  margin-right: 51px;
+  margin-top: 2px;
   cursor: pointer;
 }
 
 .logout-button {
   display: flex;
-  /* Use flex display for centering */
   align-items: center;
-  /* Center vertically */
-  font-size: 16px;
+  font-size: 20px;
+  gap: 5px;
   cursor: pointer;
 }
-
+.logout-icon {
+  margin-left: 5px;
+  margin-top: 2px;
+  /* margin-bottom: px; */
+}
 .logout-button:hover {
   text-decoration: underline;
 }

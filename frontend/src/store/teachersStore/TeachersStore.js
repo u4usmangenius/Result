@@ -31,10 +31,12 @@ class TeachersStore {
       fetchData: action,
       handleEdit: action,
       handleSaveEdit: action,
+      handleSearch: action,
       handleCancelEdit: action,
       handleDelete: action,
       setLoading: action,
-      });
+      showAlert: action,
+    });
   }
 
   setCurrentPage(page) {
@@ -55,6 +57,39 @@ class TeachersStore {
   setDataNotFound(dataNotFound) {
     this.dataNotFound = dataNotFound;
   }
+  // Add a new action to handle searching teachers
+  handleSearch = async () => {
+    try {
+      this.setLoading(true);
+      const token = localStorage.getItem("bearer token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+
+      const response = await axios.post(
+        "http://localhost:8080/api/teachers/search",
+        {
+          searchText: this.searchText,
+          selectedFilter: this.selectedFilter,
+        },
+        {
+          headers,
+        }
+      );
+
+      if (response.data.success) {
+        this.teachers = response.data.teachers;
+        console.log("first....................", this.teachers);
+      } else {
+        console.error("Error searching teachers:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error searching teachers:", error);
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
   async fetchData() {
     try {
       this.setLoading(true);
@@ -62,13 +97,21 @@ class TeachersStore {
       const headers = {
         Authorization: `${token}`,
       };
-      const response = await axios.get(
-        `http://localhost:8080/api/teachers?page=${this.currentPage}&pageSize=${this.rowsPerPage}&filter=${this.selectedFilter}&search=${this.searchText}`,
+      const response = await axios.post(
+        "http://localhost:8080/api/teacher",
+        {
+          page: this.currentPage,
+          pageSize: this.rowsPerPage,
+          filter: this.selectedFilter,
+          search: this.searchText,
+          sortColumn: "fullName", // Default sorting column
+          sortOrder: "asc", // Default sorting order (ascending)
+        },
         { headers }
       );
 
       if (this.currentPage === 1) {
-          this.teachers = response.data.teachers;
+        this.teachers = response.data.teachers;
       } else {
         this.teachers = [];
         this.teachers = [...this.teachers, ...response.data.teachers];
@@ -141,6 +184,7 @@ class TeachersStore {
         this.teachers = this.teachers.filter(
           (t) => t.teacherId !== teacher.teacherId
         );
+        this.fetchData();
       } catch (error) {
         console.error("Error deleting teacher:", error);
       }
@@ -171,7 +215,9 @@ class TeachersStore {
           teacher.phone?.toLowerCase().includes(searchTextLower)
         );
       } else {
-        return teacher[this.selectedFilter]?.toLowerCase().includes(searchTextLower);
+        return teacher[this.selectedFilter]
+          ?.toLowerCase()
+          .includes(searchTextLower);
       }
     });
   }

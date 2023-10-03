@@ -47,8 +47,7 @@ const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
   };
 
   const handleSearch = () => {
-    studentsStore.setCurrentPage(1); // Reset currentPage to 1 when searching
-    studentsStore.fetchData(); // Fetch data with updated search criteria
+    studentsStore.handleSearch();
   };
 
   const handlePrevPage = () => {
@@ -89,7 +88,14 @@ const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
           type="text"
           placeholder="Search for a student "
           value={studentsStore.searchText}
-          onChange={(e) => studentsStore.setSearchText(e.target.value)}
+          onChange={(e) =>{
+            studentsStore.setSearchText(e.target.value);
+            if (e.target.value === "") {
+              studentsStore.fetchData(); // Retrieve original data when search input is empty
+            } else {
+              studentsStore.handleSearch(); // Trigger search as the input changes
+            }
+          }}
         />
         <button className="student-search-button" onClick={handleSearch}>
           Search

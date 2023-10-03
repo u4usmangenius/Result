@@ -1,0 +1,87 @@
+/* editteachermodel.css */
+.editmodal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure the modal appears above other elements */
+}
+
+.editmodal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  /* margin-left: 5px; */
+  width: auto;
+  height: auto;
+}
+.editmodal-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 25px;
+  margin: 5px;
+  padding-right: 10px;
+  
+}
+.editmodal h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #122;
+  padding-left:3.5px;
+
+}
+
+.editform {
+  margin-top: 20px;
+}
+
+.editform-group {
+  margin-bottom: 10px;
+}
+
+.editform label {
+  display: block;
+  padding-bottom: 3px;
+}
+
+.editform input {
+  width: 96%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  /* padding-left: 10px; */
+}
+
+.editmodal-buttons {
+  /* margin-top: 20px; */
+  text-align: right;
+  outline: none;
+  margin-right: 5px;
+}
+
+.editmodal-buttons button {
+  margin-left: 15px;
+  padding: 8px 16px;
+  border: none;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  width: 71px;
+}
+
+
+
+.editmodal-buttons button:hover {
+  transition: 0.3s ease-out;
+  background-color: #0056b3;
+}

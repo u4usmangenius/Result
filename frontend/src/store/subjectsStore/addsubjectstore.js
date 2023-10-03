@@ -2,13 +2,12 @@ import { makeObservable, observable, action } from "mobx";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { subjectStore } from "./SubjectStore";
+import { validations } from "../../helper.js/SubjectValidationStore";
 
 class AddSubjectStore {
   formData = {
     subjectName: "",
     courseCode: "",
-    stdRollNo: "",
-    userSubject: "",
   };
 
   subjectData = [];
@@ -17,7 +16,12 @@ class AddSubjectStore {
   rollnoOption = [];
   showAddButton = false;
   multiplerowbtn = false;
-
+  clearFormFields() {
+    this.formData.subjectName = "";
+    this.formData.courseCode = "";
+    validations.errors.subjectName = false;
+    validations.errors.courseCode = false;
+  }
   constructor() {
     makeObservable(this, {
       formData: observable,
@@ -32,18 +36,16 @@ class AddSubjectStore {
       setFormData: action,
       setShowAddButton: action,
       fetchSubjects: action,
-      fetchRollNo: action,
+      // fetchRollNo: action,
       addSubject: action,
-      addUsersubject: action,
+      clearFormFields: action,
     });
   }
-
   setSelectedOption(option) {
     this.selectedOption = option;
   }
-
   showAlert(message) {
-    // Your showAlert implementation here
+    Swal.fire(message);
   }
 
   setFormData(data) {
@@ -71,64 +73,22 @@ class AddSubjectStore {
     }
   }
 
-  async fetchRollNo() {
-    try {
-      const token = localStorage.getItem("bearer token");
-      const headers = {
-        Authorization: `${token}`,
-      };
-      const response = await axios.get("http://localhost:8080/api/students", {
-        headers,
-      });
-      if (response.status === 200) {
-        this.rollnoOption = response.data.students;
-      }
-    } catch (error) {
-      console.error("Error fetching roll number:", error);
-    }
-  }
-
-  async addUsersubject() {
-    try {
-      const token = localStorage.getItem("bearer token");
-      const headers = {
-        Authorization: `${token}`,
-      };
-      const response = await axios.post(
-        "http://localhost:8080/api/student_subject",
-        this.formData,
-        { headers }
-      );
-
-      if (response.status === 200) {
-        Swal.fire("Subject added successfully");
-        this.formData = {
-          stdRollNo: "",
-          userSubject: "",
-        };
-        this.fetchRollNo();
-        const fetchData = async () => {
-          subjectStore.setLoading(true);
-          try {
-            await subjectStore.fetchData();
-            subjectStore.setDataNotFound(false);
-          } catch (error) {
-            console.error("Error fetching subjects:", error);
-            subjectStore.setDataNotFound(true);
-          } finally {
-            subjectStore.setLoading(false);
-          }
-        };
-
-        fetchData();
-      } else {
-        Swal.fire("Failed to Add Subject.");
-      }
-    } catch (error) {
-      console.error("Error adding subject:", error);
-      Swal.fire("An error occurred while processing the request.");
-    }
-  }
+  // async fetchRollNo() {
+  //   try {
+  //     const token = localStorage.getItem("bearer token");
+  //     const headers = {
+  //       Authorization: `${token}`,
+  //     };
+  //     const response = await axios.get("http://localhost:8080/api/students", {
+  //       headers,
+  //     });
+  //     if (response.status === 200) {
+  //       this.rollnoOption = response.data.students;
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching roll number:", error);
+  //   }
+  // }
 
   async addSubject(newSubject) {
     try {
@@ -149,6 +109,8 @@ class AddSubjectStore {
           subjectName: "",
           courseCode: "",
         };
+        validations.errors.subjectName = false;
+        validations.errors.courseCode = false;
         this.fetchSubjects();
 
         const fetchData = async () => {

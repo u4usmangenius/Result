@@ -35,7 +35,9 @@ body {
 }
 
 .logo {
-  max-width: 80px;
+  max-width: 150px;
+  margin-top: 20px;
+  margin-bottom: -20px;
 }
 
 .logo-heading {
@@ -75,7 +77,7 @@ body {
 }
 
 #features {
-  margin-top: 71px;
+  margin-top: 31px;
 }
 
 .features-label {
@@ -90,6 +92,7 @@ body {
   color: #001231;
   font-weight: 800;
   box-shadow: 10px 0 15px rgba(0, 0, 0, 0.5); /* Add a shadow to the right side */
+  font-size: 15px;
 }
 
 /* Remove the style to center the icons vertically */

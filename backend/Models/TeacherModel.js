@@ -3,13 +3,60 @@ const crypto = require("crypto");
 const router = express.Router();
 const db = require("../db/Sqlite").db;
 const { verifyToken } = require("./authMiddleware");
-// Route to create a new teacher
+// Route to search for teachers across all data in the database
+router.post("/api/teachers/search", verifyToken, (req, res) => {
+  const { searchText, selectedFilter, sortColumn, sortOrder } = req.body; // Include sortColumn and sortOrder
+
+  let query = `
+      SELECT teacherId, fullName, subject, gender, phone 
+      FROM teachers 
+      WHERE 1=1`;
+
+  const params = [];
+
+  if (
+    selectedFilter === "fullName" ||
+    selectedFilter === "subject" ||
+    selectedFilter === "gender" ||
+    selectedFilter === "phone"
+  ) {
+    query += ` AND ${selectedFilter} LIKE ?`;
+    params.push(`%${searchText}%`);
+  } else {
+    query += ` AND (fullName LIKE ? OR subject LIKE ? OR gender LIKE ? OR phone LIKE ?)`;
+    params.push(
+      `%${searchText}%`,
+      `%${searchText}%`,
+      `%${searchText}%`,
+      `%${searchText}%`
+    );
+  }
+
+  // Add sorting to the query if sortColumn and sortOrder are provided
+  if (sortColumn && sortOrder) {
+    query += ` ORDER BY ${sortColumn} ${sortOrder}`;
+  }
+
+  db.all(query, params, (err, rows) => {
+    if (err) {
+      console.error("Error searching and sorting teachers:", err);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    } else {
+      res.json({ success: true, teachers: rows });
+    }
+  });
+}); // Route to create a new teacher
 // Route to get paginated teachers with validations
-router.get("/api/teachers", verifyToken, (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const pageSize = parseInt(req.query.pageSize) || 5;
-  const filter = req.query.filter || ""; // Get the filter query parameter
-  const search = req.query.search || ""; // Get the search query parameter
+// Route to get paginated teachers with validations
+router.post("/api/teacher", verifyToken, (req, res) => {
+  const page = parseInt(req.body.page) || 1;
+  const pageSize = parseInt(req.body.pageSize) || 5;
+  const filter = req.body.filter || ""; // Get the filter query parameter
+  const search = req.body.search || ""; // Get the search query parameter
+  const sortColumn = req.body.sortColumn || "fullName"; // Default sorting column
+  const sortOrder = req.body.sortOrder || "asc"; // Default sorting order (ascending)
 
   const offset = (page - 1) * pageSize;
 
@@ -32,6 +79,9 @@ router.get("/api/teachers", verifyToken, (req, res) => {
     query += ` AND (fullName LIKE ? OR subject LIKE ? OR gender LIKE ? OR phone LIKE ?)`;
     params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
   }
+
+  // Add sorting to the query
+  query += ` ORDER BY ${sortColumn} ${sortOrder}`;
 
   // Do not limit the query, retrieve all matching records
   // query += ` LIMIT ? OFFSET ?`;
@@ -59,7 +109,13 @@ router.get("/api/teachers", verifyToken, (req, res) => {
           const endIndex = Math.min(startIndex + pageSize, rows.length);
           const pageResults = rows.slice(startIndex, endIndex);
 
-          res.json({ success: true, teachers: pageResults, totalPages });
+          res.json({
+            success: true,
+            teachers: pageResults,
+            totalPages,
+            sortColumn,
+            sortOrder,
+          });
         }
       });
     }
@@ -222,111 +278,102 @@ router.post("/api/teachers", verifyToken, (req, res) => {
   );
 });
 // upload multiple teachers using csv
-// upload multiple teachers using csv
 router.post("/api/teachers/upload-csv", verifyToken, async (req, res) => {
   const { csvData } = req.body;
-
+  console.error("csv-------csv", csvData);
   // Check if the required CSV data is provided
   if (!csvData || !Array.isArray(csvData) || csvData.length === 0) {
     return res
       .status(400)
       .json({ success: false, message: "Invalid CSV data" });
   }
+  if (
+    !csvData.fullName ||
+    !csvData.subject ||
+    !csvData.gender ||
+    !csvData.phone
+  ) {
+    console.log("All Filds are required")
+    return res
+      .status(400)
+      .json({ success: false, message: "All CSV Fields are Required" });
+  }
 
   // Assuming your CSV columns match the teacher data fields
-  // upload multiple teachers using csv
-  router.post("/api/teachers/upload-csv", verifyToken, async (req, res) => {
-    const { csvData } = req.body;
+  const teachersToAdd = csvData.map((row) => ({
+    fullName: row.fullName,
+    subject: row.subject,
+    gender: row.gender,
+    phone: row.phone,
+  }));
 
-    // Check if the required CSV data is provided
-    if (!csvData || !Array.isArray(csvData) || csvData.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid CSV data" });
-    }
-
-    // Assuming your CSV columns match the teacher data fields
-    const teachersToAdd = csvData.map((row) => ({
-      fullName: row.fullName,
-      subject: row.subject,
-      gender: row.gender,
-      phone: row.phone,
-    }));
-
-  
-    // Check if any of the teachers in the CSV already exist
-    const existingTeachers = await Promise.all(
-      teachersToAdd.map(async (teacher) => {
-        return new Promise(async (resolve, reject) => {
-          // Check if a teacher with the same data already exists
-          const count = await new Promise((resolveCount, rejectCount) => {
-            db.get(
-              "SELECT COUNT(*) as count FROM teachers WHERE fullName = ? AND subject = ? AND gender = ? AND phone = ?",
-              [
-                teacher.fullName,
-                teacher.subject,
-                teacher.gender,
-                teacher.phone,
-              ],
-              (err, row) => {
-                if (err) {
-                  rejectCount(err);
-                } else {
-                  resolveCount(row.count);
-                }
+  // Check if any of the teachers in the CSV already exist
+  const existingTeachers = await Promise.all(
+    teachersToAdd.map(async (teacher) => {
+      return new Promise(async (resolve, reject) => {
+        // Check if a teacher with the same data already exists
+        const count = await new Promise((resolveCount, rejectCount) => {
+          db.get(
+            "SELECT COUNT(*) as count FROM teachers WHERE fullName = ? AND subject = ? AND gender = ? AND phone = ?",
+            [teacher.fullName, teacher.subject, teacher.gender, teacher.phone],
+            (err, row) => {
+              if (err) {
+                rejectCount(err);
+              } else {
+                resolveCount(row.count);
               }
-            );
-          });
-
-          if (count > 0) {
-            resolve(teacher); // Teacher already exists
-          } else {
-            resolve(null); // Teacher does not exist
-          }
-        });
-      })
-    );
-
-    // Filter out the existing teachers
-    const newTeachers = teachersToAdd.filter(
-      (teacher) => existingTeachers.indexOf(teacher) === -1
-    );
-
-    // Now, you can add the new teachers to the database
-    const teacherInsertPromises = newTeachers.map((teacher) => {
-      return new Promise((resolve, reject) => {
-        const teacherId = crypto.randomUUID();
-        db.run(
-          "INSERT INTO teachers (teacherId, fullName, subject, gender, phone) VALUES (?, ?, ?, ?, ?)",
-          [
-            teacherId,
-            teacher.fullName,
-            teacher.subject,
-            teacher.gender,
-            teacher.phone,
-          ],
-          (err) => {
-            if (err) {
-              console.error("Error inserting teacher:", err);
-              reject(err);
-            } else {
-              resolve();
             }
-          }
-        );
-      });
-    });
+          );
+        });
 
-    Promise.all(teacherInsertPromises)
-      .then(() => {
-        res.json({ success: true, message: "Teachers inserted successfully" });
-      })
-      .catch((error) => {
-        res
-          .status(500)
-          .json({ success: false, message: "Internal server error" });
+        if (count > 0) {
+          resolve(teacher); // Teacher already exists
+        } else {
+          resolve(null); // Teacher does not exist
+        }
       });
+    })
+  );
+
+  // Filter out the existing teachers
+  const newTeachers = teachersToAdd.filter(
+    (teacher) => existingTeachers.indexOf(teacher) === -1
+  );
+
+  // Now, you can add the new teachers to the database
+  const teacherInsertPromises = newTeachers.map((teacher) => {
+    return new Promise((resolve, reject) => {
+      const teacherId = crypto.randomUUID();
+      db.run(
+        "INSERT INTO teachers (teacherId, fullName, subject, gender, phone) VALUES (?, ?, ?, ?, ?)",
+        [
+          teacherId,
+          teacher.fullName,
+          teacher.subject,
+          teacher.gender,
+          teacher.phone,
+        ],
+        (err) => {
+          if (err) {
+            console.error("Error inserting teacher:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        }
+      );
+    });
   });
+
+  Promise.all(teacherInsertPromises)
+    .then(() => {
+      res.json({ success: true, message: "Teachers inserted successfully" });
+    })
+    .catch((error) => {
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    });
 });
 
 module.exports = router;

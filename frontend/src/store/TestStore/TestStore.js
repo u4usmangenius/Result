@@ -28,6 +28,7 @@ class TestStore {
       filteredTests: computed,
       getCurrentPageData: computed,
       setSearchText: action,
+      handleSearch: action,
       setSelectedFilter: action,
       setCurrentPage: action,
       setShowEditModal: action,
@@ -43,26 +44,64 @@ class TestStore {
     });
   }
 
+  handleSearch = async () => {
+    try {
+      this.setLoading(true);
+      const token = localStorage.getItem("bearer token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+
+      const response = await axios.post(
+        "http://localhost:8080/api/tests/search",
+        {
+          searchText: this.searchText,
+          selectedFilter: this.selectedFilter,
+        },
+        {
+          headers,
+        }
+      );
+
+      if (response.data.success) {
+        this.tests = response.data.tests;
+      } else {
+        console.error("Error searching tests:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error searching tests:", error);
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
   get filteredTests() {
     const searchTextLower = this.searchText?.toLowerCase();
     return this.tests.filter((test) => {
       if (this.selectedFilter === "all") {
         return (
           (test.TestName &&
-            test.TestName.toString()?.toLowerCase().includes(searchTextLower)) ||
+            test.TestName.toString()
+              ?.toLowerCase()
+              .includes(searchTextLower)) ||
           (test.SubjectName &&
             test.SubjectName.toString()
               .toLowerCase()
               .includes(searchTextLower)) ||
           (test.TotalMarks &&
-            test.TotalMarks.toString().toLowerCase().includes(searchTextLower)) ||
+            test.TotalMarks.toString()
+              .toLowerCase()
+              .includes(searchTextLower)) ||
           (test.ClassName &&
             test.ClassName.toString().toLowerCase().includes(searchTextLower))
         );
       } else {
         return (
           test[this.selectedFilter] &&
-          test[this.selectedFilter].toString().toLowerCase().includes(searchTextLower)
+          test[this.selectedFilter]
+            .toString()
+            .toLowerCase()
+            .includes(searchTextLower)
         );
       }
     });
@@ -71,6 +110,9 @@ class TestStore {
   get getCurrentPageData() {
     const startIndex = (this.currentPage - 1) * this.rowsPerPage;
     const endIndex = startIndex + this.rowsPerPage;
+    console.log("startIndex:", startIndex);
+    console.log("endIndex:", endIndex);
+    console.log("filteredTests:", this.filteredTests);
     return this.filteredTests.slice(startIndex, endIndex);
   }
 
@@ -107,29 +149,39 @@ class TestStore {
     this.totalPages = totalPages;
   }
 
-  fetchDataFromBackend(page) {
-    const token = localStorage.getItem("bearer token");
-    const headers = {
-      Authorization: `${token}`,
-    };
-    this.setLoading(true);
-    axios
-      .get(
-        `http://localhost:8080/api/tests?page=${page}&pageSize=${this.rowsPerPage}`,
+  async fetchDataFromBackend(page) {
+    try {
+      this.setLoading(true);
+      const token = localStorage.getItem("bearer token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+      const response = await axios.post(
+        "http://localhost:8080/api/test",
+        {
+          page: this.currentPage,
+          pageSize: this.rowsPerPage,
+          filter: this.selectedFilter,
+          search: this.searchText,
+          sortColumn: "TestName",
+          sortOrder: "asc",
+        },
         { headers }
-      )
-      .then((response) => {
-        this.setTests(response.data.tests);
-        this.setTotalPages(response.data.totalPages);
-        this.setCurrentPage(page);
-        this.setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching tests:", error);
-        this.setLoading(false);
-      });
-  }
+      );
 
+      if (this.currentPage === 1) {
+        this.tests = response.data.tests;
+      } else {
+        this.tests = [];
+        this.tests = [...this.tests, ...response.data.tests];
+      }
+      this.totalPages = response.data.totalPages;
+      this.loading = false;
+    } catch (error) {
+      console.error("Error fetching tests:", error);
+      this.setLoading(false);
+    }
+  }
   handleEdit(test) {
     this.setShowEditModal(true);
     this.setEditingTest(test);
@@ -167,7 +219,9 @@ class TestStore {
   }
 
   async handleDelete(test) {
-    const confirmed = await this.showConfirm(`Are you sure you want to delete ${test.fullName}?`);
+    const confirmed = await this.showConfirm(
+      `Are you sure you want to delete ${test.fullName}?`
+    );
     if (confirmed) {
       const token = localStorage.getItem("bearer token");
       const headers = {
@@ -177,7 +231,9 @@ class TestStore {
         .delete(`http://localhost:8080/api/tests/${test.testId}`, { headers })
         .then((response) => {
           if (response.status === 200) {
-            const updatedTests = this.tests.filter((t) => t.testId !== test.testId);
+            const updatedTests = this.tests.filter(
+              (t) => t.testId !== test.testId
+            );
             this.setTests(updatedTests);
             this.fetchDataFromBackend(1);
           } else {
@@ -192,12 +248,12 @@ class TestStore {
 
   showConfirm(message) {
     return Swal.fire({
-      title: 'Confirm',
+      title: "Confirm",
       text: message,
-      icon: 'question',
+      icon: "question",
       showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
     }).then((result) => {
       return result.isConfirmed;
     });

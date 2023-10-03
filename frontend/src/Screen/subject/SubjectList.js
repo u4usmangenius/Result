@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { observer } from "mobx-react-lite"; // Import MobX observer
 import { subjectStore } from "../../store/subjectsStore/SubjectStore";
 import LoadingSpinner from "../../components/loaders/Spinner";
+import Modal from "../model/Modal";
 
 const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
   const navigate = useNavigate();
@@ -65,6 +66,10 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
   const handleFilterChange = (filter) => {
     subjectStore.setSelectedFilter(filter);
   };
+  const handleSearch = () => {
+    subjectStore.handleSearch();
+  };
+
   return (
     <div className="subject-list-container">
       <div className="subject-search-bar">
@@ -82,7 +87,14 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
           className="subject-text-input"
           placeholder="Search for a subject"
           value={subjectStore.searchText}
-          onChange={(e) => handleSearchTextChange(e.target.value)}
+          onChange={(e) => {
+            subjectStore.setSearchText(e.target.value);
+            if (e.target.value === "") {
+              subjectStore.fetchData(); // Retrieve original data when search input is empty
+            } else {
+              subjectStore.handleSearch(); // Trigger search as the input changes
+            }
+          }}
           ref={inputRef}
         />
         <button
@@ -93,11 +105,11 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
             subjectStore.fetchData();
           }}
         >
-          Search
+          Clear
         </button>
       </div>
       {subjectStore.isLoading ? (
-        <LoadingSpinner /> 
+        <LoadingSpinner />
       ) : subjectStore.dataNotFound ? (
         <div>Could not get data</div>
       ) : (

@@ -1,252 +1,65 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import "./ResultList.css";
 import { IoMdTrash } from "react-icons/io";
-
-import axios from "axios";
-import { BiEditAlt, BiSave } from "react-icons/bi";
-
+import { BiEditAlt } from "react-icons/bi";
+import { observer } from "mobx-react-lite";
 import EditResultModel from "./EditResultModel";
-
 import { useNavigate } from "react-router-dom";
 import { MdCancelPresentation } from "react-icons/md";
+import { FaFilePdf } from "react-icons/fa";
 import Swal from "sweetalert2";
-const ResultList = ({ openAddresultsModal, closeAddresultsModal }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 5;
-  const [searchText, setSearchText] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("all");
+import { resultStore } from "../../store/ResultStore/ResultStore";
+
+const ResultList = observer(() => {
   const inputRef = useRef(null);
-  const [results, setresults] = useState([]);
-  const [showEditModal, setShowEditModal] = useState(false); // Manage edit modal visibility
-  const [editingresult, setEditingresult] = useState(null);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [totalPages, setTotalPages] = useState(1); // Track total number of pages
-
-  const showConfirm = (message) => {
-    return Swal.fire({
-      title: "Confirm",
-      text: message,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes",
-      cancelButtonText: "No",
-    }).then((result) => {
-      return result.isConfirmed;
-    });
-  };
-  const getCurrentPageData = () => {
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return filteredresults.slice(startIndex, endIndex);
-  };
-  useEffect(() => {
-    setLoading(true);
-    const token = localStorage.getItem("bearer token");
-    const headers = {
-      Authorization: `${token}`,
-    };
-    axios
-      .get(
-        `http://localhost:8080/api/results?page=${currentPage}&pageSize=${rowsPerPage}&filter=${selectedFilter}&search=${searchText}`,
-        { headers }
-      )
-      .then((response) => {
-        if (currentPage === 1) {
-          setresults(response.data.results);
-        } else {
-          // Append the data to the existing results list
-          setresults((prevresults) => [
-            ...prevresults,
-            ...response.data.results,
-          ]);
-        }
-        setTotalPages(response.data.totalPages);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching results:", error);
-        setLoading(false);
-      });
-  }, [currentPage, rowsPerPage, selectedFilter, searchText]);
 
   useEffect(() => {
-    setSearchText(""); // Reset searchText when currentPage changes
-  }, [currentPage]);
+    resultStore.fetchDataFromBackend(resultStore.currentPage); // Pass the currentPage to fetchDataFromBackend
+  }, [resultStore.currentPage]);
 
   const handleEdit = (result) => {
-    setShowEditModal(true);
-    setEditingresult(result);
+    resultStore.handleEdit(result);
   };
 
-  const handleSaveEdit = (editedresult) => {
-    // Send a PUT request to edit the result data on the backend
-    const token = localStorage.getItem("bearer token");
-    const headers = {
-      Authorization: `${token}`,
-    };
-    axios
-      .put(
-        `http://localhost:8080/api/results/${editedresult.resultId}`,
-        editedresult,
-        {
-          headers,
-        }
-      )
-      .then((response) => {
-        // Update the result in the state based on the response from the server
-        if (response.status === 200) {
-          // Find the index of the edited result in the results array
-          const editedresultIndex = results.findIndex(
-            (t) => t.resultId === editedresult.resultId
-          );
-
-          // Create a copy of the results array with the updated result
-          const updatedresults = [...results];
-          updatedresults[editedresultIndex] = response.data;
-
-          // Update the state with the updated results array
-          setresults(updatedresults);
-          setShowEditModal(false); // Close the edit modal after a successful edit
-          navigate("/sidebar/dashboard");
-          navigate("/sidebar/result");
-        }
-        axios
-          .get(
-            `http://localhost:8080/api/results?page=${currentPage}&pageSize=${rowsPerPage}&filter=${selectedFilter}&search=${searchText}`,
-            { headers }
-          )
-          .then((response) => {
-            if (currentPage === 1) {
-              setresults(response.data.results);
-            } else {
-              // Append the data to the existing results list
-              setresults((prevresults) => [
-                ...prevresults,
-                ...response.data.results,
-              ]);
-            }
-            setTotalPages(response.data.totalPages);
-            setLoading(false);
-          })
-          .catch((error) => {
-            console.error("Error fetching results:", error);
-            setLoading(false);
-          });
-      })
-      .catch((error) => {
-        console.error("Error editing result:", error);
-      });
+  const handleSaveEdit = (editedResult) => {
+    resultStore.handleSaveEdit(editedResult);
   };
 
   const handleCancelEdit = () => {
-    setShowEditModal(false);
-    setEditingresult(null);
+    resultStore.handleCancelEdit();
   };
-  const fetchDataFromBackend = (page) => {
-    setLoading(true);
-    const token = localStorage.getItem("bearer token");
-    const headers = {
-      Authorization: `${token}`,
-    };
-    axios
-      .get(
-        `http://localhost:8080/api/results?page=${page}&pageSize=${rowsPerPage}`,
-        { headers }
-      )
-      .then((response) => {
-        setresults(response.data.results);
-        setTotalPages(response.data.totalPages);
-        // setTotalPages(Math.ceil(filteredresults.length / rowsPerPage));
-        setCurrentPage(page);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching results:", error);
-        setLoading(false);
-      });
-  };
+
   const handleDelete = async (result) => {
-    const confirmed = await showConfirm(
+    const confirmed = await resultStore.showConfirm(
       `Are you sure you want to delete ${result.fullName}?`
     );
-    // Display a confirmation dialog
     if (confirmed) {
-      console.log("User confirmed!");
-      // User confirmed, send DELETE request to the backend
-      const token = localStorage.getItem("bearer token");
-      const headers = {
-        Authorization: `${token}`,
-      };
-      axios
-        .delete(`http://localhost:8080/api/results/${result.resultId}`, {
-          headers,
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            // result deleted successfully, update the state
-            const updatedresults = results.filter(
-              (t) => t.resultId !== result.resultId
-            );
-            setresults(updatedresults);
-            fetchDataFromBackend(1);
-          } else {
-            console.error("Error deleting result:", response.data.message);
-          }
-        })
-        .catch((error) => {
-          console.error("Error deleting result:", error);
-        });
+      resultStore.handleDelete(result);
     }
   };
-  const filteredresults = results.filter((result) => {
-    const searchTextLower = searchText?.toLowerCase();
-    if (selectedFilter === "all") {
-      return (
-        (result.resultName &&
-          result.resultName
-            .toString()
-            ?.toLowerCase()
-            .includes(searchTextLower)) ||
-        (result.SubjectName &&
-          result.SubjectName.toString()
-            .toLowerCase()
-            .includes(searchTextLower)) ||
-        (result.Batch &&
-          result.Batch.toString().toLowerCase().includes(searchTextLower)) ||
-        (result.TotalMarks &&
-          result.TotalMarks.toString()
-            .toLowerCase()
-            .includes(searchTextLower)) ||
-        (result.ClassName &&
-          result.ClassName.toString().toLowerCase().includes(searchTextLower))
-      );
-    } else {
-      return (
-        result[selectedFilter] &&
-        result[selectedFilter]
-          .toString()
-          .toLowerCase()
-          .includes(searchTextLower)
-      );
-    }
-  });
+  const handleSearch = () => {
+    resultStore.handleSearch();
+  };
 
+  const handleDownloadPdf = (result) => {
+    resultStore.downloadPdf(result);
+  };
   return (
     <div className="result-list-container">
       <div className="result-search-bar">
         <select
           className="result-category"
-          value={selectedFilter}
-          onChange={(e) => setSelectedFilter(e.target.value)}
+          value={resultStore.selectedFilter}
+          onChange={(e) => resultStore.setSelectedFilter(e.target.value)}
         >
           <option value="all">All</option>
-          <option value="userName">userName</option>
+          <option value="stdRollNo">RollNo</option>
           <option value="fullName">Name</option>
           <option value="TestName">TestName</option>
           <option value="SubjectName">Subject Name</option>
           <option value="ClassName">Class Name</option>
-          <option value="ObtainedMarks">Obtained Marks</option>
+          {/* <option value="ObtainedMarks">Obtained Marks</option> */}
           <option value="Batch">Batch</option>
         </select>
 
@@ -254,14 +67,21 @@ const ResultList = ({ openAddresultsModal, closeAddresultsModal }) => {
           type="text"
           className="subject-text-input"
           placeholder="Search for a result"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          value={resultStore.searchText}
+          onChange={(e) => {
+            resultStore.setSearchText(e.target.value);
+            if (e.target.value === "") {
+              resultStore.fetchDataFromBackend(1);
+            } else {
+              resultStore.handleSearch();
+            }
+          }}
           ref={inputRef}
         />
         <button
           className="result-search-button"
           onClick={() => {
-            setSearchText("");
+            // resultStore.setSearchText("");
             inputRef.current.focus();
           }}
         >
@@ -272,28 +92,37 @@ const ResultList = ({ openAddresultsModal, closeAddresultsModal }) => {
         <table>
           <thead>
             <tr>
+              <th>RollNo</th>
               <th>Name</th>
-              <th>Username</th>
               <th>Test Name</th>
               <th>SubjectName</th>
               <th>ClassName</th>
               <th>Batch</th>
               <th>Obt. Marks</th>
               <th>Tot. Marks</th>
+              <th>PDF</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {getCurrentPageData().map((result) => (
+            {resultStore.filteredResults.map((result) => (
               <tr key={result.resultId}>
+                <td>{result.stdRollNo}</td>
                 <td>{result.fullName}</td>
-                <td>{result.userName}</td>
                 <td>{result.TestName}</td>
                 <td>{result.SubjectName}</td>
                 <td>{result.ClassName}</td>
                 <td>{result.Batch}</td>
                 <td>{result.ObtainedMarks}</td>
                 <td>{result.TotalMarks}</td>
+                <td style={{ fontSize: "22px" }}>
+                  <div
+                    className="pdf-result-icon"
+                    onClick={() => handleDownloadPdf(result)}
+                  >
+                    <FaFilePdf className="edit-result-icon" />
+                  </div>
+                </td>
                 <td className="set-result-icon">
                   <div
                     onClick={() => handleEdit(result)}
@@ -313,18 +142,20 @@ const ResultList = ({ openAddresultsModal, closeAddresultsModal }) => {
       </div>
       <div className="pagination">
         <button
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 1}
+          onClick={() =>
+            resultStore.setCurrentPage(resultStore.currentPage - 1)
+          }
+          disabled={resultStore.currentPage === 1}
           className="result-pagination-button"
         >
           Prev
         </button>
-        {Array.from({ length: totalPages }, (_, i) =>
-          currentPage === i + 1 ? ( // Check if the current button should be active
+        {Array.from({ length: resultStore.totalPages }, (_, i) =>
+          resultStore.currentPage === i + 1 ? (
             <button
               id="result-count-btn"
               key={i}
-              onClick={() => setCurrentPage(i + 1)}
+              onClick={() => resultStore.setCurrentPage(i + 1)}
               className=""
             >
               {i + 1}
@@ -332,22 +163,24 @@ const ResultList = ({ openAddresultsModal, closeAddresultsModal }) => {
           ) : null
         )}
         <button
+          onClick={() =>
+            resultStore.setCurrentPage(resultStore.currentPage + 1)
+          }
+          disabled={resultStore.currentPage === resultStore.totalPages}
           className="result-pagination-button"
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={currentPage === totalPages} // Disable when on the last page
         >
           Next
-        </button>
+        </button>{" "}
       </div>
-      {showEditModal && (
+      {resultStore.showEditModal && (
         <EditResultModel
-          result={editingresult}
+          result={resultStore.editingResult}
           onSave={handleSaveEdit}
           onCancel={handleCancelEdit}
         />
       )}
     </div>
   );
-};
+});
 
 export default ResultList;
