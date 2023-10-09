@@ -9,18 +9,21 @@ class AddSubjectStore {
     subjectName: "",
     courseCode: "",
   };
-
   subjectData = [];
+  SubjectID = "";
   selectedOption = "add-subjects";
   subjectOptions = [];
   rollnoOption = [];
   showAddButton = false;
   multiplerowbtn = false;
+  editORsubmit = false;
+  RestrictAddAnother = false;
   clearFormFields() {
     this.formData.subjectName = "";
     this.formData.courseCode = "";
     validations.errors.subjectName = false;
     validations.errors.courseCode = false;
+    // subjectStore.fetchData();
   }
   constructor() {
     makeObservable(this, {
@@ -31,8 +34,11 @@ class AddSubjectStore {
       rollnoOption: observable,
       showAddButton: observable,
       multiplerowbtn: observable,
+      editORsubmit: observable,
+      RestrictAddAnother: observable,
       setSelectedOption: action,
       showAlert: action,
+      handleSubmit: action,
       setFormData: action,
       setShowAddButton: action,
       fetchSubjects: action,
@@ -50,6 +56,9 @@ class AddSubjectStore {
 
   setFormData(data) {
     this.formData = data;
+    this.SubjectID = data.subjectId;
+    validations.editedFields.subjectName = addSubjectStore.formData.subjectName;
+    validations.editedFields.courseCode = addSubjectStore.formData.courseCode;
   }
 
   setShowAddButton(value) {
@@ -72,6 +81,29 @@ class AddSubjectStore {
       console.error("Error fetching subjects:", error);
     }
   }
+  handleSubmit = async () => {
+    try {
+      const newSubject = {
+        subjectName: this.formData.subjectName,
+        courseCode: this.formData.courseCode,
+      };
+      const success = await this.addSubject(newSubject);
+      if (success) {
+        this.showAlert("Subject added successfully");
+        this.setFormData({
+          subjectName: "",
+          courseCode: "",
+        });
+        validations.errors.subjectName = false;
+        validations.errors.courseCode = false;
+      } else {
+        this.showAlert("Failed to add subject. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error handling submit:", error);
+      this.showAlert("An error occurred while processing the request.");
+    }
+  };
 
   // async fetchRollNo() {
   //   try {

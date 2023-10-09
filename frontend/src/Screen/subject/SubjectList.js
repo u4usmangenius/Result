@@ -1,13 +1,13 @@
-import React, { useEffect, useRef} from "react";
+import React, { useEffect, useRef } from "react";
 import { IoMdTrash } from "react-icons/io";
 import { BiEditAlt } from "react-icons/bi";
-import EditSubjectModel from "./EditSubjectModel";
 import { observer } from "mobx-react-lite";
 import { subjectStore } from "../../store/subjectsStore/SubjectStore";
 import LoadingSpinner from "../../components/loaders/Spinner";
 import Modal from "../model/Modal";
-import "../styles/FormList.css"
-const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
+import "../styles/FormList.css";
+import { addSubjectStore } from "../../store/subjectsStore/addsubjectstore";
+const SubjectList = ({ openAddstudentsModal, closeAddsubjectsModal }) => {
   const inputRef = useRef();
 
   useEffect(() => {
@@ -28,7 +28,9 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
   }, []);
 
   const handleEdit = (subject) => {
-    subjectStore.handleEdit(subject);
+    // subjectStore.handleEdit(subject);
+    addSubjectStore.setFormData(subject);
+    openAddstudentsModal();
   };
 
   const handleSaveEdit = (editedSubject) => {
@@ -45,7 +47,7 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
   const handleRowsPerPageChange = (e) => {
     const newRowsPerPage = parseInt(e.target.value);
     subjectStore.setRowsPerPage(newRowsPerPage);
-    subjectStore.setCurrentPage(1); 
+    subjectStore.setCurrentPage(1);
     subjectStore.fetchData();
   };
   const handlePageChange = (page) => {
@@ -83,9 +85,9 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
           onChange={(e) => {
             subjectStore.setSearchText(e.target.value);
             if (e.target.value === "") {
-              subjectStore.fetchData(); 
+              subjectStore.fetchData();
             } else {
-              subjectStore.handleSearch(); 
+              subjectStore.handleSearch();
             }
           }}
           ref={inputRef}
@@ -156,15 +158,8 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
           Next
         </button>
       </div>
-      {subjectStore.showEditModal && (
-        <EditSubjectModel
-          teacher={subjectStore.editingSubject}
-          onSave={handleSaveEdit}
-          onCancel={handleCancelEdit}
-        />
-      )}
     </div>
   );
 };
 
-export default observer(SubjectList); 
+export default observer(SubjectList);

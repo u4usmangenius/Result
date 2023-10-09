@@ -5,7 +5,6 @@ import { observer } from "mobx-react";
 import Swal from "sweetalert2";
 import { studentsStore } from "../../store/studentsStore/studentsStore";
 import LoadingSpinner from "../../components/loaders/Spinner";
-import EditStudentModal from "./EditedStudentModel";
 import "../styles/FormList.css";
 import { addstudentStore } from "../../store/studentsStore/AddstudentsStore";
 
@@ -63,13 +62,13 @@ const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
 
   const handleEdit = (student) => {
     const subjects = studentSubjects[student.studentId];
-    
+
     // Set student data and selected subjects in the AddStudentStore
     addstudentStore.setStudentData(student, subjects);
     // Open the AddStudent.js modal
     openAddstudentsModal();
   };
-  
+
   const handleSaveEdit = (editedstudent) => {
     studentsStore.handleSaveEdit(editedstudent);
   };
@@ -236,13 +235,6 @@ const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
           </button>
         </div>{" "}
       </div>
-      {studentsStore.showEditModal && (
-        <EditStudentModal
-          student={studentsStore.editingstudent}
-          onSave={handleSaveEdit}
-          onCancel={handleCancelEdit}
-        />
-      )}
     </div>
   );
 };

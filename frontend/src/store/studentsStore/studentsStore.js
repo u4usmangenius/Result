@@ -128,7 +128,7 @@ class StudentsStore {
     this.editingstudent = student;
   }
   handleSaveEdit() {
-    const studentsInfo = {
+    const studentsInfo = {  
       fullName: addstudentStore.formData.fullName,
       className: addstudentStore.formData.className,
       gender: addstudentStore.formData.gender,
@@ -146,7 +146,7 @@ class StudentsStore {
     };
     axios
       .put(
-        `http://localhost:8080/api/students/${studentid}`,
+        `http://localhost:8080/api/students/$ {studentid}`,
         { student: studentsInfo, subjects: subj },
         { headers }
       )

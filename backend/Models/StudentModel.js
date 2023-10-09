@@ -290,96 +290,10 @@ router.post("/api/students", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
-
-// upload multiple students using csv
-router.post("/api/students/upload-csv", verifyToken, (req, res) => {
-  const { csvData } = req.body;
-  if (!csvData.fullName) {
-  }
-
-  if (!Array.isArray(csvData) || csvData.length === 0) {
-    res.status(400).json({ success: false, message: "Invalid CSV data" });
-    return;
-  }
-  for (const data of csvData) {
-    // Check if required properties exist in each object
-    if (
-      !data.fullName ||
-      !data.stdRollNo ||
-      !data.className ||
-      !data.gender ||
-      !data.guard_Phone ||
-      !data.Batch ||
-      !data.stdPhone ||
-      !data.Subject1 ||
-      !data.Subject2 ||
-      !data.Subject3 ||
-      !data.Subject4 ||
-      !data.Subject5 ||
-      !data.Subject6
-    ) {
-      res.status(400).json({ success: false, message: "Invalid CSV data" });
-      return;
-    }
-  }
-
-  // Assuming your CSV columns match the student data fields
-  const studentsToAdd = csvData.map((row) => ({
-    fullName: row.fullName,
-    className: row.className,
-    Batch: row.Batch,
-    gender: row.gender,
-    stdPhone: row.stdPhone,
-    stdRollNo: row.stdRollNo,
-    guard_Phone: row.guard_Phone,
-  }));
-
-  // Now, you can add the multiple students to the database
-  const studentInsertPromises = studentsToAdd.map((student) => {
-    return new Promise((resolve, reject) => {
-      const studentId = crypto.randomUUID();
-      db.run(
-        "INSERT INTO students (studentId, fullName, className, stdRollNo, gender, stdPhone,guard_Phone,Batch) VALUES (?, ?, ?, ?, ?, ?, ?,?)",
-        [
-          studentId,
-          student.fullName,
-          student.className,
-          student.stdRollNo,
-          student.gender,
-          student.stdPhone,
-          student.guard_Phone,
-          student.Batch,
-        ],
-        (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        }
-      );
-    });
-  });
-
-  Promise.all(studentInsertPromises)
-    .then(() => {
-      res.json({ success: true, message: "students inserted successfully" });
-    })
-    .catch((error) => {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    });
-});
-
-// create api for handling multiple data from frontend in array (csv)
 // Route to update a student by ID (excluding password)
 router.put("/api/students/:studentId", verifyToken, async (req, res) => {
   const studentId = req.params.studentId;
-  const {
-    student, 
-    subjects,
-  } = req.body;
+  const { student, subjects } = req.body;
   if (
     !student.fullName ||
     !student.className ||

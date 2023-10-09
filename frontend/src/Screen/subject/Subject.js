@@ -36,7 +36,7 @@ const Subject = () => {
       </Modal>
 
       <SubjectList
-        openAddStudentsModal={openAddStudentsModal}
+        openAddstudentsModal={openAddStudentsModal}
         closeAddStudentsModal={closeAddStudentsModal}
       />
     </>

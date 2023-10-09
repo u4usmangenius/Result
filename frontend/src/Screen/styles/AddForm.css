@@ -13,7 +13,6 @@
   transition: background-color 0.3s ease;
   background: transparent;
   border: none;
-
 }
 
 .addForm-container-option:hover {
@@ -24,8 +23,7 @@
   cursor: not-allowed;
   background-color: transparent;
   color: #000;
-color: #b1adad;
-
+  color: #b1adad;
 }
 .addForm-form-active {
   background-color: #007bff;
@@ -84,7 +82,7 @@ color: #b1adad;
   outline: none;
   width: 230px;
   height: 33px;
-  text-transform: capitalize;
+  /* text-transform: capitalize; */
 }
 .subject-input-select-subject {
   outline: none;
@@ -215,7 +213,7 @@ color: #b1adad;
   outline: none;
   width: 238px;
   height: 39px;
-  text-transform: capitalize;
+  /* text-transform: capitalize; */
 }
 /* import button  */
 .addForm-import-button {
@@ -246,4 +244,11 @@ color: #b1adad;
   width: 20px;
   height: 15px;
   outline: red;
+}
+/* Error Message */
+.steric-error-msg {
+  color: red !important;
+}
+.normal-label {
+  color: #122;
 }

@@ -36,7 +36,6 @@ const AddStudents = ({ onClose }) => {
       addstudentStore.RestrictImportCSV = false;
     }
     addstudentStore.selectedOption = "manually";
-
     addstudentStore.fetchSubjects();
   }, []);
   const handleAddAnotherClick = () => {
@@ -81,8 +80,7 @@ const AddStudents = ({ onClose }) => {
         return;
       }
       if (addstudentStore.editORsubmit) {
-        console.log("studentData----->", studentData);
-        studentsStore.handleSaveEdit(studentData);
+        studentsStore.handleSaveEdit();
       } else {
         handleSubmit();
       }
@@ -362,7 +360,7 @@ const AddStudents = ({ onClose }) => {
             {/* Add student Button */}
             <button className="add-form-button" type="submit">
               <button className="add-Forms-button">
-                {addstudentStore.RestrictImportCSV === true
+                {addstudentStore.RestrictAddAnother === true
                   ? "Update Now"
                   : "Add Now"}
               </button>

@@ -5,13 +5,29 @@ import { observer } from "mobx-react";
 import { addSubjectStore } from "../../store/subjectsStore/addsubjectstore";
 import { validations } from "../../helper.js/SubjectValidationStore";
 import InputMask from "react-input-mask";
+import { subjectStore } from "../../store/subjectsStore/SubjectStore";
 
 const AddSubjects = observer(({ onClose }) => {
   useEffect(() => {
+    if (
+      addSubjectStore.formData.subjectName ||
+      addSubjectStore.formData.courseCode.length > 0
+    ) {
+      addSubjectStore.editORsubmit = true;
+      addSubjectStore.RestrictAddAnother = true;
+      addSubjectStore.RestrictImportCSV = true;
+      subjectStore.fetchData();
+    } else {
+      addSubjectStore.RestrictAddAnother = false;
+      addSubjectStore.RestrictImportCSV = false;
+    }
     addSubjectStore.fetchSubjects();
   }, []);
 
   const handleAddAnotherClick = () => {
+    if (addSubjectStore.RestrictAddAnother) {
+      return;
+    }
     validations.errors.subjectName = false;
     validations.errors.courseCode = false;
     addSubjectStore.clearFormFields();
@@ -29,39 +45,12 @@ const AddSubjects = observer(({ onClose }) => {
     if (!validations.validateForm()) {
       return;
     } else {
-      try {
-        if (addSubjectStore.selectedOption !== "add-subjects") {
-          addSubjectStore.addUsersubject();
-          return;
-        } else {
-          const newSubject = {
-            subjectName: addSubjectStore.formData.subjectName,
-            courseCode: addSubjectStore.formData.courseCode,
-          };
-
-          const success = await addSubjectStore.addSubject(newSubject);
-
-          if (success) {
-            addSubjectStore.showAlert("Subject added successfully");
-            addSubjectStore.setFormData({
-              subjectName: "",
-              courseCode: "",
-            });
-            validations.errors.subjectName = false;
-            validations.errors.courseCode = false;
-            onClose();
-          } else {
-            addSubjectStore.showAlert(
-              "Failed to add subject. Please try again."
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Error handling submit:", error);
-        addSubjectStore.showAlert(
-          "An error occurred while processing the request."
-        );
+      if (addSubjectStore.editORsubmit) {
+        subjectStore.handleSaveEdit();
+      } else {
+        addSubjectStore.handleSubmit();
       }
+      onClose();
     }
   };
 
@@ -141,17 +130,20 @@ const AddSubjects = observer(({ onClose }) => {
             </div>
           </div>
           <div className="addForm-another-btn">
-            <div
+            <button
               className="add-another-form-text"
               onClick={handleAddAnotherClick}
+              disabled={addSubjectStore.RestrictAddAnother === true}
             >
               <div className="add-another-text-icon-btn">
                 <IoMdAddCircle />
               </div>
               Add Another
-            </div>
+            </button>
             <button type="submit" className="add-form-button">
-              Add Now
+              {addSubjectStore.RestrictAddAnother === true
+                ? "Update Now"
+                : "Add Now"}
             </button>
           </div>
         </form>

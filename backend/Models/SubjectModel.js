@@ -8,7 +8,7 @@ const db = require("../db/Sqlite").db;
 router.post("/api/subjects/search", verifyToken, (req, res) => {
   const { searchText, selectedFilter, sortColumn, sortOrder } = req.body;
   const page = parseInt(req.body.page) || 1;
-  const pageSize = parseInt(req.body.pageSize) || 5;
+  const pageSize = parseInt(req.body.pageSize) || 10;
   const filter = req.body.filter || "";
   const search = req.body.search || "";
   const offset = (page - 1) * pageSize;
@@ -69,7 +69,7 @@ router.post("/api/subjects/search", verifyToken, (req, res) => {
 // Router to get paginated subjects with validations
 router.post("/api/subject", verifyToken, (req, res) => {
   const page = parseInt(req.body.page) || 1;
-  const pageSize = parseInt(req.body.pageSize) || 5;
+  const pageSize = parseInt(req.body.pageSize) || 10;
   const filter = req.body.filter || "";
   const search = req.body.search || "";
   const sortColumn = req.body.sortColumn || "subjectName"; // Default sorting column
@@ -204,7 +204,6 @@ router.post("/api/subjects", verifyToken, (req, res) => {
 router.put("/api/subjects/:subjectId", verifyToken, (req, res) => {
   const subjectId = req.params.subjectId;
   const { subjectName, courseCode } = req.body;
-
   // Check if any required field is missing
   if (!subjectName || !courseCode) {
     res

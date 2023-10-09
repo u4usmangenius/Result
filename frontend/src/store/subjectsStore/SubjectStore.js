@@ -1,11 +1,12 @@
 import { makeObservable, observable, action, computed } from "mobx";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { addSubjectStore } from "./addsubjectstore";
 
 class SubjectStore {
   subjects = [];
   currentPage = 1;
-  rowsPerPage = 5;
+  rowsPerPage = 10;
   searchText = "";
   selectedFilter = "all";
   showEditModal = false;
@@ -137,37 +138,44 @@ class SubjectStore {
     this.editingSubject = subject;
   }
 
-  handleSaveEdit(editedSubject) {
-    // Send a PUT request to edit the subject data on the backend
+  handleSaveEdit() {
+    const subjectsInfo = {
+      subjectName: addSubjectStore.formData.subjectName,
+      courseCode: addSubjectStore.formData.courseCode,
+    };
+    const subjectId = addSubjectStore.SubjectID;
     const token = localStorage.getItem("bearer token");
     const headers = {
       Authorization: `${token}`,
     };
     axios
       .put(
-        `http://localhost:8080/api/subjects/${editedSubject.subjectId}`,
-        editedSubject,
-        { headers }
+        `http://localhost:8080/api/subjects/${subjectId}`,
+        {
+          subjectName: subjectsInfo.subjectName,
+          courseCode: subjectsInfo.courseCode,
+        },
+        {
+          headers,
+        }
       )
       .then((response) => {
         if (response.status === 200) {
           const editedSubjectIndex = this.subjects.findIndex(
-            (t) => t.subjectId === editedSubject.subjectId
+            (t) => t.subjectId === subjectId
           );
           const updatedSubjects = [...this.subjects];
           updatedSubjects[editedSubjectIndex] = response.data;
           this.subjects = updatedSubjects;
           this.showEditModal = false;
           this.fetchData();
-          this.showAlert("Updated Successfully")
-        }
-        else if(response.status===400){
+          this.showAlert("Updated Successfully");
+        } else if (response.status === 400) {
           this.showAlert("Please Update some Values");
-
         }
       })
       .catch((error) => {
-        this.showAlert("Error while Updating")
+        this.showAlert("Error while Updating");
         console.error("Error editing subject:", error);
       });
   }
@@ -197,9 +205,11 @@ class SubjectStore {
         this.subjects = this.subjects.filter(
           (t) => t.subjectId !== subject.subjectId
         );
+        this.showAlert("Deleted Successfully...");
         this.fetchData();
       } catch (error) {
         console.error("Error deleting subject:", error);
+        this.showAlert("Error while Deleting...");
       }
     }
   };
