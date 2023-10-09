@@ -1,16 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
-import "./SubjectList.css";
+import React, { useEffect, useRef} from "react";
 import { IoMdTrash } from "react-icons/io";
 import { BiEditAlt } from "react-icons/bi";
 import EditSubjectModel from "./EditSubjectModel";
-import { useNavigate } from "react-router-dom";
-import { observer } from "mobx-react-lite"; // Import MobX observer
+import { observer } from "mobx-react-lite";
 import { subjectStore } from "../../store/subjectsStore/SubjectStore";
 import LoadingSpinner from "../../components/loaders/Spinner";
 import Modal from "../model/Modal";
-
+import "../styles/FormList.css"
 const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
-  const navigate = useNavigate();
   const inputRef = useRef();
 
   useEffect(() => {
@@ -48,13 +45,9 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
   const handleRowsPerPageChange = (e) => {
     const newRowsPerPage = parseInt(e.target.value);
     subjectStore.setRowsPerPage(newRowsPerPage);
-    subjectStore.setCurrentPage(1); // Reset to page 1 when changing rowsPerPage
-    subjectStore.fetchData(); // No need to pass rowsPerPage here
+    subjectStore.setCurrentPage(1); 
+    subjectStore.fetchData();
   };
-  // const handleSearchTextChange = (text) => {
-  //   store.setSearchTerm(text);
-  // };
-
   const handlePageChange = (page) => {
     subjectStore.setCurrentPage(page);
     subjectStore.fetchData();
@@ -71,10 +64,10 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
   };
 
   return (
-    <div className="subject-list-container">
-      <div className="subject-search-bar">
+    <div className="Form-list-container">
+      <div className="Form-search-bar">
         <select
-          className="subject-category"
+          className="Form-search-category"
           value={subjectStore.selectedFilter}
           onChange={(e) => handleFilterChange(e.target.value)}
         >
@@ -84,21 +77,21 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
         </select>
         <input
           type="text"
-          className="subject-text-input"
+          className="FormList-text-input"
           placeholder="Search for a subject"
           value={subjectStore.searchText}
           onChange={(e) => {
             subjectStore.setSearchText(e.target.value);
             if (e.target.value === "") {
-              subjectStore.fetchData(); // Retrieve original data when search input is empty
+              subjectStore.fetchData(); 
             } else {
-              subjectStore.handleSearch(); // Trigger search as the input changes
+              subjectStore.handleSearch(); 
             }
           }}
           ref={inputRef}
         />
         <button
-          className="subject-search-button"
+          className="Form-List-search-button"
           onClick={() => {
             handleSearchTextChange("");
             inputRef.current.focus();
@@ -113,7 +106,7 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
       ) : subjectStore.dataNotFound ? (
         <div>Could not get data</div>
       ) : (
-        <div className="subject-table">
+        <div className="FormList-table">
           <table>
             <thead>
               <tr>
@@ -127,16 +120,16 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
                 <tr key={teacher.subjectId}>
                   <td>{teacher.subjectName}</td>
                   <td>{teacher.courseCode}</td>
-                  <td className="set-teacher-icon">
+                  <td className="FormList-edit-icon">
                     <div
                       onClick={() => handleEdit(teacher)}
-                      className="edit-teacher-icon"
+                      className="FormList-edit-icons"
                     >
-                      <BiEditAlt className="edit-teacher-icon" />
+                      <BiEditAlt className="FormList-edit-icons" />
                     </div>
                     <IoMdTrash
                       onClick={() => handleDelete(teacher)}
-                      className="delete-teacher-icon"
+                      className="FormList-delete-icon"
                     />
                   </td>
                 </tr>
@@ -146,18 +139,18 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
         </div>
       )}
 
-      <div className="pagination-header">
+      <div className="FormList-pagination-header">
         <button
           onClick={() => handlePageChange(subjectStore.currentPage - 1)}
           disabled={subjectStore.currentPage === 1}
-          className="pagination-button"
+          className="FormList-pagination-button"
         >
           Prev
         </button>{" "}
         <div className="page-count">{subjectStore.currentPage}</div>
         <button
           onClick={() => handlePageChange(subjectStore.currentPage + 1)}
-          className="pagination-button"
+          className="FormList-pagination-button"
           disabled={subjectStore.currentPage === subjectStore.totalPages}
         >
           Next
@@ -174,4 +167,4 @@ const SubjectList = ({ openAddsubjectsModal, closeAddsubjectsModal }) => {
   );
 };
 
-export default observer(SubjectList); // Wrap the component with MobX observer
+export default observer(SubjectList); 

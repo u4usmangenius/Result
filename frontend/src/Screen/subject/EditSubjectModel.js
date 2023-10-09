@@ -59,7 +59,7 @@ const EditSubjectModel = observer(({ teacher, onSave, onCancel }) => {
     <form onSubmit={handleSubmit}>
       <div className="editmodal">
         <div className="editmodal-content">
-          <h2>Update Subject</h2>
+          <h2>Edit Subject</h2>
           <div className="editform">
             <div className="editmodal-row">
               <div className="editform-group">

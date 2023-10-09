@@ -55,16 +55,25 @@
 .editform input {
   width: 96%;
   padding: 8px;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
   outline: none;
   /* padding-left: 10px; */
 }
+.Edit-Modal-Select{
+  width:209px;
+  height: 34.2px;
+  outline: none;
+  margin: 0;
+  padding: 0;
+  margin-right: -10px;
 
+}
 .editmodal-buttons {
   /* margin-top: 20px; */
   text-align: right;
   outline: none;
   margin-right: 5px;
+  margin-top: 11px;
 }
 
 .editmodal-buttons button {
@@ -78,8 +87,6 @@
   cursor: pointer;
   width: 71px;
 }
-
-
 
 .editmodal-buttons button:hover {
   transition: 0.3s ease-out;

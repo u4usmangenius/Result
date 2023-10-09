@@ -5,6 +5,7 @@ import { IoMdAddCircle } from "react-icons/io";
 import { addstudentStore } from "../../store/studentsStore/AddstudentsStore";
 import InputMask from "react-input-mask";
 import { validations } from "../../helper.js/StudentsValidationStore";
+import { studentsStore } from "../../store/studentsStore/studentsStore";
 
 const AddStudents = ({ onClose }) => {
   const {
@@ -17,19 +18,43 @@ const AddStudents = ({ onClose }) => {
     handleFileUpload,
     handleMultiRowUpload,
     handleSubmit,
-    showAlert,
   } = addstudentStore;
-
   useEffect(() => {
-    // addstudentStore.clearFormFields();
+    if (
+      addstudentStore.formData.stdRollNo ||
+      addstudentStore.formData.fullName ||
+      addstudentStore.formData.stdPhone ||
+      addstudentStore.formData.guard_Phone ||
+      addstudentStore.formData.Batch ||
+      addstudentStore.selectedSubjects.length > 0
+    ) {
+      addstudentStore.editORsubmit = true;
+      addstudentStore.RestrictAddAnother = true;
+      addstudentStore.RestrictImportCSV = true;
+    } else {
+      addstudentStore.RestrictAddAnother = false;
+      addstudentStore.RestrictImportCSV = false;
+    }
     addstudentStore.selectedOption = "manually";
 
     addstudentStore.fetchSubjects();
   }, []);
   const handleAddAnotherClick = () => {
-    validations.errors.subjectName = false;
-    validations.errors.courseCode = false;
-    addstudentStore.clearFormFields();
+    if (addstudentStore.RestrictAddAnother) {
+      return;
+    } else {
+      validations.errors.subjectName = false;
+      validations.errors.courseCode = false;
+      addstudentStore.clearFormFields();
+    }
+  };
+  const handleCSV = () => {
+    if (addstudentStore.RestrictImportCSV) {
+      return;
+    } else {
+      handleMultiRowUpload();
+    }
+    onClose();
   };
   const handleSubmitNewStudenet = async (e) => {
     e.preventDefault();
@@ -47,13 +72,20 @@ const AddStudents = ({ onClose }) => {
       validations.errors.gender = true;
       validations.errors.className = true;
       validations.errors.Batch = true;
+      validations.errors.subjects = true;
       return;
     } else {
       if (addstudentStore.selectedSubjects.length < 6) {
-        addstudentStore.showAlert("Select 6 Subjects");
+        validations.errors.subjects = true;
+        // addstudentStore.showAlert("Select 6 Subjects");
         return;
       }
-      handleSubmit();
+      if (addstudentStore.editORsubmit) {
+        console.log("studentData----->", studentData);
+        studentsStore.handleSaveEdit(studentData);
+      } else {
+        handleSubmit();
+      }
       onClose();
     }
   };
@@ -62,22 +94,23 @@ const AddStudents = ({ onClose }) => {
     <div className="add-form-content">
       <h2 className="add-form-heading">Add students</h2>
       <div className="add-form-options">
-        <div
+        <button
           className={`addForm-container-option ${
             selectedOption === "manually" ? "addForm-form-active" : ""
           }`}
           onClick={() => handleOptionChange("manually")}
         >
           Manually
-        </div>
-        <div
+        </button>
+        <button
           className={`addForm-container-option ${
             selectedOption === "import-csv" ? "addForm-form-active" : ""
           }`}
           onClick={() => handleOptionChange("import-csv")}
+          disabled={addstudentStore.RestrictImportCSV === true}
         >
           Import CSV
-        </div>
+        </button>
       </div>
       {selectedOption === "manually" ? (
         <form onSubmit={handleSubmitNewStudenet}>
@@ -274,7 +307,22 @@ const AddStudents = ({ onClose }) => {
               />
             </div>
           </div>
+          {/* <h3 className="addForm-h3">Select Subjects</h3> */}
           <h3 className="addForm-h3">Select Subjects</h3>
+          <div
+            className={`addForm-h3 select-6-subjects ${
+              validations.errors.subjects ? "steric-error-msg" : "normal-label"
+            }`}
+          >
+            {validations.errors.subjects &&
+              addstudentStore.formData.Subject1.trim() === "" && (
+                <span className="steric-error-msg"> *</span>
+              ) && (
+                <div className="select-6-subjects-error">
+                  Please select exactly 6 subjects..{" "}
+                </div>
+              )}
+          </div>
           <div className="select-addForm-list">
             <div className="addForm-list-enlist">
               {subjectOptions.map((subject, index) => (
@@ -301,19 +349,22 @@ const AddStudents = ({ onClose }) => {
           </div>
 
           <div className="addForm-another-btn">
-            <div
+            <button
               className="add-another-form-text"
               onClick={handleAddAnotherClick}
+              disabled={addstudentStore.RestrictAddAnother === true}
             >
               <div className="add-another-text-icon-btn">
                 <IoMdAddCircle />
               </div>
               Add Another
-            </div>
+            </button>
             {/* Add student Button */}
             <button className="add-form-button" type="submit">
               <button className="add-Forms-button">
-                {addstudentStore.editingIndex !== -1 ? "Save Edit" : "Add Now"}
+                {addstudentStore.RestrictImportCSV === true
+                  ? "Update Now"
+                  : "Add Now"}
               </button>
             </button>
           </div>
@@ -329,7 +380,7 @@ const AddStudents = ({ onClose }) => {
           {multiplerowbtn && (
             <button
               className="add-form-button addForm-import-csv-btn"
-              onClick={handleMultiRowUpload}
+              onClick={handleCSV}
             >
               Add Now
             </button>
@@ -369,11 +420,7 @@ const AddStudents = ({ onClose }) => {
                 e.preventDefault();
                 handleSubmit();
               }}
-            >
-              {addstudentStore.editingIndex !== -1
-                ? "Save Edit"
-                : "Add student"}
-            </button>
+            ></button>
           </div>
         </div>
       )}

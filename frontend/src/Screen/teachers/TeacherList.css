@@ -102,42 +102,6 @@
   background-color: #ddd;
 }
 
-/* Pagination Buttons */
-.pagination-header{
-  display: flex;
-  margin-top: 20px;
-  align-items: center;
-  justify-content:flex-start;
-  flex-direction: row;
-  gap: 20px;
-}
-.page-count{
-font-size: 25px;
-}
-.pagination-button {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin: 0 5px; /* Add margin between buttons */
-  width: 121px;
-  height: 41px;
-}
-.pagination-button:hover{
-  background-color: #0056b3;
-}
-
-/* Disable the Prev and Next buttons */
-.pagination-button[disabled] {
-  background-color: #ccc !important; /* Use !important to override other styles */
-  cursor: not-allowed;
-}
-
-/* Style the active page button */
-.pagination-button.active {
-  background-color: #0056b3;
-}
 
 /* Style the Cancel and Save buttons */
 .edit-button {
@@ -172,14 +136,6 @@ font-size: 25px;
 /* #teacher-count-btn:active{
     width: 220px;
   } */
-.set-teacher-icon {
-  display: flex;
-  align-items: flex-start;
-  gap: 3px;
-  justify-content: flex-start;
-  flex-direction: row;
-  font-size: 23px;
-}
 .save-teacher-icon {
   cursor: pointer;
 }
@@ -194,13 +150,6 @@ font-size: 25px;
 .cancel-teacher-icon:hover {
   background-color: rgb(185, 18, 18);
   color: #fff;
-}
-.edit-teacher-icon {
-  cursor: pointer;
-  width: 30px;
-}
-.delete-teacher-icon {
-  cursor: pointer;
 }
 
 /* Add a media query for screens between 850px and 1000px */
@@ -233,21 +182,10 @@ font-size: 25px;
   }
 
   /* Style the pagination buttons */
-  .pagination-button {
-    padding: 5px 10px;
-    margin: 0 3px; /* Add some spacing between buttons */
-  }
-
   /* Style the edit and delete buttons */
   .edit-button,
-  .delete-teacher-icon {
+  .FormList-delete-icon {
     font-size: 20px; /* Adjust the icon size as needed */
     margin-right: 5px; /* Add some spacing */
   }
-}
-.edit-teacher-icon{
-  color:#0067d5;
-}
-.delete-teacher-icon{
-  color: red;
 }

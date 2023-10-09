@@ -8,13 +8,24 @@
 .addForm-container-option {
   cursor: pointer;
   padding: 10px;
-  border-radius: 8px;
+  width: 93px;
+  border-radius: 5px;
   transition: background-color 0.3s ease;
+  background: transparent;
+  border: none;
+
 }
 
 .addForm-container-option:hover {
   background-color: #007bff;
   color: #fff;
+}
+.addForm-container-option[disabled] {
+  cursor: not-allowed;
+  background-color: transparent;
+  color: #000;
+color: #b1adad;
+
 }
 .addForm-form-active {
   background-color: #007bff;
@@ -112,8 +123,22 @@
   position: relative;
   display: flex;
   align-items: flex-start;
-  justify-content: flex-start;  
+  justify-content: flex-start;
+  /* margin-bottom: 14px; */
 }
+.select-6-subjects {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.select-6-subjects-error {
+  font-size: 12px;
+  margin: 0px;
+  margin-top: -19px;
+  margin-bottom: 8px;
+}
+
 .addForm-list-enlist {
   display: flex;
   flex-wrap: wrap;
@@ -129,6 +154,11 @@
   flex-direction: row;
   font-size: 15px;
   cursor: pointer;
+  border: none;
+  background: transparent;
+}
+.add-another-form-text[disabled] {
+  cursor: not-allowed;
 }
 .add-another-text-icon-btn {
   font-size: 20px;
@@ -151,15 +181,16 @@
   border-radius: 5px;
   height: 44px;
 }
-.add-Forms-button{
-    background: transparent;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    outline: none;
+.add-Forms-button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  outline: none;
+  font-size: 17px;
 }
-.add-subject-button{
-    border-radius: 5px !important;
+.add-subject-button {
+  border-radius: 5px !important;
 }
 .add-form-button {
   background-color: #007bff;
@@ -169,22 +200,22 @@
   font-size: 15px;
   cursor: pointer;
   outline: none;
-  height: 37px;
+  height: 41px;
   border-radius: 5px;
   padding: 3px;
-  width: 111px;
-  /* margin-top: 10px; */
+  width: 141px;
 }
-.addForm-import-csv-btn{
-    margin-top: 10px;
+.add-form-button:hover {
+  background-color: #0056b3;
+}
+.addForm-import-csv-btn {
+  margin-top: 10px;
 }
 .addForm-input-select {
   outline: none;
   width: 238px;
   height: 39px;
   text-transform: capitalize;
-
-  
 }
 /* import button  */
 .addForm-import-button {
@@ -207,7 +238,7 @@
   flex-direction: row;
   gap: 2px;
   align-items: center;
-  margin-right: 30px;
+  margin-right: 17px;
   margin-bottom: 10px;
   outline: none;
 }

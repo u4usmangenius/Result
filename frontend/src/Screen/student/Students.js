@@ -32,9 +32,13 @@ const Students = () => {
         <AddStudents onClose={closeAddStudentsModal} />
       </Modal>
 
-      <StudentList
+      {/* <StudentList
         openAddStudentsModal={openAddStudentsModal}
         closeAddStudentsModal={closeAddStudentsModal}
+      /> */}
+      <StudentList
+        openAddstudentsModal={openAddStudentsModal}
+        closeAddstudentsModal={closeAddStudentsModal}
       />
     </>
   );

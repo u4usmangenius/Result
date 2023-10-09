@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import "./TeacherList.css";
 import { IoMdTrash } from "react-icons/io";
 import { BiEditAlt } from "react-icons/bi";
 import { observer } from "mobx-react";
@@ -7,6 +6,7 @@ import EditTeacherModal from "./EditTeacherModal";
 import Swal from "sweetalert2";
 import { teachersStore } from "../../store/teachersStore/TeachersStore";
 import LoadingSpinner from "../../components/loaders/Spinner";
+import "../styles/FormList.css";
 
 const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
   useEffect(() => {
@@ -72,10 +72,10 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
   };
 
   return (
-    <div className="teacher-list-container">
-      <div className="search-bar">
+    <div className="Form-list-container">
+      <div className="Form-search-bar">
         <select
-          className="category"
+          className="Form-search-category"
           value={teachersStore.selectedFilter}
           onChange={(e) => teachersStore.setSelectedFilter(e.target.value)}
         >
@@ -99,12 +99,12 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
             }
           }}
         />
-        <button className="search-button" onClick={handleSearch}>
+        <button className="Form-List-search-button" onClick={handleSearch}>
           Search
         </button>
       </div>
 
-      <div className="teacher-table">
+      <div className="FormList-table">
         {teachersStore.loading ? (
           <LoadingSpinner />
         ) : teachersStore.dataNotFound ? (
@@ -127,16 +127,16 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
                   <td>{teacher.subject}</td>
                   <td>{teacher.gender}</td>
                   <td>{teacher.phone}</td>
-                  <td className="set-teacher-icon">
+                  <td className="FormList-edit-icon">
                     <div
                       onClick={() => handleEdit(teacher)}
-                      className="edit-teacher-icon"
+                      className="FormList-edit-icons"
                     >
-                      <BiEditAlt className="edit-teacher-icon" />
+                      <BiEditAlt className="FormList-edit-icons" />
                     </div>
                     <IoMdTrash
                       onClick={() => handleDelete(teacher)}
-                      className="delete-teacher-icon"
+                      className="FormList-delete-icon"
                     />
                   </td>
                 </tr>
@@ -144,9 +144,9 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
             </tbody>
           </table>
         )}
-        <div className="pagination-header">
+        <div className="FormList-pagination-header">
           <button
-            className="pagination-button"
+            className="FormList-pagination-button"
             onClick={handlePrevPage}
             disabled={teachersStore.currentPage === 1 || teachersStore.loading}
           >
@@ -154,7 +154,7 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
           </button>
           <div className="page-count">{teachersStore.currentPage}</div>
           <button
-            className="pagination-button"
+            className="FormList-pagination-button"
             onClick={handleNextPage}
             disabled={
               teachersStore.currentPage === teachersStore.totalPages ||

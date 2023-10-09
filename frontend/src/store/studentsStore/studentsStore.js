@@ -1,11 +1,12 @@
 import { makeObservable, observable, action, computed } from "mobx";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { addstudentStore } from "./AddstudentsStore";
 
 class StudentsStore {
   students = [];
   currentPage = 1;
-  rowsPerPage = 5;
+  rowsPerPage = 10;
   searchText = "";
   selectedFilter = "all";
   showEditModal = false;
@@ -24,10 +25,10 @@ class StudentsStore {
       editingstudent: observable,
       totalPages: observable,
       loading: observable,
-      filteredstudents: computed,
-      handleSearch:action,
-      setCurrentPage: action,
       setSearchText: action,
+      filteredstudents: computed,
+      handleSearch: action,
+      setCurrentPage: action,
       setSelectedFilter: action,
       fetchData: action,
       handleEdit: action,
@@ -87,7 +88,6 @@ class StudentsStore {
     }
   };
 
- 
   async fetchData() {
     try {
       this.setLoading(true);
@@ -127,31 +127,44 @@ class StudentsStore {
     this.showEditModal = true;
     this.editingstudent = student;
   }
+  handleSaveEdit() {
+    const studentsInfo = {
+      fullName: addstudentStore.formData.fullName,
+      className: addstudentStore.formData.className,
+      gender: addstudentStore.formData.gender,
+      stdRollNo: addstudentStore.formData.stdRollNo,
+      stdPhone: addstudentStore.formData.stdPhone,
+      Batch: addstudentStore.formData.Batch,
+      guard_Phone: addstudentStore.formData.guard_Phone,
+    };
 
-  handleSaveEdit(editedstudent) {
+    const subj = addstudentStore.selectedSubjects;
+    const studentid = addstudentStore.StudentID;
     const token = localStorage.getItem("bearer token");
     const headers = {
       Authorization: `${token}`,
     };
     axios
       .put(
-        `http://localhost:8080/api/students/${editedstudent.studentId}`,
-        editedstudent,
+        `http://localhost:8080/api/students/${studentid}`,
+        { student: studentsInfo, subjects: subj },
         { headers }
       )
       .then((response) => {
         if (response.status === 200) {
-          const editedstudentIndex = this.students.findIndex(
-            (t) => t.studentId === editedstudent.studentId
+          const editedStudentIndex = this.students.findIndex(
+            (t) => t.studentId === studentid
           );
-          const updatedstudents = [...this.students];
-          updatedstudents[editedstudentIndex] = response.data;
-          this.students = updatedstudents;
+          const updatedStudents = [...this.students];
+          updatedStudents[editedStudentIndex] = response.data;
+          this.students = updatedStudents;
           this.showEditModal = false;
+          this.showAlert("Updated Successfully...");
           this.fetchData();
         }
       })
       .catch((error) => {
+        this.showAlert("Something went wrong");
         console.error("Error editing student:", error);
       });
   }
@@ -183,8 +196,10 @@ class StudentsStore {
           (t) => t.studentId !== student.studentId
         );
         this.fetchData();
+        this.showAlert(`Student Deleted Successfully`);
       } catch (error) {
         console.error("Error deleting student:", error);
+        this.showAlert(`Error While Deleting Student`);
       }
     }
   };

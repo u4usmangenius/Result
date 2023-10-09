@@ -7,6 +7,13 @@ const {
   checkStudentSubjectExists,
   fetchSubjectId,
   insertStudentSubject,
+  fetchStudentById,
+  deleteStudent,
+  deleteStudentSubjects,
+  updateStudent,
+  updateStudentSubjects,
+  arraysEqual,
+  getStudentSubjects,
 } = require("./StudentHelper");
 // searching data api
 router.post("/api/students/search", verifyToken, (req, res) => {
@@ -61,7 +68,7 @@ router.post("/api/students/search", verifyToken, (req, res) => {
 // Router to get paginated students with validations
 router.post("/api/student", verifyToken, (req, res) => {
   const page = parseInt(req.body.page) || 1;
-  const pageSize = parseInt(req.body.pageSize) || 5;
+  const pageSize = parseInt(req.body.pageSize) || 10;
   const filter = req.body.filter || "";
   const search = req.body.search || "";
   const sortColumn = req.body.sortColumn || "fullName"; // Default sorting column
@@ -137,129 +144,161 @@ router.post("/api/student", verifyToken, (req, res) => {
 
 // add students with subjects in subject table
 router.post("/api/students", verifyToken, async (req, res) => {
-  const {
-    fullName,
-    className,
-    stdRollNo,
-    gender,
-    stdPhone,
-    guard_Phone,
-    Batch,
-    subjects, // Assuming subjects is an array of subject names
-  } = req.body;
+  try {
+    const { csvData } = req.body;
+    let uploadedCount = 0;
+    let skippedCount = 0;
+    let matchCount = 0; // Initialize matchCount to 0
 
-  // Check if any required field is missing
-  if (
-    !fullName ||
-    !className ||
-    !gender ||
-    !stdRollNo ||
-    !Batch ||
-    !subjects ||
-    subjects.length !== 6 // Ensure there are exactly 6 subjects
-  ) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid request data" });
-  }
-  // Generate a UUID for studentId
+    // Create a map to store the counts of each unique combination of roll number and className
+    const rollClassNameCounts = new Map();
 
-  const studentExistsQuery =
-    "SELECT COUNT(*) as count FROM students WHERE stdRollNo = ? AND className = ?";
-  db.get(studentExistsQuery, [stdRollNo, className], async (err, result) => {
-    if (err) {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    } else {
-      const studentCount = result.count;
+    for (const studentData of csvData) {
+      const {
+        fullName,
+        className,
+        stdRollNo,
+        gender,
+        stdPhone,
+        guard_Phone,
+        Batch,
+        subjects,
+      } = studentData;
 
-      if (studentCount > 0) {
-        return res.status(409).json({
-          success: false,
-          message: `Student with the same roll number already exists in class ${className}`,
-        });
-      } else {
-        // Continue with the insertion process
-        const studentId = crypto.randomUUID();
-
-        // Insert student information into the students table
-        db.run(
-          "INSERT INTO students (studentId, fullName, className, stdRollNo, gender, stdPhone, guard_Phone, Batch) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-          [
-            studentId,
-            fullName,
-            className,
-            stdRollNo,
-            gender,
-            stdPhone,
-            guard_Phone,
-            Batch,
-          ],
-          async (err) => {
-            if (err) {
-              res.status(500).json({
-                success: false,
-                message: "Internal herererer server error",
-              });
-            } else {
-              try {
-                // Insert subjects into the student_subject table for this student
-                for (const subjectName of subjects) {
-                  // Check if the same roll number and subject already exist in student_subject
-                  const studentSubjectCount = await checkStudentSubjectExists(
-                    stdRollNo,
-                    subjectName
-                  );
-
-                  if (studentSubjectCount === 0) {
-                    const std_subjectId = crypto.randomUUID();
-
-                    // Fetch subjectId from the subjects table
-                    const subjectRow = await fetchSubjectId(subjectName);
-
-                    if (subjectRow) {
-                      const subjectId = subjectRow.subjectId;
-
-                      // Insert data into the student_subject table
-                      await insertStudentSubject(
-                        std_subjectId,
-                        studentId,
-                        subjectId,
-                        stdRollNo,
-                        subjectName
-                      );
-                    }
-                  }
-                }
-
-                res.json({
-                  success: true,
-                  message: "Student and subjects inserted successfully",
-                });
-              } catch (error) {
-                res
-                  .status(500)
-                  .json({ success: false, message: "Internal server error" });
-              }
-            }
-          }
-        );
+      // Validate student data as before
+      if (
+        !fullName ||
+        !className ||
+        !gender ||
+        !stdRollNo ||
+        !Batch ||
+        !subjects ||
+        subjects.length !== 6
+      ) {
+        console.error("Invalid request data:", studentData);
+        continue; // Skip this row and continue with the next one
       }
+
+      // Check if a student with the same roll number and class name already exists in the database
+      const studentExistsQuery =
+        "SELECT COUNT(*) as count FROM students WHERE stdRollNo = ? AND className = ?";
+
+      let shouldSkip = false;
+
+      await new Promise((resolve, reject) => {
+        db.get(studentExistsQuery, [stdRollNo, className], (err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            const studentCount = result.count;
+
+            if (studentCount > 0) {
+              console.error(
+                `Student with the same roll number already exists in class ${className}:`,
+                studentData
+              );
+              skippedCount++;
+              shouldSkip = true;
+              // Increment matchCount when a match is found
+              matchCount++;
+            }
+            resolve();
+          }
+        });
+      });
+
+      // Check if this combination of roll number and className is already counted
+      const rollClassNameKey = stdRollNo + className;
+      const existingCount = rollClassNameCounts.get(rollClassNameKey) || 0;
+      rollClassNameCounts.set(rollClassNameKey, existingCount + 1);
+
+      if (shouldSkip) {
+        continue;
+      }
+
+      const studentId = crypto.randomUUID();
+
+      await db.run(
+        "INSERT INTO students (studentId, fullName, className, stdRollNo, gender, stdPhone, guard_Phone, Batch) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+          studentId,
+          fullName,
+          className,
+          stdRollNo,
+          gender,
+          stdPhone,
+          guard_Phone,
+          Batch,
+        ]
+      );
+
+      const subjectNames = subjects
+        .join(",")
+        .split(",")
+        .map((subject) => subject.trim())
+        .filter((subject) => subject !== "");
+
+      if (subjectNames.length !== 6) {
+        console.error("Invalid subjects:", subjectNames);
+        continue;
+      }
+      for (const subjectName of subjectNames) {
+        const subjectRow = await fetchSubjectId(subjectName);
+
+        if (subjectRow) {
+          const subjectId = subjectRow.subjectId;
+
+          const std_subjectId = crypto.randomUUID();
+          await insertStudentSubject(
+            std_subjectId,
+            studentId,
+            subjectId,
+            stdRollNo,
+            subjectName
+          );
+        } else {
+          console.error(
+            `Subject not found in the subjects table: ${subjectName}`
+          );
+        }
+      }
+
+      uploadedCount++;
     }
-  });
-}); // upload multiple students using csv
+
+    // Check if all rows have the same roll number and className or if all rows are duplicated
+    if (
+      (matchCount === csvData.length && csvData.length > 0) ||
+      (csvData.length > 0 &&
+        Array.from(rollClassNameCounts.values()).every((count) => count > 1))
+    ) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "All rows have the same roll number and class name or all rows are duplicated.",
+      });
+    }
+
+    const responseMessage = `Uploaded ${uploadedCount} students, skipped ${skippedCount} duplicates.`;
+
+    res.json({
+      success: true,
+      message: responseMessage,
+    });
+  } catch (error) {
+    console.error("Error uploading students:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// upload multiple students using csv
 router.post("/api/students/upload-csv", verifyToken, (req, res) => {
   const { csvData } = req.body;
-
-  // Check if the required CSV data is provided
   if (!csvData.fullName) {
-    console.log("nahi full name mila gaya", csvData.fullName);
   }
 
   if (!Array.isArray(csvData) || csvData.length === 0) {
     res.status(400).json({ success: false, message: "Invalid CSV data" });
-    console.log("nahi mila 1st");
     return;
   }
   for (const data of csvData) {
@@ -280,7 +319,6 @@ router.post("/api/students/upload-csv", verifyToken, (req, res) => {
       !data.Subject6
     ) {
       res.status(400).json({ success: false, message: "Invalid CSV data" });
-      console.log("nahi mila 2nd a&&&&&&&&&&&&&&& always");
       return;
     }
   }
@@ -336,27 +374,20 @@ router.post("/api/students/upload-csv", verifyToken, (req, res) => {
 
 // create api for handling multiple data from frontend in array (csv)
 // Route to update a student by ID (excluding password)
-router.put("/api/students/:studentId", verifyToken, (req, res) => {
+router.put("/api/students/:studentId", verifyToken, async (req, res) => {
   const studentId = req.params.studentId;
   const {
-    fullName,
-    className,
-    stdRollNo,
-    gender,
-    stdPhone,
-    Batch,
-    guard_Phone,
+    student, 
+    subjects,
   } = req.body;
-
-  // Check if any required field is missing
   if (
-    !fullName ||
-    !className ||
-    !gender ||
-    !stdRollNo ||
-    !stdPhone ||
-    !Batch ||
-    !guard_Phone
+    !student.fullName ||
+    !student.className ||
+    !student.gender ||
+    !student.stdRollNo ||
+    !student.stdPhone ||
+    !student.Batch ||
+    !student.guard_Phone
   ) {
     res
       .status(400)
@@ -364,100 +395,83 @@ router.put("/api/students/:studentId", verifyToken, (req, res) => {
     return;
   }
 
-  // Check if the student with the specified ID exists
-  db.get(
-    "SELECT * FROM students WHERE studentId = ?",
-    [studentId],
-    (err, row) => {
-      if (err) {
-        res
-          .status(500)
-          .json({ success: false, message: "Internal server error" });
-      } else if (!row) {
-        res.status(404).json({ success: false, message: "student not found" });
-      } else {
-        // Check if the new data is different from the existing data
-        if (
-          fullName === row.fullName &&
-          className === row.subject &&
-          stdRollNo === row.stdRollNo &&
-          gender === row.gender &&
-          Batch === row.gender &&
-          guard_Phone === row.guard_Phone &&
-          stdPhone === row.stdPhone
-        ) {
-          res.status(400).json({
-            success: false,
-            message: "No changes detected. student data remains the same",
-          });
-        } else {
-          // Update the student's information (excluding password)
-          db.run(
-            "UPDATE students SET fullName=?, className=?, stdRollNo=?, gender=?,stdPhone=?, guard_Phone=?, Batch=? WHERE studentId=?",
-            [
-              fullName,
-              className,
-              stdRollNo,
-              gender,
-              stdPhone,
-              guard_Phone,
-              Batch,
-              studentId,
-            ],
-            (err) => {
-              if (err) {
-                res
-                  .status(500)
-                  .json({ success: false, message: "Internal server error" });
-              } else {
-                res.json({
-                  success: true,
-                  message: "student updated successfully",
-                });
-              }
-            }
-          );
-        }
-      }
+  try {
+    const existingStudent = await fetchStudentById(studentId);
+
+    if (!existingStudent) {
+      res.status(404).json({ success: false, message: "Student not found" });
+      return;
     }
-  );
+
+    // Check if the new data is different from the existing data
+    const studentInfoChanged =
+      student.fullName !== existingStudent.fullName ||
+      student.className !== existingStudent.className ||
+      student.stdRollNo !== existingStudent.stdRollNo ||
+      student.gender !== existingStudent.gender ||
+      student.Batch !== existingStudent.Batch ||
+      student.guard_Phone !== existingStudent.guard_Phone ||
+      student.stdPhone !== existingStudent.stdPhone;
+
+    // Check if there is a change in subjects
+    const existingSubjects = await getStudentSubjects(studentId);
+    const subjectsChanged = !arraysEqual(existingSubjects, subjects);
+
+    // Check if the subjects sent from the frontend exist in the subjects table
+    const subjectIds = [];
+    for (const subjectName of subjects) {
+      const subjectRow = await fetchSubjectId(subjectName);
+      if (!subjectRow) {
+        res.status(400).json({
+          success: false,
+          message: `Subject '${subjectName}' does not exist in the subjects table`,
+        });
+        return;
+      }
+      subjectIds.push(subjectRow.subjectId);
+    }
+
+    if (studentInfoChanged || subjectsChanged) {
+      // Update the student's information (excluding password)
+      await updateStudent(studentId, student);
+
+      // Update subjects in student_subject table
+      await updateStudentSubjects(studentId, subjects);
+
+      res.json({
+        success: true,
+        message: "Student updated successfully",
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "No changes detected. Student data remains the same",
+      });
+    }
+  } catch (error) {
+    console.error("Error updating student:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
-// Route to delete a student by ID
-router.delete("/api/students/:studentId", verifyToken, (req, res) => {
+// Route to delete a student by ID with his subjects
+router.delete("/api/students/:studentId", verifyToken, async (req, res) => {
   const studentId = req.params.studentId;
 
-  // Check if the student with the specified ID exists
-  db.get(
-    "SELECT * FROM students WHERE studentId = ?",
-    [studentId],
-    (err, row) => {
-      if (err) {
-        res
-          .status(500)
-          .json({ success: false, message: "Internal server error" });
-      } else if (!row) {
-        res.status(404).json({ success: false, message: "student not found" });
-      } else {
-        // Delete the student from the database
-        db.run(
-          "DELETE FROM students WHERE studentId = ?",
-          [studentId],
-          (err) => {
-            if (err) {
-              res
-                .status(500)
-                .json({ success: false, message: "Internal server error" });
-            } else {
-              res.json({
-                success: true,
-                message: "student deleted successfully",
-              });
-            }
-          }
-        );
-      }
-    }
-  );
-});
+  try {
+    const studentRow = await fetchStudentById(studentId);
 
+    if (!studentRow) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found" });
+    }
+    await deleteStudent(studentId);
+    await deleteStudentSubjects(studentId);
+
+    res.json({ success: true, message: "Student deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
 module.exports = router;

@@ -17,6 +17,7 @@ class Validations {
     className: false,
     Batch: false,
     hasError: false,
+    subjects: false,
   };
 
   constructor() {
