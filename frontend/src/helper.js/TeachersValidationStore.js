@@ -1,22 +1,19 @@
-import { makeObservable, observable, action, computed } from "mobx";
+import { makeObservable, observable, action } from "mobx";
 
 class Validations {
   editedFields = {
-    Name: "",
-    rollNo: "",
+    phone: "",
+    fullName: "",
     gender: "Select Gender",
-    className: "Select Class",
-    Batch: "",
+    subject: "Select Subject",
   };
 
   errors = {
-    Name: false,
-    rollNo: false,
+    phone: false,
     gender: false,
-    className: false,
-    Batch: false,
+    subject: false,
     hasError: false,
-    subjects: false,
+    fullName: false,
   };
 
   constructor() {
@@ -34,39 +31,33 @@ class Validations {
   validateForm() {
     let isValid = true;
     this.errors = {
-      Name: false,
-      rollNo: false,
+      phone: false,
       gender: false,
-      className: false,
-      Batch: false,
+      subject: false,
       hasError: false,
+      fullName: false,
     };
-    if (!this.editedFields.Name.trim()) {
-      this.errors.Name = true;
+    if (!this.editedFields.fullName.trim()) {
+      this.errors.fullName = true;
       this.errors.hasError = true;
       isValid = false;
     }
-    if (!this.editedFields.rollNo.trim()) {
-      this.errors.rollNo = true;
+    if (!this.editedFields.phone.trim()) {
+      this.errors.phone = true;
       this.errors.hasError = true;
+      isValid = false;
     }
     if (this.editedFields.gender.trim() === "Select Gender") {
       this.errors.gender = true;
       this.errors.hasError = true;
       isValid = false;
     }
-    if (this.editedFields.className.trim() === "Select Class") {
-      this.errors.className = true;
+    if (this.editedFields.subject.trim() === "Select Subject") {
+      this.errors.subject = true;
       this.errors.hasError = true;
       isValid = false;
     }
-    if (!this.editedFields.Batch.trim()) {
-      this.errors.Batch = true;
-      this.errors.hasError = true;
-    }
-
     this.errors.hasError = !isValid;
-
     return isValid;
   }
 }

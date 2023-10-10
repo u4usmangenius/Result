@@ -3,14 +3,15 @@ import "./Modal.css";
 import { AiFillCloseCircle } from "react-icons/ai";
 import { addSubjectStore } from "../../store/subjectsStore/addsubjectstore";
 import { validations } from "../../helper.js/SubjectValidationStore";
-import {addstudentStore} from "../../store/studentsStore/AddstudentsStore.js"
+import { addstudentStore } from "../../store/studentsStore/AddstudentsStore.js";
+import { addTeacherStore } from "../../store/teachersStore/AddTeacherStore";
 const Modal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
   const handleOnClose = () => {
     addSubjectStore.clearFormFields();
     addstudentStore.clearFormFields();
-  
-    
+    addTeacherStore.clearFormFields();
+
     onClose();
   };
   return (

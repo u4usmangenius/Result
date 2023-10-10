@@ -73,10 +73,17 @@ const AddStudents = ({ onClose }) => {
       validations.errors.Batch = true;
       validations.errors.subjects = true;
       return;
+    }
+    if (
+      addstudentStore.formData.gender === "Select Gender" ||
+      addstudentStore.formData.className === "Select Class"
+    ) {
+      validations.errors.gender = true;
+      validations.errors.className = true;
+      return;
     } else {
       if (addstudentStore.selectedSubjects.length < 6) {
         validations.errors.subjects = true;
-        // addstudentStore.showAlert("Select 6 Subjects");
         return;
       }
       if (addstudentStore.editORsubmit) {
@@ -87,7 +94,6 @@ const AddStudents = ({ onClose }) => {
       onClose();
     }
   };
-
   return (
     <div className="add-form-content">
       <h2 className="add-form-heading">Add students</h2>

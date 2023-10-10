@@ -3,16 +3,21 @@ import { makeObservable, observable, action } from "mobx";
 import Swal from "sweetalert2"; // Import Swal (SweetAlert)
 import Papa from "papaparse";
 import { teachersStore } from "./TeachersStore";
+import { validations } from "../../helper.js/TeachersValidationStore";
 
 class AddTeacherStore {
   showAddButton = false;
+  TeacherID = "";
   currentPage = 1;
   rowsPerPage = 8;
   selectedOption = "manually";
   teacherData = [];
+  subjectOptions = [];
   editingIndex = -1;
   multiplerowbtn = false;
-  subjectOptions = [];
+  editORsubmit = false;
+  RestrictAddAnother = false;
+  RestrictImportCSV = false;
   formData = {
     fullName: "",
     phone: "",
@@ -23,7 +28,11 @@ class AddTeacherStore {
     this.formData.fullName = "";
     this.formData.phone = "";
     this.formData.gender = "Select Gender";
-    this.formData.subject = "";
+    this.formData.subject = "Select Subject";
+    validations.errors.fullName = false;
+    validations.errors.phone = false;
+    validations.errors.gender = false;
+    validations.errors.subject = false;
   }
   constructor() {
     this.teacherData = [];
@@ -37,6 +46,9 @@ class AddTeacherStore {
       multiplerowbtn: observable,
       subjectOptions: observable,
       formData: observable,
+      editORsubmit: observable,
+      RestrictAddAnother: observable,
+      RestrictImportCSV: observable,
       //   handleOptionChange: action,
       handleFileUpload: action,
       handleMultiRowUpload: action,
@@ -44,6 +56,22 @@ class AddTeacherStore {
       showAlert: action, // Add the showAlert action
       fetchSubjects: action,
     });
+  }
+
+  setTeacherData(teacher) {
+    const data = { ...teacher };
+    this.formData.fullName = data.fullName;
+    this.formData.gender = data.gender;
+    this.formData.phone = data.phone;
+    this.formData.subject = data.subject;
+    this.StudentID = teacher.teacherId;
+
+    validations.errors.fullName = false;
+    validations.errors.gender = false;
+    validations.errors.phone = false;
+    validations.errors.subject = false;
+    console.log(this.formData);
+    console.log(this.StudentID);
   }
 
   // Define the showAlert action
@@ -264,6 +292,7 @@ class AddTeacherStore {
         this.formData.subject === "Select Subject"
       ) {
         this.showAlert("Please fill all fields.");
+        this.clearFormFields();
         return;
       }
       const newTeacher = {

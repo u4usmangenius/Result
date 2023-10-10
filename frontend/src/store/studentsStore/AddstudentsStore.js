@@ -403,6 +403,7 @@ class AddStudentStore {
         this.formData.gender === "Select Gender"
       ) {
         this.showAlert("Please fill all fields.");
+        this.clearFormFields();
         return;
       }
       if (this.formData.stdPhone === "") {

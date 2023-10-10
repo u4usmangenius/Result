@@ -39,7 +39,7 @@ const Teachers = () => {
       </Modal>
 
       <TeacherList
-        openAddTeachersModal={openAddTeachersModal}
+        openAddstudentsModal={openAddTeachersModal}
         closeAddTeachersModal={closeAddTeachersModal}
       />
     </TeachersContext.Provider>

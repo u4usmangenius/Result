@@ -1,14 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { IoMdTrash } from "react-icons/io";
 import { BiEditAlt } from "react-icons/bi";
 import { observer } from "mobx-react";
-import EditTeacherModal from "./EditTeacherModal";
 import Swal from "sweetalert2";
 import { teachersStore } from "../../store/teachersStore/TeachersStore";
 import LoadingSpinner from "../../components/loaders/Spinner";
 import "../styles/FormList.css";
+import { addTeacherStore } from "../../store/teachersStore/AddTeacherStore";
 
-const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
+const TeacherList = ({ openAddstudentsModal, closeAddTeachersModal }) => {
+  const inputRef = useRef();
+
   useEffect(() => {
     const fetchData = async () => {
       teachersStore.setLoading(true);
@@ -30,12 +32,13 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
     teachersStore.setSort(column, order);
     teachersStore.fetchData();
   };
-  const showAlert = (message) => {
-    Swal.fire(message);
+  const handleSearchTextChange = (text) => {
+    teachersStore.setSearchText(text);
   };
-
   const handleEdit = (teacher) => {
-    teachersStore.handleEdit(teacher);
+    // teachersStore.handleEdit(teacher);
+    addTeacherStore.setTeacherData(teacher);
+    openAddstudentsModal();
   };
 
   const handleSaveEdit = (editedTeacher) => {
@@ -98,9 +101,17 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
               teachersStore.handleSearch(); // Trigger search as the input changes
             }
           }}
+          ref={inputRef}
         />
-        <button className="Form-List-search-button" onClick={handleSearch}>
-          Search
+        <button
+          className="Form-List-search-button"
+          onClick={() => {
+            handleSearchTextChange("");
+            inputRef.current.focus();
+            teachersStore.fetchData();
+          }}
+        >
+          Clear
         </button>
       </div>
 
@@ -165,13 +176,6 @@ const TeacherList = ({ openAddTeachersModal, closeAddTeachersModal }) => {
           </button>
         </div>{" "}
       </div>
-      {teachersStore.showEditModal && (
-        <EditTeacherModal
-          teacher={teachersStore.editingTeacher}
-          onSave={handleSaveEdit}
-          onCancel={handleCancelEdit}
-        />
-      )}
     </div>
   );
 };

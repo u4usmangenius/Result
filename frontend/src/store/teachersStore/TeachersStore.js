@@ -1,6 +1,7 @@
 import { makeObservable, observable, action, computed } from "mobx";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { addTeacherStore } from "./AddTeacherStore";
 
 class TeachersStore {
   teachers = [];
@@ -131,30 +132,47 @@ class TeachersStore {
   }
 
   handleSaveEdit(editedTeacher) {
+    const teachersInfo = {
+      fullName: addTeacherStore.formData.fullName,
+      gender: addTeacherStore.formData.gender,
+      phone: addTeacherStore.formData.phone,
+      subject: addTeacherStore.formData.subject,
+    };
+
+    const teacherId = addTeacherStore.StudentID;
     const token = localStorage.getItem("bearer token");
     const headers = {
       Authorization: `${token}`,
     };
     axios
       .put(
-        `http://localhost:8080/api/teachers/${editedTeacher.teacherId}`,
-        editedTeacher,
-        { headers }
+        `http://localhost:8080/api/teachers/${teacherId}`,
+        {
+          teacher: teachersInfo,
+        },
+        {
+          headers,
+        }
       )
       .then((response) => {
         if (response.status === 200) {
           const editedTeacherIndex = this.teachers.findIndex(
-            (t) => t.teacherId === editedTeacher.teacherId
+            (t) => t.teacherId === teacherId
           );
           const updatedTeachers = [...this.teachers];
           updatedTeachers[editedTeacherIndex] = response.data;
           this.teachers = updatedTeachers;
           this.showEditModal = false;
+          this.showAlert("Updated Successfully...");
           this.fetchData();
+          addTeacherStore.clearFormFields();
         }
       })
       .catch((error) => {
+        this.showAlert("Something went wrong");
         console.error("Error editing teacher:", error);
+        addTeacherStore.clearFormFields();
+        
       });
   }
 
@@ -185,8 +203,10 @@ class TeachersStore {
           (t) => t.teacherId !== teacher.teacherId
         );
         this.fetchData();
+        this.showAlert(`Student Deleted Successfully`);
       } catch (error) {
         console.error("Error deleting teacher:", error);
+        this.showAlert(`Error While Deleting Student`);
       }
     }
   };

@@ -125,10 +125,17 @@ router.post("/api/teacher", verifyToken, (req, res) => {
 // Route to update a teacher by ID (excluding password)
 router.put("/api/teachers/:teacherId", verifyToken, (req, res) => {
   const teacherId = req.params.teacherId;
-  const { fullName, subject, gender, phone } = req.body;
+  const { teacher } = req.body;
 
+  console.log("teacherId", teacherId);
+  console.log("teacher", teacher);
   // Check if any required field is missing
-  if (!fullName || !subject || !gender || !phone) {
+  if (
+    !teacher.fullName ||
+    !teacher.subject ||
+    !teacher.gender ||
+    !teacher.phone
+  ) {
     res
       .status(400)
       .json({ success: false, message: "All fields are required" });
@@ -150,10 +157,10 @@ router.put("/api/teachers/:teacherId", verifyToken, (req, res) => {
       } else {
         // Check if the new data is different from the existing data
         if (
-          fullName === row.fullName &&
-          subject === row.subject &&
-          gender === row.gender &&
-          phone === row.phone
+          teacher.fullName === row.fullName &&
+          teacher.subject === row.subject &&
+          teacher.gender === row.gender &&
+          teacher.phone === row.phone
         ) {
           res.status(400).json({
             success: false,
@@ -163,7 +170,13 @@ router.put("/api/teachers/:teacherId", verifyToken, (req, res) => {
           // Update the teacher's information (excluding password)
           db.run(
             "UPDATE teachers SET fullName=?, subject=?, gender=?, phone=? WHERE teacherId=?",
-            [fullName, subject, gender, phone, teacherId],
+            [
+              teacher.fullName,
+              teacher.subject,
+              teacher.gender,
+              teacher.phone,
+              teacherId,
+            ],
             (err) => {
               if (err) {
                 console.error("Error updating teacher:", err);
@@ -245,7 +258,7 @@ router.post("/api/teachers", verifyToken, async (req, res) => {
 
       // Check if a teacher with the same roll number and same subject  already exists in the database
       const teacherExistsQuery =
-        "SELECT COUNT(*) as count FROM teachers WHERE fullName = ? AND subject = ?";
+        "SELECT COUNT(*) as count FROM teachers WHERE LOWER(fullName) = LOWER(?) AND LOWER(subject) = LOWER(?)";
 
       let shouldSkip = false;
 
@@ -292,7 +305,8 @@ router.post("/api/teachers", verifyToken, async (req, res) => {
     ) {
       return res.status(409).json({
         success: false,
-        message: "Same Data is already exist OR All rows have the same fields OR all rows are duplicated.",
+        message:
+          "Same Data is already exist OR All rows have the same fields OR all rows are duplicated.",
       });
     }
 

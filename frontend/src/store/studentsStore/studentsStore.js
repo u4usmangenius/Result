@@ -128,7 +128,7 @@ class StudentsStore {
     this.editingstudent = student;
   }
   handleSaveEdit() {
-    const studentsInfo = {  
+    const studentsInfo = {
       fullName: addstudentStore.formData.fullName,
       className: addstudentStore.formData.className,
       gender: addstudentStore.formData.gender,
@@ -144,8 +144,6 @@ class StudentsStore {
     const headers = {
       Authorization: `${token}`,
     };
-    console.log("studentId","<<<<<<")
-    console.log(studentId,"<<<<<<")
     axios
       .put(
         `http://localhost:8080/api/students/${studentId}`,
@@ -163,10 +161,12 @@ class StudentsStore {
           this.showEditModal = false;
           this.showAlert("Updated Successfully...");
           this.fetchData();
+          addstudentStore.clearFormFields();
         }
       })
       .catch((error) => {
         this.showAlert("Something went wrong");
+        addstudentStore.clearFormFields();
         console.error("Error editing student:", error);
       });
   }

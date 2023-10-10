@@ -55,17 +55,9 @@ const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
   const handleSearchTextChange = (text) => {
     studentsStore.setSearchText(text);
   };
-
-  const showAlert = (message) => {
-    Swal.fire(message);
-  };
-
   const handleEdit = (student) => {
     const subjects = studentSubjects[student.studentId];
-
-    // Set student data and selected subjects in the AddStudentStore
     addstudentStore.setStudentData(student, subjects);
-    // Open the AddStudent.js modal
     openAddstudentsModal();
   };
 
