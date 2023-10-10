@@ -139,21 +139,23 @@ class StudentsStore {
     };
 
     const subj = addstudentStore.selectedSubjects;
-    const studentid = addstudentStore.StudentID;
+    const studentId = addstudentStore.StudentID;
     const token = localStorage.getItem("bearer token");
     const headers = {
       Authorization: `${token}`,
     };
+    console.log("studentId","<<<<<<")
+    console.log(studentId,"<<<<<<")
     axios
       .put(
-        `http://localhost:8080/api/students/$ {studentid}`,
+        `http://localhost:8080/api/students/${studentId}`,
         { student: studentsInfo, subjects: subj },
         { headers }
       )
       .then((response) => {
         if (response.status === 200) {
           const editedStudentIndex = this.students.findIndex(
-            (t) => t.studentId === studentid
+            (t) => t.studentId === studentId
           );
           const updatedStudents = [...this.students];
           updatedStudents[editedStudentIndex] = response.data;

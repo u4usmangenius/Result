@@ -19,7 +19,12 @@ class AddTeacherStore {
     gender: "Select Gender",
     subject: "Select Subject",
   };
-
+  clearFormFields() {
+    this.formData.fullName = "";
+    this.formData.phone = "";
+    this.formData.gender = "Select Gender";
+    this.formData.subject = "";
+  }
   constructor() {
     this.teacherData = [];
     makeObservable(this, {
@@ -94,47 +99,38 @@ class AddTeacherStore {
       const headers = {
         Authorization: `${token}`,
       };
-
-      if (this.editingIndex !== -1) {
-        // Handle updating an existing teacher
-        const response = await axios.put(
-          `http://localhost:8080/api/teachers/${teacherData.id}`,
-          teacherData,
-          {
-            headers,
-          }
-        );
-
-        if (response.status === 200) {
-          return true; // Teacher updated successfully
-        } else {
-          return false; // Failed to update teacher
+      const formattedData = [
+        {
+          fullName: teacherData.fullName,
+          gender: teacherData.gender,
+          phone: teacherData.phone,
+          subject: teacherData.subject,
+        },
+      ];
+      console.log(formattedData);
+      const response = await axios.post(
+        "http://localhost:8080/api/teachers",
+        { csvData: formattedData },
+        {
+          headers,
         }
+      );
+
+      if (response.status === 200) {
+        return true; // Teacher added successfully
       } else {
-        // Handle adding a new teacher
-        const response = await axios.post(
-          "http://localhost:8080/api/teachers",
-          teacherData,
-          {
-            headers,
-          }
-        );
-
-        if (response.status === 200) {
-          return true; // Teacher added successfully
-        } else {
-          return false; // Failed to add teacher
-        }
+        return false; // Failed to add teacher
       }
     } catch (error) {
       console.error("Error adding/updating teacher:", error);
       return false; // An error occurred while processing the request
     }
   }
-
   handleFileUpload = (event) => {
     const file = event.target.files[0];
-
+    if (!file) {
+      return;
+    }
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -143,29 +139,18 @@ class AddTeacherStore {
         console.log("Parsed data:", result.data);
         console.log("Current teacherData:", this.teacherData);
 
-        if (parsedData.length === 1) {
-          const singleRowData = parsedData[0];
+        if (parsedData.length > 0) {
+          const filteredData = parsedData.filter((rowData) => {
+            const requiredFields = ["fullName", "phone", "gender", "subject"];
+            return requiredFields.every((field) => rowData[field]);
+          });
 
-          // Check if the fields in the CSV match the expected fields
-          const expectedFields = ["fullName", "phone", "gender", "subject"];
-          const csvFields = Object.keys(singleRowData);
-
-          if (expectedFields.every((field) => csvFields.includes(field))) {
-            this.formData = {
-              fullName: singleRowData["fullName"] || "",
-              phone: singleRowData["phone"] || "",
-              gender: singleRowData["gender"] || "Select Gender",
-              subject: singleRowData["subject"] || "Select Subject",
-            };
-            this.selectedOption = "manually";
-            this.showAddButton = false;
-            this.multiplerowbtn = false;
-          } else {
-            this.showAlert("CSV fields do not match the expected fields.");
+          if (filteredData.length === 0) {
+            this.showAlert("No valid rows found with all required fields.");
+            return;
           }
-        } else if (parsedData.length > 1) {
-          this.teacherData.replace(parsedData); // Use replace to update the observable array
-          //   this.teacherData = parsedData;
+          this.teacherData.replace(filteredData);
+          console.log("Filtered teacherData:", this.teacherData);
           this.selectedOption = "import-csv";
           this.showAddButton = false;
           this.multiplerowbtn = true;
@@ -180,7 +165,7 @@ class AddTeacherStore {
 
   handleMultiRowUpload = async () => {
     const confirmed = await this.showConfirm(
-      `Continue to Insert All Teachers?`
+      `Continue to Insert All teachers?`
     );
 
     if (confirmed) {
@@ -189,64 +174,72 @@ class AddTeacherStore {
         const headers = {
           Authorization: `${token}`,
         };
-
-        // Check for duplicates in the CSV data
         const duplicates = this.findDuplicates(this.teacherData);
 
         if (duplicates.length > 0) {
-          // Display an alert with the duplicate entries
-          this.multiplerowbtn = false;
-          this.showAlert(`Duplicate entries found: ${duplicates.join(", ")}`);
+          // Filter out duplicates from teacherData
+          this.teacherData = this.teacherData.filter(
+            (item) => !duplicates.includes(JSON.stringify(item))
+          );
+        }
+        const formattedArray = this.teacherData
+          .map((item) => {
+            if (item.fullName && item.gender && item.phone && item.subject) {
+              return {
+                fullName: item.fullName,
+                phone: item.phone || "",
+                gender: item.gender,
+                subject: item.subject,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
+        console.log("formattedArray===>", formattedArray);
+        if (formattedArray.length === 0) {
+          this.showAlert("No rows with all required fields found.");
           return;
         }
-
         const response = await axios.post(
-          "http://localhost:8080/api/teachers/upload-csv",
-          { csvData: this.teacherData },
+          "http://localhost:8080/api/teachers",
+          { csvData: formattedArray },
           {
             headers,
           }
         );
-
         if (response.status === 200) {
-          const { success, message } = response.data;
-
-          if (success) {
+          if (response.data.success) {
             this.showAlert("Teachers uploaded successfully");
+            this.clearFormFields();
             const fetchData = async () => {
               teachersStore.setLoading(true);
               try {
                 await teachersStore.fetchData();
                 teachersStore.setDataNotFound(false);
               } catch (error) {
-                console.error("Error fetching subjects:", error);
+                console.error("Error fetching Teachers:", error);
                 teachersStore.setDataNotFound(true);
               } finally {
                 teachersStore.setLoading(false);
               }
             };
             fetchData();
-
-            // Optionally, you can clear the teacherData state if needed
-            this.teacherData = [];
-            this.multiplerowbtn = false;
           } else {
-            // Check the message returned from the backend
-            if (message.includes("redundant")) {
-              this.showAlert(`Redundant rows found: ${message}`);
+            if (response.data.message) {
+              console.error("Error:", response.data.message);
             } else {
-              this.showAlert(`Failed to upload teachers: ${message}`);
+              console.error("Unknown error occurred");
             }
           }
-        } else {
-          this.showAlert("Failed to upload teachers. Please try again.");
         }
       } catch (error) {
         console.error("Error uploading teachers:", error);
         this.showAlert("An error occurred while processing the request.");
+        this.clearFormFields();
       }
     }
   };
+
   findDuplicates(arr) {
     const seen = {};
     const duplicates = [];
@@ -254,90 +247,59 @@ class AddTeacherStore {
     for (const item of arr) {
       const key = JSON.stringify(item);
       if (seen[key]) {
-        duplicates.push(key);
+        duplicates.push(item);
       } else {
         seen[key] = true;
       }
     }
-
     return duplicates;
   }
 
   handleSubmit = async () => {
     try {
-      if (this.editingIndex !== -1) {
-        // Handle editing existing teacher
-        const updatedTeacherData = [...this.teacherData];
-        const updatedTeacher = {
-          ...this.formData,
-          id: updatedTeacherData[this.editingIndex].id,
+      if (
+        this.formData.fullName === "" ||
+        this.formData.phone === "" ||
+        this.formData.gender === "Select Gender" ||
+        this.formData.subject === "Select Subject"
+      ) {
+        this.showAlert("Please fill all fields.");
+        return;
+      }
+      const newTeacher = {
+        fullName: this.formData.fullName,
+        phone: this.formData.phone,
+        gender: this.formData.gender,
+        subject: this.formData.subject,
+      };
+      const success = await this.addTeacherToBackend(newTeacher);
+      if (success) {
+        this.showAlert("Teacher added successfully");
+        this.formData = {
+          fullName: "",
+          phone: "",
+          gender: "Select Gender",
+          subject: "Select Subject",
         };
-        updatedTeacherData[this.editingIndex] = updatedTeacher;
-        this.teacherData = updatedTeacherData;
+        const fetchData = async () => {
+          teachersStore.setLoading(true);
+          try {
+            await teachersStore.fetchData();
+            teachersStore.setDataNotFound(false);
+          } catch (error) {
+            console.error("Error fetching subjects:", error);
+            teachersStore.setDataNotFound(true);
+          } finally {
+            teachersStore.setLoading(false);
+          }
+        };
+        fetchData();
 
-        const success = await this.addTeacherToBackend(updatedTeacher);
-
-        if (success) {
-          this.showAlert("Teacher updated successfully");
-          this.formData = {
-            fullName: "",
-            phone: "",
-            gender: "Select Gender",
-            subject: "Select Subject",
-          };
-          this.editingIndex = -1;
-        } else {
-          this.showAlert("Failed to update teacher. Please try again.");
+        if (this.onClose) {
+          this.onClose();
         }
       } else {
-        if (
-          this.formData.fullName === "" ||
-          this.formData.phone === "" ||
-          this.formData.gender === "Select Gender" ||
-          this.formData.subject === "Select Subject"
-        ) {
-          this.showAlert("Please fill all fields.");
-          return; // Don't proceed if default values are selected
-        }
-        // Handle adding a new teacher
-        const newTeacher = {
-          fullName: this.formData.fullName,
-          phone: this.formData.phone,
-          gender: this.formData.gender,
-          subject: this.formData.subject,
-        };
-
-        const success = await this.addTeacherToBackend(newTeacher);
-
-        if (success) {
-          this.showAlert("Teacher added successfully");
-          //   onClose(); // Close the form
-          this.formData = {
-            fullName: "",
-            phone: "",
-            gender: "Select Gender",
-            subject: "Select Subject",
-          };
-          const fetchData = async () => {
-            teachersStore.setLoading(true);
-            try {
-              await teachersStore.fetchData();
-              teachersStore.setDataNotFound(false);
-            } catch (error) {
-              console.error("Error fetching subjects:", error);
-              teachersStore.setDataNotFound(true);
-            } finally {
-              teachersStore.setLoading(false);
-            }
-          };
-          fetchData();
-
-          if (this.onClose) {
-            this.onClose();
-          }
-        } else {
-          this.showAlert("Failed to add teacher. Please try again.");
-        }
+        this.showAlert("Failed to add teacher. Please try again.");
       }
     } catch (error) {
       console.error("Error handling submit:", error);

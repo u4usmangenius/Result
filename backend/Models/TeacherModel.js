@@ -47,8 +47,7 @@ router.post("/api/teachers/search", verifyToken, (req, res) => {
       res.json({ success: true, teachers: rows });
     }
   });
-}); // Route to create a new teacher
-// Route to get paginated teachers with validations
+});
 // Route to get paginated teachers with validations
 router.post("/api/teacher", verifyToken, (req, res) => {
   const page = parseInt(req.body.page) || 1;
@@ -225,155 +224,88 @@ router.delete("/api/teachers/:teacherId", verifyToken, (req, res) => {
 });
 
 // Route to create a new teacher with validations
-router.post("/api/teachers", verifyToken, (req, res) => {
-  const { fullName, subject, gender, phone } = req.body;
+router.post("/api/teachers", verifyToken, async (req, res) => {
+  try {
+    const { csvData } = req.body;
+    let uploadedCount = 0;
+    let skippedCount = 0;
+    let matchCount = 0; // Initialize matchCount to 0
 
-  // Check if any required field is missing
-  if (!fullName || !subject || !gender || !phone) {
-    res
-      .status(400)
-      .json({ success: false, message: "All fields are required" });
-    return;
-  }
-  db.get(
-    "SELECT COUNT(*) as count FROM teachers WHERE fullName = ? AND subject = ? AND gender = ? AND phone = ?",
-    [fullName, subject, gender, phone],
-    async (err, row) => {
-      if (err) {
-        console.error("Error checking teacher existence:", err);
-        return res
-          .status(500)
-          .json({ success: false, message: "Internal server error" });
-      } else {
-        const teacherCount = row.count;
-        if (teacherCount > 0) {
-          return res.status(400).json({
-            success: false,
-            message: "Teacher with the same data already exists",
-          });
-        } else {
-          // If the teacher does not exist, insert it into the database
-          const teacherId = crypto.randomUUID();
-          db.run(
-            "INSERT INTO teachers (teacherId, fullName, subject, gender, phone) VALUES (?, ?, ?, ?, ?)",
-            [teacherId, fullName, subject, gender, phone],
-            (err) => {
-              if (err) {
-                console.error("Error inserting teacher:", err);
-                return res
-                  .status(500)
-                  .json({ success: false, message: "Internal server error" });
-              } else {
-                console.log("Teacher inserted successfully");
-                return res.json({
-                  success: true,
-                  message: "Teacher inserted successfully",
-                });
-              }
-            }
-          );
-        }
+    // Create a map to store the counts of each unique combination of roll number and className
+    const TeachersCount = new Map();
+
+    for (const teacherData of csvData) {
+      const { fullName, phone, gender, subject } = teacherData;
+
+      // Validate teacher data as before
+      if (!fullName || !phone || !gender || !subject) {
+        console.error("Invalid request data:", teacherData);
+        continue; // Skip this row and continue with the next one
       }
-    }
-  );
-});
-// upload multiple teachers using csv
-router.post("/api/teachers/upload-csv", verifyToken, async (req, res) => {
-  const { csvData } = req.body;
-  console.error("csv-------csv", csvData);
-  // Check if the required CSV data is provided
-  if (!csvData || !Array.isArray(csvData) || csvData.length === 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid CSV data" });
-  }
-  if (
-    !csvData.fullName ||
-    !csvData.subject ||
-    !csvData.gender ||
-    !csvData.phone
-  ) {
-    console.log("All Filds are required")
-    return res
-      .status(400)
-      .json({ success: false, message: "All CSV Fields are Required" });
-  }
 
-  // Assuming your CSV columns match the teacher data fields
-  const teachersToAdd = csvData.map((row) => ({
-    fullName: row.fullName,
-    subject: row.subject,
-    gender: row.gender,
-    phone: row.phone,
-  }));
+      // Check if a teacher with the same roll number and same subject  already exists in the database
+      const teacherExistsQuery =
+        "SELECT COUNT(*) as count FROM teachers WHERE fullName = ? AND subject = ?";
 
-  // Check if any of the teachers in the CSV already exist
-  const existingTeachers = await Promise.all(
-    teachersToAdd.map(async (teacher) => {
-      return new Promise(async (resolve, reject) => {
-        // Check if a teacher with the same data already exists
-        const count = await new Promise((resolveCount, rejectCount) => {
-          db.get(
-            "SELECT COUNT(*) as count FROM teachers WHERE fullName = ? AND subject = ? AND gender = ? AND phone = ?",
-            [teacher.fullName, teacher.subject, teacher.gender, teacher.phone],
-            (err, row) => {
-              if (err) {
-                rejectCount(err);
-              } else {
-                resolveCount(row.count);
-              }
-            }
-          );
-        });
+      let shouldSkip = false;
 
-        if (count > 0) {
-          resolve(teacher); // Teacher already exists
-        } else {
-          resolve(null); // Teacher does not exist
-        }
-      });
-    })
-  );
-
-  // Filter out the existing teachers
-  const newTeachers = teachersToAdd.filter(
-    (teacher) => existingTeachers.indexOf(teacher) === -1
-  );
-
-  // Now, you can add the new teachers to the database
-  const teacherInsertPromises = newTeachers.map((teacher) => {
-    return new Promise((resolve, reject) => {
-      const teacherId = crypto.randomUUID();
-      db.run(
-        "INSERT INTO teachers (teacherId, fullName, subject, gender, phone) VALUES (?, ?, ?, ?, ?)",
-        [
-          teacherId,
-          teacher.fullName,
-          teacher.subject,
-          teacher.gender,
-          teacher.phone,
-        ],
-        (err) => {
+      await new Promise((resolve, reject) => {
+        db.get(teacherExistsQuery, [fullName, subject], (err, result) => {
           if (err) {
-            console.error("Error inserting teacher:", err);
             reject(err);
           } else {
+            const teacherCount = result.count;
+            if (teacherCount > 0) {
+              console.error(
+                `teacher with the same roll number already exists in:`,
+                teacherData
+              );
+              skippedCount++;
+              shouldSkip = true;
+              // Increment matchCount when a match is found
+              matchCount++;
+            }
             resolve();
           }
-        }
-      );
-    });
-  });
+        });
+      });
+      const IfExistKey = fullName + subject;
+      const existingCount = TeachersCount.get(IfExistKey) || 0;
+      TeachersCount.set(IfExistKey, existingCount + 1);
 
-  Promise.all(teacherInsertPromises)
-    .then(() => {
-      res.json({ success: true, message: "Teachers inserted successfully" });
-    })
-    .catch((error) => {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
+      if (shouldSkip) {
+        continue;
+      }
+
+      const teacherId = crypto.randomUUID();
+      await db.run(
+        "INSERT INTO teachers (teacherId, fullName, phone, gender,subject) VALUES (?, ?, ?, ?, ?)",
+        [teacherId, fullName, phone, gender, subject]
+      );
+      uploadedCount++;
+    }
+    // Check if all rows have the same roll number and className or if all rows are duplicated
+    if (
+      (matchCount === csvData.length && csvData.length > 0) ||
+      (csvData.length > 0 &&
+        Array.from(TeachersCount.values()).every((count) => count > 1))
+    ) {
+      return res.status(409).json({
+        success: false,
+        message: "Same Data is already exist OR All rows have the same fields OR all rows are duplicated.",
+      });
+    }
+
+    const responseMessage = `Uploaded ${uploadedCount} teachers, skipped ${skippedCount} duplicates.`;
+
+    res.json({
+      success: true,
+      message: responseMessage,
     });
+  } catch (error) {
+    console.error("Error uploading teachers:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
 module.exports = router;

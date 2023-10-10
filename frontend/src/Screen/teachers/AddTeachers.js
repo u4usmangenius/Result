@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { observer } from "mobx-react";
-import "./AddTeachers.css";
+// import "./AddTeachers.css";
 import { IoMdAddCircle } from "react-icons/io";
 import { addTeacherStore } from "../../store/teachersStore/AddTeacherStore";
 
@@ -22,13 +22,17 @@ const AddTeachers = ({ onClose }) => {
   useEffect(() => {
     addTeacherStore.fetchSubjects(); // Call the fetchSubjects action from MobX store
   }, []);
+  const handleCSV = () => {
+    handleMultiRowUpload();
+    onClose();
+  };
 
   return (
-    <div className="add-teachers-content">
-      <h2 className="add-teachers-heading">Add Teachers</h2>
-      <div className="add-teachers-options">
+    <div className="add-form-content">
+      <h2 className="add-form-heading">Add Teachers</h2>
+      <div className="add-form-options">
         <div
-          className={`teacher-container-option ${
+          className={`addForm-container-option ${
             selectedOption === "manually" ? "teacher-form-active" : ""
           }`}
           onClick={() => handleOptionChange("manually")}
@@ -36,7 +40,7 @@ const AddTeachers = ({ onClose }) => {
           Manually
         </div>
         <div
-          className={`teacher-container-option ${
+          className={`addForm-container-option ${
             selectedOption === "import-csv" ? "teacher-form-active" : ""
           }`}
           onClick={() => handleOptionChange("import-csv")}
@@ -46,12 +50,12 @@ const AddTeachers = ({ onClose }) => {
       </div>
       {selectedOption === "manually" ? (
         <form>
-          <div className="add-teacher-form-row">
-            <div className="add-teacher-form-group">
-              <label className="teachers-input-label">fullName:</label>
+          <div className="add-form-row">
+            <div className="add-form-group">
+              <label className="addForm-input-label">fullName:</label>
               <input
                 type="text"
-                className="teacher-text-input"
+                className="addForm-input-type-text"
                 placeholder="fullName"
                 value={formData.fullName}
                 onChange={(e) =>
@@ -60,11 +64,11 @@ const AddTeachers = ({ onClose }) => {
               />
             </div>
 
-            <div className="add-teacher-form-group">
-              <label className="teachers-input-label">Phone:</label>
+            <div className="add-form-group">
+              <label className="addForm-input-label">Phone:</label>
               <input
                 type="text"
-                className="teacher-text-input"
+                className="addForm-input-type-text"
                 placeholder="Phone"
                 value={formData.phone}
                 onChange={(e) =>
@@ -73,11 +77,11 @@ const AddTeachers = ({ onClose }) => {
               />
             </div>
           </div>
-          <div className="add-teacher-form-row">
-            <div className="add-teacher-form-group">
-              <label className="teachers-input-label">Gender:</label>
+          <div className="add-form-row">
+            <div className="add-form-group">
+              <label className="addForm-input-label">Gender:</label>
               <select
-                className="teachers-input-select"
+                className="addForm-input-select"
                 value={formData.gender}
                 onChange={(e) =>
                   addTeacherStore.setFormData("gender", e.target.value)
@@ -89,10 +93,10 @@ const AddTeachers = ({ onClose }) => {
                 <option>Other</option>
               </select>
             </div>
-            <div className="add-teacher-form-group">
-              <label className="teachers-input-label">Subject:</label>
+            <div className="add-form-group">
+              <label className="addForm-input-label">Subject:</label>
               <select
-                className="teachers-input-select"
+                className="addForm-input-select"
                 value={formData.subject}
                 onChange={(e) =>
                   addTeacherStore.setFormData("subject", e.target.value)
@@ -107,40 +111,35 @@ const AddTeachers = ({ onClose }) => {
               </select>
             </div>
           </div>
-          <div className="add-another-teacher-teacher">
-            <div className="add-another-teacher-text">
-              <div className="add-another-teacher-text-icon">
+          <div className="addForm-another-btn">
+            <div className="add-another-form-text">
+              <div className="add-another-text-icon-btn">
                 <IoMdAddCircle />
               </div>
               Add Another
             </div>
             {/* Add Teacher Button */}
-            <div className="add-teacher-button">
-              <button className="add-teachers-button" 
-              onClick={handleSubmit}
-              >
-                {addTeacherStore.editingIndex !== -1
-                  ? "Save Edit"
-                  : "Add Teacher"}
-              </button>
-            </div>
+            <button className="add-form-button" onClick={handleSubmit}>
+              {addTeacherStore.editingIndex !== -1
+                ? "Save Edit"
+                : "Add Teacher"}
+            </button>
           </div>
         </form>
       ) : (
         <div>
           <input
-            className="teacher-import-button"
+            className="addForm-import-button"
             type="file"
             accept=".csv"
             onChange={handleFileUpload}
           />
           {multiplerowbtn && (
             <button
-              id="add-multiple-teachers"
-              className="add-teachers-button"
-              onClick={handleMultiRowUpload}
+              className="add-form-button addForm-import-csv-btn"
+              onClick={handleCSV}
             >
-              Add Multiple Teachers
+              Add Now
             </button>
           )}
         </div>
@@ -170,10 +169,10 @@ const AddTeachers = ({ onClose }) => {
           </div>
         )}
       {addTeacherStore.showAddButton && (
-        <div className="add-another-teacher-teacher">
-          <div className="add-teacher-button">
+        <div className="addForm-another-btn">
+          <div className="add-form-button">
             <button
-              className="add-teachers-button"
+              className="add-form-button"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSubmit();

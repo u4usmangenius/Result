@@ -143,8 +143,8 @@ class AddStudentStore {
     this.formData.Batch = student.Batch;
 
     this.StudentID = student.studentId;
+    console.log("this", student.studentId);
     this.selectedSubjects = subjects;
-
     validations.errors.Name = false;
     validations.errors.rollNo = false;
     validations.errors.gender = false;
