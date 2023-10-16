@@ -161,7 +161,7 @@ router.post("/api/subjects", verifyToken, (req, res) => {
 
   // Check if a subject with the same subjectName or courseCode already exists
   db.get(
-    "SELECT * FROM subjects WHERE subjectName = ? OR courseCode = ?",
+    "SELECT * FROM subjects WHERE LOWER(subjectName) = LOWER(?) OR LOWER(courseCode) = LOWER(?)",
     [subjectName, courseCode],
     (err, row) => {
       if (err) {

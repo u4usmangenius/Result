@@ -67,8 +67,7 @@ db.run(
     fullName TEXT,
     subject TEXT,
     gender TEXT,
-    phone TEXT,
-    password TEXT
+    phone INTEGER
   )
 `,
   (err) => {
@@ -84,11 +83,11 @@ db.run(
   CREATE TABLE IF NOT EXISTS students (
     studentId TEXT PRIMARY KEY,
     fullName TEXT,
-    stdRollNo TEXT Text,
+    stdRollNo INTEGER,
     className TEXT,
     gender TEXT,
-    stdPhone TEXT,
-    guard_Phone TEXT,
+    stdPhone INTEGER,
+    guard_Phone INTEGER,
     Batch TEXT
   )
 `,
@@ -122,7 +121,7 @@ db.run(
     std_subjectId varchar(255) PRIMARY KEY,
     studentId TEXT,
     subjectId TEXT,
-    stdRollNo varchar(255),
+    stdRollNo INTEGER,
     userSubject varchar(255),
     FOREIGN KEY (studentId) REFERENCES students(studentId),
     FOREIGN KEY (subjectId) REFERENCES subjects(subjectId)
@@ -161,22 +160,22 @@ db.run(
 
 db.run(
   `
-  CREATE TABLE IF NOT EXISTS result (
-    resultId TEXT PRIMARY KEY,
-    stdRollNo TEXT,
-    TestName TEXT,
-    TotalMarks TEXT,
-    SubjectName TEXT,
-    fullName TEXT,
-    ClassName TEXT,
-    ObtainedMarks INTEGER,
-    Batch TEXT,
-    studentId TEXT,
-    testId TEXT,
-    FOREIGN KEY (studentId) REFERENCES students(studentId),
-    FOREIGN KEY (testId) REFERENCES tests(testtId)
-  )
-`,
+    CREATE TABLE IF NOT EXISTS result (
+      resultId TEXT PRIMARY KEY,
+      stdRollNo INTEGER,
+      TestName TEXT,
+      ClassName TEXT,
+      ObtainedMarks INTEGER,
+      TotalMarks INTEGER,
+      stdTestPercentage REAL,
+      SubjectName TEXT,
+      fullName TEXT,
+      studentId TEXT,
+      testId TEXT,
+      FOREIGN KEY (studentId) REFERENCES students(studentId),
+      FOREIGN KEY (testId) REFERENCES tests(testtId)
+    )
+  `,
   (err) => {
     if (err) {
       console.error("Error creating test_results table:", err);

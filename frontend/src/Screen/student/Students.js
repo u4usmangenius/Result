@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import "./Student.css";
 import Modal from "../model/Modal.js";
 import Header from "../header/Header";
 import StudentList from "./StudentList";
 import AddStudents from "./AddStudents";
+import StudentSearchInput from "./StudentSearchInput.js";
 
 const Students = () => {
   const [isAddStudentsModalOpen, setIsAddStudentsModalOpen] = useState(false);
@@ -19,10 +19,11 @@ const Students = () => {
   return (
     <>
       <Header />
-      <div className="student-container">
-        <div className="student-header-row">
+      <div className="formlist-list-container">
+        <div className="formlist-header-row">
           <h1>Students</h1>
-          <button className="add-student-button" onClick={openAddStudentsModal}>
+          <StudentSearchInput/>
+          <button className="formlist-click-add-button" onClick={openAddStudentsModal}>
             Add Students
           </button>
         </div>

@@ -4,22 +4,37 @@ import axios from "axios";
 import Papa from "papaparse";
 import Swal from "sweetalert2";
 import { testStore } from "./TestStore";
+import { validations } from "../../helper.js/TestsValidationStore";
 
 class AddTestStore {
   showAddButton = false;
   currentPage = 1;
   rowsPerPage = 8;
   selectedOption = "manually";
+  testId = "";
   testData = [];
   editingIndex = -1;
   subjectOptions = [];
   classnameOptions = [];
+  editORsubmit = false;
+  RestrictAddAnother = false;
   formData = {
     TestName: "",
-    SubjectName: "",
-    ClassName: "",
-    TotalMarks: "",
+    SubjectName: "Select Subject",
+    ClassName: "Select Class",
+    TotalMarks: null,
   };
+  clearFormFields() {
+    this.formData.TestName = "";
+    this.formData.ClassName = "Select Class";
+    this.formData.TotalMarks = null;
+    this.formData.SubjectName = "Select Subject";
+    validations.errors.SubjectName = false;
+    validations.errors.ClassName = false;
+    validations.errors.TestName = false;
+    validations.errors.TotalMarks = false;
+    // subjectStore.fetchData();
+  }
   constructor() {
     makeObservable(this, {
       showAddButton: observable,
@@ -30,14 +45,17 @@ class AddTestStore {
       subjectOptions: observable,
       classnameOptions: observable,
       formData: observable,
-      setClassNameOptions: action,
+      editORsubmit: observable,
+      RestrictAddAnother: observable,
+      fetchData: action,
       setFormData: action,
       setSubjectOptions: action,
-      fetchData: action,
-      fetchSubjects: action,
-      addTestToBackend: action,
+      setClassNameOptions: action,
       handleOptionChange: action,
+      addTestToBackend: action,
+      fetchSubjects: action,
       handleSubmit: action,
+      clearFormFields: action,
     });
   }
 
@@ -50,6 +68,25 @@ class AddTestStore {
   }
   setFormData(data) {
     this.formData = { ...this.formData, ...data };
+    console.log("<______________",{...this.formData.TotalMarks})
+  }
+  setTestsData(test) {
+    const data = { ...test };
+    this.formData.TestName = data.TestName;
+    this.formData.SubjectName = data.SubjectName;
+    this.formData.ClassName = data.ClassName;
+    this.formData.TotalMarks = data.TotalMarks;
+    this.testId = test.testId;
+
+    validations.errors.TestName = false;
+    validations.errors.SubjectName = false;
+    validations.errors.ClassName = false;
+    validations.errors.TotalMarks = false;
+  }
+
+  // Define the showAlert action
+  showAlert(message) {
+    Swal.fire(message);
   }
 
   fetchData = async () => {
@@ -120,73 +157,42 @@ class AddTestStore {
     this.setShowAddButton(false);
   };
 
-  
-  
   handleSubmit = async () => {
     try {
-      if (this.editingIndex !== -1) {
-        const updatedtestData = [...this.testData];
-        const updatedtest = {
-          ...this.formData,
-          id: updatedtestData[this.editingIndex].id,
-        };
-        updatedtestData[this.editingIndex] = updatedtest;
-        this.setTestData(updatedtestData);
-
-        const success = await this.addTestToBackend(updatedtest);
-
-        if (success) {
-          this.showAlert("test updated successfully");
-          this.setFormData({
-            TestName: "",
-            SubjectName: "",
-            ClassName: "",
-            TotalMarks: "",
-          });
-          this.setEditingIndex(-1);
-        } else {
-          this.showAlert("Failed to update test. Please try again.");
-        }
-      } else {
-        const newtest = {
-          TestName: this.formData.TestName,
-          SubjectName: this.formData.SubjectName,
-          ClassName: this.formData.ClassName,
-          TotalMarks: this.formData.TotalMarks,
-        };
-
-        const success = await this.addTestToBackend(newtest);
-        console.log("await ");
-        if (success) {
-          const fetchData = async () => {
-            testStore.setLoading(true);
-            try {
+      const newtest = {
+        TestName: this.formData.TestName,
+        SubjectName: this.formData.SubjectName,
+        ClassName: this.formData.ClassName,
+        TotalMarks: this.formData.TotalMarks,
+      };
+      console.log(newtest);
+      const success = await this.addTestToBackend(newtest);
+      console.log("await ");
+      if (success) {
+        const fetchData = async () => {
+          testStore.setLoading(true);
+          try {
             //   await testStore.fetchDataFromBackend(this.currentPage);
-              await testStore.fetchDataFromBackend(this.currentPage);
-            } catch (error) {
-              console.error("Error fetching subjects:", error);
-            } finally {
-              testStore.setLoading(false);
-            }
-          };
+            await testStore.fetchDataFromBackend(this.currentPage);
+          } catch (error) {
+            console.error("Error fetching subjects:", error);
+          } finally {
+            testStore.setLoading(false);
+          }
+        };
 
-          fetchData();
+        fetchData();
 
-          this.showAlert("test added successfully");
-          // onClose(); // You may need to pass onClose as a parameter
-          this.setFormData({
-            TestName: "",
-            SubjectName: "",
-            ClassName: "",
-            TotalMarks: "",
-          });
-        } else {
-          this.showAlert("Failed to add test. Please try again.");
-        }
+        this.clearFormFields();
+        this.showAlert("Test added successfully");
+      } else {
+        this.clearFormFields();
+        this.showAlert("Failed to add test. Please try again.");
       }
     } catch (error) {
       console.error("Error handling submit:", error);
       this.showAlert("An error occurred while processing the request.");
+      this.clearFormFields();
     }
   };
 

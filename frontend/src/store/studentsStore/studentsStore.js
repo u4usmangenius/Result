@@ -13,6 +13,8 @@ class StudentsStore {
   editingstudent = null;
   totalPages = 1;
   loading = false;
+  FiltreClassName = "";
+  mouseHover = false;
 
   constructor() {
     makeObservable(this, {
@@ -24,8 +26,12 @@ class StudentsStore {
       showEditModal: observable,
       editingstudent: observable,
       totalPages: observable,
+      FiltreClassName: observable,
+      mouseHover: observable,
       loading: observable,
+      getDataByClassName: action,
       setSearchText: action,
+      setrowsPerPage: action,
       filteredstudents: computed,
       handleSearch: action,
       setCurrentPage: action,
@@ -42,9 +48,13 @@ class StudentsStore {
   setCurrentPage(page) {
     this.currentPage = page;
   }
-
   setSearchText(text) {
     this.searchText = text;
+    this.FiltreClassName = false;
+  }
+  setrowsPerPage(page) {
+    this.rowsPerPage = page;
+    this.fetchData();
   }
 
   setSelectedFilter(filter) {
@@ -57,6 +67,32 @@ class StudentsStore {
   setDataNotFound(dataNotFound) {
     this.dataNotFound = dataNotFound;
   }
+
+  async getDataByClassName() {
+    const ClassName = this.FiltreClassName;
+    try {
+      const token = localStorage.getItem("bearer token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+      const response = await axios.post(
+        "http://localhost:8080/api/students/ClassName",
+        { ClassName },
+        {
+          headers,
+        }
+      );
+
+      if (response.status === 200) {
+        this.students = response.data.data;
+      } else {
+        console.error("Error:", response.data.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
   handleSearch = async () => {
     try {
       this.setLoading(true);
@@ -102,8 +138,8 @@ class StudentsStore {
           pageSize: this.rowsPerPage,
           filter: this.selectedFilter,
           search: this.searchText,
-          sortColumn: "fullName", // Default sorting column
-          sortOrder: "asc", // Default sorting order (ascending)
+          sortColumn: "stdRollNo",
+          sortOrder: "asc",
         },
         { headers }
       );
@@ -224,16 +260,21 @@ class StudentsStore {
     return this.students.filter((student) => {
       if (this.selectedFilter === "all") {
         return (
-          student.fullName?.toLowerCase().includes(searchTextLower) ||
-          student.subject?.toLowerCase().includes(searchTextLower) ||
-          student.gender?.toLowerCase().includes(searchTextLower) ||
-          student.stdRollNo?.toLowerCase().includes(searchTextLower) ||
-          student.guard_Phone?.toLowerCase().includes(searchTextLower) ||
-          student.stdPhone?.toLowerCase().includes(searchTextLower)
+          (student.fullName || "").toLowerCase().includes(searchTextLower) ||
+          (student.subject || "").toLowerCase().includes(searchTextLower) ||
+          (student.className || "").toLowerCase().includes(searchTextLower) ||
+          (student.gender || "").toLowerCase().includes(searchTextLower) ||
+          (student.stdRollNo || "")
+            .toString()
+            .toLowerCase()
+            .includes(searchTextLower) || // Convert to string and then to lowercase
+          (student.guard_Phone || "").toLowerCase().includes(searchTextLower) ||
+          (student.stdPhone || "").toLowerCase().includes(searchTextLower)
         );
       } else {
-        return student[this.selectedFilter]
-          ?.toLowerCase()
+        return (student[this.selectedFilter] || "")
+          .toString()
+          .toLowerCase()
           .includes(searchTextLower);
       }
     });

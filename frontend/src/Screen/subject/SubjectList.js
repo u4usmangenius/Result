@@ -33,22 +33,8 @@ const SubjectList = ({ openAddstudentsModal, closeAddsubjectsModal }) => {
     openAddstudentsModal();
   };
 
-  const handleSaveEdit = (editedSubject) => {
-    subjectStore.handleSaveEdit(editedSubject);
-  };
-
-  const handleCancelEdit = () => {
-    subjectStore.handleCancelEdit();
-  };
-
   const handleDelete = (subject) => {
     subjectStore.handleDelete(subject);
-  };
-  const handleRowsPerPageChange = (e) => {
-    const newRowsPerPage = parseInt(e.target.value);
-    subjectStore.setRowsPerPage(newRowsPerPage);
-    subjectStore.setCurrentPage(1);
-    subjectStore.fetchData();
   };
   const handlePageChange = (page) => {
     subjectStore.setCurrentPage(page);
@@ -61,53 +47,13 @@ const SubjectList = ({ openAddstudentsModal, closeAddsubjectsModal }) => {
   const handleFilterChange = (filter) => {
     subjectStore.setSelectedFilter(filter);
   };
-  const handleSearch = () => {
-    subjectStore.handleSearch();
-  };
-
   return (
     <div className="Form-list-container">
-      <div className="Form-search-bar">
-        <select
-          className="Form-search-category"
-          value={subjectStore.selectedFilter}
-          onChange={(e) => handleFilterChange(e.target.value)}
-        >
-          <option value="all">All</option>
-          <option value="subjectName">subject</option>
-          <option value="courseCode">courseCode</option>
-        </select>
-        <input
-          type="text"
-          className="FormList-text-input"
-          placeholder="Search for a subject"
-          value={subjectStore.searchText}
-          onChange={(e) => {
-            subjectStore.setSearchText(e.target.value);
-            if (e.target.value === "") {
-              subjectStore.fetchData();
-            } else {
-              subjectStore.handleSearch();
-            }
-          }}
-          ref={inputRef}
-        />
-        <button
-          className="Form-List-search-button"
-          onClick={() => {
-            handleSearchTextChange("");
-            inputRef.current.focus();
-            subjectStore.fetchData();
-          }}
-        >
-          Clear
-        </button>
-      </div>
       {subjectStore.isLoading ? (
         <LoadingSpinner />
       ) : subjectStore.dataNotFound ? (
         <div>Could not get data</div>
-      ) : (
+      ) : ( 
         <div className="FormList-table">
           <table>
             <thead>
@@ -118,19 +64,19 @@ const SubjectList = ({ openAddstudentsModal, closeAddsubjectsModal }) => {
               </tr>
             </thead>
             <tbody>
-              {subjectStore.filteredSubjects.map((teacher) => (
-                <tr key={teacher.subjectId}>
-                  <td>{teacher.subjectName}</td>
-                  <td>{teacher.courseCode}</td>
+              {subjectStore.filteredSubjects.map((subject) => (
+                <tr key={subject.subjectId}>
+                  <td>{subject.subjectName}</td>
+                  <td>{subject.courseCode}</td>
                   <td className="FormList-edit-icon">
                     <div
-                      onClick={() => handleEdit(teacher)}
+                      onClick={() => handleEdit(subject)}
                       className="FormList-edit-icons"
                     >
                       <BiEditAlt className="FormList-edit-icons" />
                     </div>
                     <IoMdTrash
-                      onClick={() => handleDelete(teacher)}
+                      onClick={() => handleDelete(subject)}
                       className="FormList-delete-icon"
                     />
                   </td>

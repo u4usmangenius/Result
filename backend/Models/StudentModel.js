@@ -15,6 +15,32 @@ const {
   arraysEqual,
   getStudentSubjects,
 } = require("./StudentHelper");
+
+// send data matched with ClassName
+router.post("/api/students/ClassName", verifyToken, (req, res) => {
+  const { ClassName } = req.body;
+  db.all(
+    "SELECT * FROM students WHERE ClassName = ?",
+    [ClassName],
+    (err, rows) => {
+      if (err) {
+        console.error("Error fetching result data:", err);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      } else {
+        if (rows.length === 0) {
+          res.status(404).json({
+            success: false,
+            message: "No results found for the provided ClassName",
+          });
+        } else {
+          res.json({ success: true, data: rows });
+        }
+      }
+    }
+  );
+});
 // searching data api
 router.post("/api/students/search", verifyToken, (req, res) => {
   const { searchText, selectedFilter, sortColumn, sortOrder } = req.body;
@@ -146,6 +172,7 @@ router.post("/api/student", verifyToken, (req, res) => {
 router.post("/api/students", verifyToken, async (req, res) => {
   try {
     const { csvData } = req.body;
+    console.log(req.body);
     let uploadedCount = 0;
     let skippedCount = 0;
     let matchCount = 0; // Initialize matchCount to 0
@@ -294,6 +321,7 @@ router.post("/api/students", verifyToken, async (req, res) => {
 router.put("/api/students/:studentId", verifyToken, async (req, res) => {
   const studentId = req.params.studentId;
   const { student, subjects } = req.body;
+  console.log(student, subjects);
   if (
     !student.fullName ||
     !student.className ||

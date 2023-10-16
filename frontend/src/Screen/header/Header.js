@@ -85,7 +85,7 @@ const Header = () => {
           <span onClick={handleImport}>Import</span> */}
         </div>
         <div className="right-elements">
-          <div className="notification-icon-orange">
+          <div className="notification-icon">
             <FaBell />
           </div>
           <div className="logout-button" onClick={Logout}>

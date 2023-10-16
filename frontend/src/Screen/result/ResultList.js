@@ -1,94 +1,50 @@
 import React, { useEffect, useRef } from "react";
-import "./ResultList.css";
 import { IoMdTrash } from "react-icons/io";
 import { BiEditAlt } from "react-icons/bi";
 import { observer } from "mobx-react-lite";
-import EditResultModel from "./EditResultModel";
-import { useNavigate } from "react-router-dom";
-import { MdCancelPresentation } from "react-icons/md";
 import { FaFilePdf } from "react-icons/fa";
-import Swal from "sweetalert2";
 import { resultStore } from "../../store/ResultStore/ResultStore";
+import { addResultStore } from "../../store/ResultStore/AddResultStore";
 
-const ResultList = observer(() => {
-  const inputRef = useRef(null);
-  const navigate = useNavigate();
-
+const ResultList = ({ openAddresultsModal }) => {
+  const { FiltreClassName } = { ...resultStore };
   useEffect(() => {
-    resultStore.fetchDataFromBackend(resultStore.currentPage); // Pass the currentPage to fetchDataFromBackend
-  }, [resultStore.currentPage]);
+    if (resultStore.FiltreClassName !== "") {
+      resultStore.getDataByClassName();
+    } else {
+      resultStore.fetchDataFromBackend(1);
+      console.log("--->", resultStore.fetchDataFromBackend(1));
+    }
+  }, [FiltreClassName]);
 
   const handleEdit = (result) => {
-    resultStore.handleEdit(result);
+    addResultStore.setResultData(result);
+    console.log(result.resultId, "<<<--->>>");
+    openAddresultsModal();
   };
-
-  const handleSaveEdit = (editedResult) => {
-    resultStore.handleSaveEdit(editedResult);
-  };
-
-  const handleCancelEdit = () => {
-    resultStore.handleCancelEdit();
-  };
-
   const handleDelete = async (result) => {
-    const confirmed = await resultStore.showConfirm(
-      `Are you sure you want to delete ${result.fullName}?`
-    );
-    if (confirmed) {
-      resultStore.handleDelete(result);
-    }
+    resultStore.handleDelete(result);
   };
-  const handleSearch = () => {
-    resultStore.handleSearch();
-  };
-
   const handleDownloadPdf = (result) => {
     resultStore.downloadPdf(result);
   };
   return (
-    <div className="result-list-container">
-      <div className="result-search-bar">
-        <select
-          className="result-category"
-          value={resultStore.selectedFilter}
-          onChange={(e) => resultStore.setSelectedFilter(e.target.value)}
-        >
-          <option value="all">All</option>
-          <option value="stdRollNo">RollNo</option>
-          <option value="fullName">Name</option>
-          <option value="TestName">TestName</option>
-          <option value="SubjectName">Subject Name</option>
-          <option value="ClassName">Class Name</option>
-          {/* <option value="ObtainedMarks">Obtained Marks</option> */}
-          <option value="Batch">Batch</option>
-        </select>
-
-        <input
-          type="text"
-          className="subject-text-input"
-          placeholder="Search for a result"
-          value={resultStore.searchText}
-          onChange={(e) => {
-            resultStore.setSearchText(e.target.value);
-            if (e.target.value === "") {
-              resultStore.fetchDataFromBackend(1);
-            } else {
-              resultStore.handleSearch();
-            }
-          }}
-          ref={inputRef}
-        />
-        <button
-          className="result-search-button"
-          onClick={() => {
-            // resultStore.setSearchText("");
-            inputRef.current.focus();
-          }}
-        >
-          Search
-        </button>
+    <div className="Form-list-container">
+      <div className="Formlist-align-filtre-pagebtn">
+        <div className="Form-search-bar">
+          <select
+            className="Form-filter-ClassName"
+            value={resultStore.FiltreClassName}
+            onChange={(e) => (resultStore.FiltreClassName = e.target.value)}
+          >
+            <option value="">Show All</option>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+          </select>
+        </div>
       </div>
-      <div className="result-table">
+
+      <div className="FormList-table">
         <table>
           <thead>
             <tr>
@@ -97,9 +53,9 @@ const ResultList = observer(() => {
               <th>Test Name</th>
               <th>SubjectName</th>
               <th>ClassName</th>
-              <th>Batch</th>
               <th>Obt. Marks</th>
               <th>Tot. Marks</th>
+              <th>Percentage</th>
               <th>PDF</th>
               <th>Actions</th>
             </tr>
@@ -112,27 +68,27 @@ const ResultList = observer(() => {
                 <td>{result.TestName}</td>
                 <td>{result.SubjectName}</td>
                 <td>{result.ClassName}</td>
-                <td>{result.Batch}</td>
                 <td>{result.ObtainedMarks}</td>
                 <td>{result.TotalMarks}</td>
+                <td>{result.stdTestPercentage}</td>
                 <td style={{ fontSize: "22px" }}>
                   <div
-                    className="pdf-result-icon"
+                    className="FormList-edit-icon"
                     onClick={() => handleDownloadPdf(result)}
                   >
-                    <FaFilePdf className="edit-result-icon" />
+                    <FaFilePdf className="FormList-edit-icons" />
                   </div>
                 </td>
-                <td className="set-result-icon">
+                <td className="FormList-edit-icon">
                   <div
                     onClick={() => handleEdit(result)}
-                    className="edit-result-icon"
+                    className="FormList-edit-icons"
                   >
-                    <BiEditAlt className="edit-result-icon" />
+                    <BiEditAlt className="FormList-edit-icons" />
                   </div>
                   <IoMdTrash
                     onClick={() => handleDelete(result)}
-                    className="delete-result-icon"
+                    className="FormList-delete-icon"
                   />
                 </td>
               </tr>
@@ -140,47 +96,29 @@ const ResultList = observer(() => {
           </tbody>
         </table>
       </div>
-      <div className="pagination">
+      <div className="FormList-pagination-header">
         <button
           onClick={() =>
             resultStore.setCurrentPage(resultStore.currentPage - 1)
           }
           disabled={resultStore.currentPage === 1}
-          className="result-pagination-button"
+          className="FormList-pagination-button"
         >
           Prev
         </button>
-        {Array.from({ length: resultStore.totalPages }, (_, i) =>
-          resultStore.currentPage === i + 1 ? (
-            <button
-              id="result-count-btn"
-              key={i}
-              onClick={() => resultStore.setCurrentPage(i + 1)}
-              className=""
-            >
-              {i + 1}
-            </button>
-          ) : null
-        )}
+        <div className="page-count">{resultStore.currentPage}</div>
         <button
           onClick={() =>
             resultStore.setCurrentPage(resultStore.currentPage + 1)
           }
           disabled={resultStore.currentPage === resultStore.totalPages}
-          className="result-pagination-button"
+          className="FormList-pagination-button"
         >
           Next
         </button>{" "}
       </div>
-      {resultStore.showEditModal && (
-        <EditResultModel
-          result={resultStore.editingResult}
-          onSave={handleSaveEdit}
-          onCancel={handleCancelEdit}
-        />
-      )}
     </div>
   );
-});
+};
 
-export default ResultList;
+export default observer(ResultList);

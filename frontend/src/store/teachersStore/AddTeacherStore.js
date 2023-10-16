@@ -198,6 +198,7 @@ class AddTeacherStore {
 
     if (confirmed) {
       try {
+        teachersStore.setLoading(true);
         const token = localStorage.getItem("bearer token");
         const headers = {
           Authorization: `${token}`,
@@ -237,6 +238,7 @@ class AddTeacherStore {
         );
         if (response.status === 200) {
           if (response.data.success) {
+            teachersStore.setLoading(false);
             this.showAlert("Teachers uploaded successfully");
             this.clearFormFields();
             const fetchData = async () => {
@@ -263,6 +265,7 @@ class AddTeacherStore {
       } catch (error) {
         console.error("Error uploading teachers:", error);
         this.showAlert("An error occurred while processing the request.");
+        teachersStore.setLoading(false);
         this.clearFormFields();
       }
     }
@@ -328,6 +331,7 @@ class AddTeacherStore {
           this.onClose();
         }
       } else {
+        this.clearFormFields();
         this.showAlert("Failed to add teacher. Please try again.");
       }
     } catch (error) {

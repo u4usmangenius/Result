@@ -1,16 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoMdTrash } from "react-icons/io";
 import { BiEditAlt } from "react-icons/bi";
 import { observer } from "mobx-react";
-import Swal from "sweetalert2";
 import { studentsStore } from "../../store/studentsStore/studentsStore";
 import LoadingSpinner from "../../components/loaders/Spinner";
 import "../styles/FormList.css";
 import { addstudentStore } from "../../store/studentsStore/AddstudentsStore";
 
-const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
-  const inputRef = useRef();
+const StudentList = ({ openAddstudentsModal }) => {
   const [studentSubjects, setStudentSubjects] = useState({});
+  const { FiltreClassName, filteredstudents } = { ...studentsStore };
   useEffect(() => {
     // Fetch student subjects when the component mounts
     const fetchStudentSubjects = async (studentId) => {
@@ -29,12 +28,19 @@ const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
         console.error("Error fetching subjects:", error);
       }
     };
-
-    // Iterate over your students and fetch subjects for each student
     studentsStore.filteredstudents.forEach((student) => {
       fetchStudentSubjects(student.studentId);
     });
-  }, [studentsStore.filteredstudents]);
+  }, [filteredstudents]);
+
+  useEffect(() => {
+    if (studentsStore.FiltreClassName !== "") {
+      studentsStore.getDataByClassName();
+    } 
+    else {
+      studentsStore.fetchData();
+    }
+  }, [FiltreClassName]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,31 +58,14 @@ const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
     // Fetch data when the component mounts
     fetchData();
   }, []);
-  const handleSearchTextChange = (text) => {
-    studentsStore.setSearchText(text);
-  };
   const handleEdit = (student) => {
     const subjects = studentSubjects[student.studentId];
     addstudentStore.setStudentData(student, subjects);
     openAddstudentsModal();
   };
-
-  const handleSaveEdit = (editedstudent) => {
-    studentsStore.handleSaveEdit(editedstudent);
-  };
-
-  const handleCancelEdit = () => {
-    studentsStore.handleCancelEdit();
-  };
-
   const handleDelete = (student) => {
     studentsStore.handleDelete(student);
   };
-
-  const handleSearch = () => {
-    studentsStore.handleSearch();
-  };
-
   const handlePrevPage = () => {
     if (studentsStore.currentPage > 1) {
       studentsStore.setCurrentPage(studentsStore.currentPage - 1);
@@ -96,45 +85,18 @@ const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
 
   return (
     <div className="Form-list-container">
-      <div className="Form-search-bar">
-        <select
-          className="Form-search-category"
-          value={studentsStore.selectedFilter}
-          onChange={(e) => studentsStore.setSelectedFilter(e.target.value)}
-        >
-          <option value="all">All</option>
-          <option value="fullName">Name</option>
-          <option value="className">ClassName</option>
-          <option value="stdRollNo">RollNo</option>
-          <option value="gender">Gender</option>
-          <option value="stdPhone">Std.PhoneNo</option>
-          <option value="guard_Phone">Guardian PhoneNo</option>
-        </select>
-
-        <input
-          type="text"
-          placeholder="Search for a student "
-          value={studentsStore.searchText}
-          onChange={(e) => {
-            studentsStore.setSearchText(e.target.value);
-            if (e.target.value === "") {
-              studentsStore.fetchData();
-            } else {
-              studentsStore.handleSearch();
-            }
-          }}
-          ref={inputRef}
-        />
-        <button
-          className="Form-List-search-button"
-          onClick={() => {
-            handleSearchTextChange("");
-            inputRef.current.focus();
-            studentsStore.fetchData();
-          }}
-        >
-          Clear
-        </button>
+      <div className="Formlist-align-filtre-pagebtn">
+        <div className="Form-search-bar">
+          <select
+            className="Form-filter-ClassName"
+            value={studentsStore.FiltreClassName}
+            onChange={(e) => (studentsStore.FiltreClassName = e.target.value)}
+          >
+            <option value="">Show All</option>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+          </select>
+        </div>
       </div>
 
       <div className="FormList-table">
@@ -150,7 +112,7 @@ const StudentList = ({ openAddstudentsModal, closeAddstudentsModal }) => {
                 <th>Name</th>
                 <th>ClassName</th>
                 <th>Std.PhoneNo</th>
-                <th>Guardian PhoneNor</th>
+                <th>Guardian PhoneNo</th>
                 <th>Gender</th>
                 <th>Batch</th>
                 <th>Subjects</th>

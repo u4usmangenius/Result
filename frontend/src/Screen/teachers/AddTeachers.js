@@ -34,6 +34,8 @@ const AddTeachers = ({ onClose }) => {
     } else {
       addTeacherStore.RestrictAddAnother = false;
       addTeacherStore.RestrictImportCSV = false;
+      addTeacherStore.editORsubmit = false;
+      // addTeacherStore.clearFormFields();
     }
     addTeacherStore.selectedOption = "manually";
     addTeacherStore.fetchSubjects();
@@ -246,7 +248,7 @@ const AddTeachers = ({ onClose }) => {
             </div>
           </div>
           <div className="addForm-another-btn">
-            <button
+            <div
               className="add-another-form-text"
               onClick={handleAddAnotherClick}
               disabled={addTeacherStore.RestrictAddAnother === true}
@@ -255,13 +257,11 @@ const AddTeachers = ({ onClose }) => {
                 <IoMdAddCircle />
               </div>
               Add Another
-            </button>
+            </div>
             <button className="add-form-button" type="submit">
-              <button className="add-Forms-button">
-                {addTeacherStore.RestrictAddAnother === true
-                  ? "Update Now"
-                  : "Add Now"}
-              </button>
+              {addTeacherStore.RestrictAddAnother === true
+                ? "Update Now"
+                : "Add Now"}
             </button>
           </div>
         </form>

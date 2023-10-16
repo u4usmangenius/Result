@@ -1,33 +1,28 @@
-import React, { useEffect } from "react";
-import "./TestList.css";
+import React, { useEffect, useRef } from "react";
 import { IoMdTrash } from "react-icons/io";
 import { BiEditAlt } from "react-icons/bi";
-import { useNavigate } from "react-router-dom";
-import { MdCancelPresentation } from "react-icons/md";
+import LoadingSpinner from "../../components/loaders/Spinner";
 import { observer } from "mobx-react-lite";
-import EdittestModal from "./EditTestModel";
 import { testStore } from "../../store/TestStore/TestStore";
+import "../styles/FormList.css";
+import { addTestStore } from "../../store/TestStore/AddTestStore";
 
-const TestList = observer(() => {
-  const navigate = useNavigate();
+const TestList = ({ openAddtestsModal, closeAddtestsModal }) => {
+  const { FiltreClassName } = { ...testStore };
 
   useEffect(() => {
-    // Fetch data from the backend when the component mounts
-    testStore.fetchDataFromBackend(1);
-  }, []);
+    if (testStore.FiltreClassName !== "") {
+      testStore.getDataByClassName();
+    } else {
+      testStore.fetchDataFromBackend(1);
+    }
+  }, [FiltreClassName]);
 
   const handleEdit = (test) => {
-    testStore.handleEdit(test);
+    addTestStore.setTestsData(test);
+    console.log(test.testId, "asd");
+    openAddtestsModal();
   };
-
-  const handleSaveEdit = (editedTest) => {
-    testStore.handleSaveEdit(editedTest);
-  };
-
-  const handleCancelEdit = () => {
-    testStore.handleCancelEdit();
-  };
-
   const handleDelete = (test) => {
     testStore.handleDelete(test);
   };
@@ -43,117 +38,83 @@ const TestList = observer(() => {
   const handleFilterChange = (filter) => {
     testStore.setSelectedFilter(filter);
   };
-  const handleSearch = () => {
-    testStore.handleSearch();
-  };
-
   return (
-    <div className="test-list-container">
-      <div className="test-search-bar">
-        <select
-          className="test-category"
-          value={testStore.selectedFilter}
-          onChange={(e) => handleFilterChange(e.target.value)}
-        >
-          <option value="all">All</option>
-          <option value="TestName">TestName</option>
-          <option value="ClassName">ClassName</option>
-          <option value="TotalMarks">TotalMarks</option>
-          <option value="SubjectName">SubjectName</option>
-        </select>
-        <input
-          type="text"
-          className="subject-text-input"
-          placeholder="Search for a test"
-          value={testStore.searchText}
-          onChange={(e) => {
-            testStore.setSearchText(e.target.value);
-            if (e.target.value === "") {
-              testStore.fetchDataFromBackend(1);
-            } else {
-              testStore.handleSearch();
-            }
-          }}
-        />
-        <button
-          className="test-search-button"
-          onClick={() => handleSearchTextChange("")}
-        >
-          Search
-        </button>
+    <div className="Form-list-container">
+      <div className="Formlist-align-filtre-pagebtn">
+        <div className="Form-search-bar">
+          <select
+            className="Form-filter-ClassName"
+            value={testStore.FiltreClassName}
+            onChange={(e) => (testStore.FiltreClassName = e.target.value)}
+          >
+            <option value="">Show All</option>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+          </select>
+        </div>
+        
       </div>
-      <div className="test-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Test Name</th>
-              <th>Subject Name</th>
-              <th>Class Name</th>
-              <th>Total Marks</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {testStore.filteredTests.map((test) => (
-              <tr key={test.testId}>
-                <td>{test.TestName}</td>
-                <td>{test.SubjectName}</td>
-                <td>{test.ClassName}</td>
-                <td>{test.TotalMarks}</td>
-                <td className="set-test-icon">
-                  <div
-                    onClick={() => handleEdit(test)}
-                    className="edit-test-icon"
-                  >
-                    <BiEditAlt className="edit-test-icon" />
-                  </div>
-                  <IoMdTrash
-                    onClick={() => handleDelete(test)}
-                    className="delete-test-icon"
-                  />
-                </td>
+
+      {testStore.isLoading ? (
+        <LoadingSpinner />
+      ) : testStore.dataNotFound ? (
+        <div>Could not get data</div>
+      ) : (
+        <div className="FormList-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Test Name</th>
+                <th>Subject Name</th>
+                <th>Class Name</th>
+                <th>Total Marks</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="pagination">
-        <button
-          onClick={() => handlePageChange(testStore.currentPage - 1)}
-          disabled={testStore.currentPage === 1}
-          className="result-pagination-button"
-        >
-          Prev
-        </button>
-        {Array.from({ length: testStore.totalPages }, (_, i) =>
-          testStore.currentPage === i + 1 ? (
-            <button
-              id="result-count-btn"
-              key={i}
-              onClick={() => handlePageChange(i + 1)}
-              className=""
-            >
-              {i + 1}
-            </button>
-          ) : null
-        )}
-        <button
-          className="result-pagination-button"
-          onClick={() => handlePageChange(testStore.currentPage + 1)}
-          disabled={testStore.currentPage === testStore.totalPages}
-        >
-          Next
-        </button>
-      </div>
-      {testStore.showEditModal && (
-        <EdittestModal
-          test={testStore.editingTest}
-          onSave={handleSaveEdit}
-          onCancel={handleCancelEdit}
-        />
+            </thead>
+            <tbody>
+              {testStore.filteredTests.map((test) => (
+                <tr key={test.testId}>
+                  <td>{test.TestName}</td>
+                  <td>{test.SubjectName}</td>
+                  <td>{test.ClassName}</td>
+                  <td>{test.TotalMarks}</td>
+                  <td className="FormList-edit-icon">
+                    <div
+                      onClick={() => handleEdit(test)}
+                      className="FormList-edit-icons"
+                    >
+                      <BiEditAlt className="FormList-edit-icons" />
+                    </div>
+                    <IoMdTrash
+                      onClick={() => handleDelete(test)}
+                      className="FormList-delete-icon"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
+      <div className="FormList-pagination-header">
+          <button
+            onClick={() => handlePageChange(testStore.currentPage - 1)}
+            disabled={testStore.currentPage === 1}
+            className="FormList-pagination-button"
+          >
+            Prev
+          </button>
+          <div className="page-count">{testStore.currentPage}</div>
+          <button
+            className="FormList-pagination-button"
+            onClick={() => handlePageChange(testStore.currentPage + 1)}
+            disabled={testStore.currentPage === testStore.totalPages}
+          >
+            Next
+          </button>
+        </div>
     </div>
   );
-});
+};
 
-export default TestList;
+export default observer(TestList);

@@ -1,102 +1,227 @@
 import React, { useEffect } from "react";
-import "./AddTest.css";
 import { IoMdAddCircle } from "react-icons/io";
 import { observer } from "mobx-react"; // Import MobX observer
 import { addTestStore } from "../../store/TestStore/AddTestStore";
+import { validations } from "../../helper.js/TestsValidationStore";
+import { testStore } from "../../store/TestStore/TestStore";
+import InputMask from "react-input-mask";
 
 const AddTest = ({ onClose }) => {
-  const store = addTestStore;
   useEffect(() => {
-    store.fetchData();
-    store.fetchSubjects();
-  }, [store]);
-
-  const handleSubmit = async () => {
-    try {
-      await store.handleSubmit();
+    if (
+      addTestStore.formData.TestName ||
+      addTestStore.formData.TotalMarks ||
+      (addTestStore.formData.SubjectName &&
+        addTestStore.formData.SubjectName !== "Select Subject") ||
+      (addTestStore.formData.ClassName &&
+        addTestStore.formData.ClassName !== "Select Class")
+    ) {
+      addTestStore.editORsubmit = true;
+      addTestStore.RestrictAddAnother = true;
+    } else {
+      addTestStore.editORsubmit = false;
+      addTestStore.RestrictAddAnother = false;
+    }
+    // addTestStore.fetchData();
+    addTestStore.fetchSubjects();
+  }, []);
+  const handleAddAnotherClick = () => {
+    if (addTestStore.RestrictAddAnother) {
+      return;
+    }
+    validations.errors.ClassName = false;
+    validations.errors.SubjectName = false;
+    validations.errors.TestName = false;
+    validations.errors.TotalMarks = false;
+    addTestStore.clearFormFields();
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (
+      !addTestStore.formData.TestName.trim() ||
+      !addTestStore.formData.ClassName.trim() ||
+      !addTestStore.formData.SubjectName.trim()
+      //  ||
+      // !addTestStore.formData.TotalMarks?.toString().trim()
+      // Total Marks is integer, trim is used with string,so dont use below line, nor i can use toString as i need it as integer
+      //  || !addTestStore.formData.TotalMarks.trim()
+    ) {
+      validations.errors.TestName = true;
+      validations.errors.SubjectName = true;
+      validations.errors.ClassName = true;
+      validations.errors.TotalMarks = true;
+      return;
+    }
+    if (
+      addTestStore.formData.SubjectName === "Select Subject" ||
+      addTestStore.formData.ClassName === "Select Class"
+    ) {
+      validations.errors.SubjectName = true;
+      validations.errors.ClassName = true;
+      return;
+    } else {
+      if (addTestStore.editORsubmit) {
+        testStore.handleSaveEdit();
+      } else {
+        addTestStore.handleSubmit();
+      }
       onClose();
-    } catch (error) {
-      console.error("Error handling submit:", error);
     }
   };
 
   return (
-    <div className="add-test-content">
-      <h2 className="add-test-heading">Add Test</h2>
-      <div className="add-test-options"></div>
-      <form>
-        <div className="test-form-row">
-          <div className="test-form-group">
-            <label className="test-input-label">Subject:</label>
+    <div className="add-form-content">
+      <h2 className="add-form-heading">Add Test</h2>
+      <div className="add-form-options"></div>
+      <form onSubmit={handleSubmit}>
+        <div className="add-form-row">
+          <div className="add-form-group">
+            <label
+              className={`addForm-input-label ${
+                validations.errors.SubjectName &&
+                addTestStore.formData.SubjectName.trim() === "Select Subject"
+                  ? "steric-error-msg"
+                  : "normal-label"
+              }`}
+            >
+              Subject
+              {validations.errors.SubjectName &&
+                addTestStore.formData.SubjectName.trim() ===
+                  "Select Subject" && (
+                  <span className="steric-error-msg"> *</span>
+                )}
+            </label>
             <select
-              value={store.formData.SubjectName}
-              className="test-input-select-subject"
+              value={addTestStore.formData.SubjectName}
+              className="addForm-input-select"
               onChange={(e) =>
-                store.setFormData({ SubjectName: e.target.value })
+                addTestStore.setFormData({ SubjectName: e.target.value })
               }
             >
               <option>Select Subject</option>
-              {store.subjectOptions.map((subject, index) => (
+              {addTestStore.subjectOptions.map((subject, index) => (
                 <option key={index} value={subject.subjectName}>
                   {subject.subjectName}
                 </option>
               ))}
             </select>
           </div>
-          <div className="test-form-group">
-            <label className="test-input-label">Test Name:</label>
-            <input
+          <div className="add-form-group">
+            <label
+              className={`addForm-input-label ${
+                validations.errors.TestName &&
+                addTestStore.formData.TestName.trim() === ""
+                  ? "steric-error-msg"
+                  : "normal-label"
+              }`}
+            >
+              Test Name
+              {validations.errors.TestName &&
+                addTestStore.formData.TestName.trim() === "" && (
+                  <span className="steric-error-msg"> *</span>
+                )}
+            </label>
+            <InputMask
+              mask="**-***"
+              maskChar=""
               type="text"
-              className="test-input-type-text"
-              placeholder="Test Name"
-              value={store.formData.TestName}
-              onChange={(e) => store.setFormData({ TestName: e.target.value })}
+              className="addForm-input-type-text"
+              placeholder="T1-CSI"
+              value={addTestStore.formData.TestName}
+              onChange={(e) =>
+                addTestStore.setFormData({ TestName: e.target.value })
+              }
             />
           </div>
         </div>
-      </form>
-      <div className="test-form-row">
-        <div className="test-form-group">
-          <label className="test-input-label">Total Marks:</label>
-          <input
-            type="number"
-            className="test-input-type-text"
-            placeholder="Total Marks"
-            value={store.formData.TotalMarks}
-            onChange={(e) => store.setFormData({ TotalMarks: e.target.value })}
-          />
-        </div>
+        <div className="add-form-row">
+          <div className="add-form-group">
+            <label
+              className={`addForm-input-label ${
+                validations.errors.TotalMarks &&
+                addTestStore.formData.TotalMarks === null
+                  ? "steric-error-msg"
+                  : "normal-label"
+              }`}
+            >
+              Total Marks
+              {validations.errors.TotalMarks &&
+                addTestStore.formData.TotalMarks === null && (
+                  <span className="steric-error-msg"> *</span>
+                )}
+            </label>
+            <input
+              type="number"
+              className="addForm-input-type-text"
+              placeholder="Total Marks"
+              value={addTestStore.formData.TotalMarks}
+              onChange={(e) => {
+                let value = parseInt(e.target.value);
+                if (!isNaN(value)) {
+                  addTestStore.setFormData({ TotalMarks: value });
+                } else {
+                  if (e.target.value <= 999999999999999)
+                    addTestStore.setFormData({ TotalMarks: null });
+                }
+              }}
+            />
+          </div>
 
-        <div className="test-form-group">
-          <label className="test-input-label">ClassName:</label>
-          <select
-            value={store.formData.ClassName}
-            className="test-input-select-subject"
-            onChange={(e) => store.setFormData({ ClassName: e.target.value })}
-          >
-            <option value="">Select ClassName</option>
-            {store.classnameOptions.map((className, index) => (
+          <div className="add-form-group">
+            <label
+              className={`addForm-input-label ${
+                validations.errors.ClassName &&
+                addTestStore.formData.ClassName.trim() === "Select Class"
+                  ? "steric-error-msg"
+                  : "normal-label"
+              }`}
+            >
+              ClassName
+              {validations.errors.ClassName &&
+                addTestStore.formData.ClassName.trim() === "Select Class" && (
+                  <span className="steric-error-msg"> *</span>
+                )}
+            </label>
+            <select
+              value={addTestStore.formData.ClassName}
+              className="addForm-input-select"
+              onChange={(e) =>
+                addTestStore.setFormData({ ClassName: e.target.value })
+              }
+            >
+              <option value="">Select Class</option>
+              <option>1st Year</option>
+              <option>2nd Year</option>
+              {/* {addTestStore.classnameOptions.map((className, index) => (
               <option key={index} value={className}>
                 {className}
               </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="add-another-test">
-        <div className="add-another-test-text">
-          <div className="add-another-text-icon-test">
-            <IoMdAddCircle />
+            ))} */}
+            </select>
           </div>
-          Add Another
         </div>
-        {/* Add test Button */}
-        <div className="add-test-button" onClick={handleSubmit}>
-          <button className="add-tests-button">
-            {store.editingIndex !== -1 ? "Save Edit" : "Add Subjects"}
+        <div className="addForm-another-btn">
+          <div
+            className="add-another-form-text"
+            onClick={handleAddAnotherClick}
+            disabled={addTestStore.RestrictAddAnother === true}
+          >
+            <div className="add-another-text-icon-btn">
+              <IoMdAddCircle />
+            </div>
+            Add Another
+          </div>
+          <button
+            type="submit"
+            className="add-form-button"
+            onClick={handleSubmit}
+          >
+            {addTestStore.RestrictAddAnother === true
+              ? "Update Now"
+              : "Add Now"}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

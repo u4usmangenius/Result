@@ -23,12 +23,12 @@ class AddStudentStore {
 
   formData = {
     fullName: "",
-    stdRollNo: "",
+    stdRollNo: null,
     stdPhone: "",
     guard_Phone: "",
     gender: "Select Gender",
     className: "Select Class",
-    Batch: "",
+    Batch: "Select Batch",
     Subject1: "",
     Subject2: "",
     Subject3: "",
@@ -43,7 +43,7 @@ class AddStudentStore {
     this.formData.guard_Phone = "";
     this.formData.gender = "Select Gender";
     this.formData.className = "Select Class";
-    this.formData.Batch = "";
+    this.formData.Batch = "Select Batch";
     validations.errors.Name = false;
     validations.errors.rollNo = false;
     validations.errors.gender = false;
@@ -123,6 +123,7 @@ class AddStudentStore {
   }
   setFormData(field, value) {
     this.formData[field] = value;
+    console.log("this.formData[field]", this.formData[field]);
   }
   setEditingSubjects(subjects) {
     this.editingSubjects = subjects;
@@ -279,6 +280,7 @@ class AddStudentStore {
 
     if (confirmed) {
       try {
+        studentsStore.setLoading(true);
         const token = localStorage.getItem("bearer token");
         const headers = {
           Authorization: `${token}`,
@@ -343,6 +345,7 @@ class AddStudentStore {
         if (response.status === 200) {
           if (response.data.success) {
             this.showAlert("Students uploaded successfully");
+            studentsStore.setLoading(false);
             this.clearFormFields();
             this.selectedSubjects = [];
             const fetchData = async () => {
@@ -369,6 +372,7 @@ class AddStudentStore {
       } catch (error) {
         console.error("Error uploading students:", error);
         this.showAlert("An error occurred while processing the request.");
+        studentsStore.setLoading(false);
         this.clearFormFields();
       }
     }
@@ -398,7 +402,7 @@ class AddStudentStore {
       if (
         this.formData.fullName === "" ||
         this.formData.stdRollNo === "" ||
-        this.formData.Batch === "" ||
+        this.formData.Batch === "Select Batch" ||
         this.formData.className === "Select Class" ||
         this.formData.gender === "Select Gender"
       ) {

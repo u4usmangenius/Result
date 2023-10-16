@@ -15,6 +15,8 @@ class SubjectStore {
   loading = false;
   isLoading = false;
   dataNotFound = false;
+  FiltreClassName = "";
+  mouseHover = false;
 
   constructor() {
     makeObservable(this, {
@@ -24,6 +26,8 @@ class SubjectStore {
       searchText: observable,
       selectedFilter: observable,
       showEditModal: observable,
+      FiltreClassName: observable,
+      mouseHover: observable,
       editingSubject: observable,
       totalPages: observable,
       loading: observable,
@@ -41,6 +45,7 @@ class SubjectStore {
       handleCancelEdit: action,
       handleDelete: action,
       setLoading: action,
+      setrowsPerPage: action,
     });
   }
   showAlert(message) {
@@ -54,18 +59,20 @@ class SubjectStore {
   setSearchText(text) {
     this.searchText = text;
   }
-
+  setrowsPerPage(page) {
+    this.rowsPerPage = page;
+    this.fetchData();
+    console.log(this.rowsPerPage);
+  }
   setSelectedFilter(filter) {
     this.selectedFilter = filter;
   }
-  // New action to update dataNotFound state
   setDataNotFound(dataNotFound) {
     this.dataNotFound = dataNotFound;
   }
   setLoading(isLoading) {
-    this.loading = isLoading; // Update the observable directly
+    this.loading = isLoading;
   }
-
   handleSearch = async () => {
     try {
       this.setLoading(true);
@@ -170,13 +177,16 @@ class SubjectStore {
           this.showEditModal = false;
           this.fetchData();
           this.showAlert("Updated Successfully");
+          addSubjectStore.clearFormFields();
         } else if (response.status === 400) {
           this.showAlert("Please Update some Values");
+          addSubjectStore.clearFormFields();
         }
       })
       .catch((error) => {
         this.showAlert("Error while Updating");
         console.error("Error editing subject:", error);
+        addSubjectStore.clearFormFields();
       });
   }
 
@@ -205,10 +215,12 @@ class SubjectStore {
         this.subjects = this.subjects.filter(
           (t) => t.subjectId !== subject.subjectId
         );
-        this.showAlert("Deleted Successfully...");
         this.fetchData();
+        addSubjectStore.clearFormFields();
+        this.showAlert("Deleted Successfully...");
       } catch (error) {
         console.error("Error deleting subject:", error);
+        addSubjectStore.clearFormFields();
         this.showAlert("Error while Deleting...");
       }
     }

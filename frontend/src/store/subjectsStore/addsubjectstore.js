@@ -90,6 +90,7 @@ class AddSubjectStore {
       const success = await this.addSubject(newSubject);
       if (success) {
         this.showAlert("Subject added successfully");
+        this.clearFormFields()
         this.setFormData({
           subjectName: "",
           courseCode: "",
@@ -97,9 +98,11 @@ class AddSubjectStore {
         validations.errors.subjectName = false;
         validations.errors.courseCode = false;
       } else {
+        this.clearFormFields();
         this.showAlert("Failed to add subject. Please try again.");
       }
     } catch (error) {
+      this.clearFormFields(); 
       console.error("Error handling submit:", error);
       this.showAlert("An error occurred while processing the request.");
     }
@@ -163,7 +166,8 @@ class AddSubjectStore {
         // subjectStore.fetchSubjects();
         return true;
       } else {
-        Swal.fire("Failed to add subject. Please try again.");
+        this.clearFormFields();
+        this.showAlert("Failed to add subject. Please try again.");
         return false;
       }
     } catch (error) {

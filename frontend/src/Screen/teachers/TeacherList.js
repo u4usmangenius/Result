@@ -76,45 +76,7 @@ const TeacherList = ({ openAddstudentsModal, closeAddTeachersModal }) => {
 
   return (
     <div className="Form-list-container">
-      <div className="Form-search-bar">
-        <select
-          className="Form-search-category"
-          value={teachersStore.selectedFilter}
-          onChange={(e) => teachersStore.setSelectedFilter(e.target.value)}
-        >
-          <option value="all">All</option>
-          <option value="fullName">Name</option>
-          <option value="subject">Subject</option>
-          <option value="gender">Gender</option>
-          <option value="phone">Phone Number</option>
-        </select>
-
-        <input
-          type="text"
-          placeholder="Search for a teacher "
-          value={teachersStore.searchText}
-          onChange={(e) => {
-            teachersStore.setSearchText(e.target.value);
-            if (e.target.value === "") {
-              teachersStore.fetchData(); // Retrieve original data when search input is empty
-            } else {
-              teachersStore.handleSearch(); // Trigger search as the input changes
-            }
-          }}
-          ref={inputRef}
-        />
-        <button
-          className="Form-List-search-button"
-          onClick={() => {
-            handleSearchTextChange("");
-            inputRef.current.focus();
-            teachersStore.fetchData();
-          }}
-        >
-          Clear
-        </button>
-      </div>
-
+      {/* <label>Search Here</label> */}
       <div className="FormList-table">
         {teachersStore.loading ? (
           <LoadingSpinner />

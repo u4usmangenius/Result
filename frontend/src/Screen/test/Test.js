@@ -1,43 +1,44 @@
 import React, { useState } from "react";
-import "./Test.css";
 import Modal from "../model/Modal.js";
 import Header from "../header/Header";
 import AddTest from "./AddTest";
 import TestList from "./TestList";
+import TestSearchInput from "./TestSearchInput.js";
 
 const Test = () => {
-  const [isAddStudentsModalOpen, setIsAddStudentsModalOpen] = useState(false);
+  const [isAddTestsModalOpen, setIsAddTestsModalOpen] = useState(false);
 
-  const openAddStudentsModal = () => {
-    setIsAddStudentsModalOpen(true);
+  const openAddTestsModal = () => {
+    setIsAddTestsModalOpen(true);
   };
 
-  const closeAddStudentsModal = () => {
-    setIsAddStudentsModalOpen(false);
+  const closeAddTestsModal = () => {
+    setIsAddTestsModalOpen(false);
   };
 
   return (
     <>
       <Header />
-      <div className="test-container">
-        <div className="test-header-row">
+      <div className="formlist-list-container">
+        <div className="formlist-header-row">
           <h1>Test</h1>
+          <TestSearchInput/>
           <button
-            className="add-test-button"
-            onClick={openAddStudentsModal}
+            className="formlist-click-add-button"
+            onClick={openAddTestsModal}
           >
             Add Test
           </button>
         </div>
       </div>
 
-      <Modal isOpen={isAddStudentsModalOpen} onClose={closeAddStudentsModal}>
-        <AddTest onClose={closeAddStudentsModal} />
+      <Modal isOpen={isAddTestsModalOpen} onClose={closeAddTestsModal}>
+        <AddTest onClose={closeAddTestsModal} />
       </Modal>
 
       <TestList
-        openAddStudentsModal={openAddStudentsModal}
-        closeAddStudentsModal={closeAddStudentsModal}
+        openAddtestsModal={openAddTestsModal}
+        closeAddtestsModal={closeAddTestsModal}
       />
     </>
   );

@@ -1,9 +1,9 @@
 import React, { createContext, useState } from "react";
-import "./Teacher.css";
 import AddTeachers from "./AddTeachers";
 import Modal from "../model/Modal.js";
 import TeacherList from "./TeacherList";
 import Header from "../header/Header";
+import TeacherSearchInput from "./TeacherSearchInput";
 export const TeachersContext = createContext(); // Create the context
 const Teachers = () => {
   const [isAddTeachersModalOpen, setIsAddTeachersModalOpen] = useState(false);
@@ -22,11 +22,12 @@ const Teachers = () => {
   return (
     <TeachersContext.Provider value={{ teachersData, addNewTeacher }}>
       <Header />
-      <div className="teachers-container">
-        <div className="teachers-header-row">
+      <div className="formlist-list-container">
+        <div className="formlist-header-row">
           <h1>Teachers</h1>
+          <TeacherSearchInput />
           <button
-            className="add-teachers-button"
+            className="formlist-click-add-button"
             onClick={openAddTeachersModal}
           >
             Add Teachers

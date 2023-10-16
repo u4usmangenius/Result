@@ -25,13 +25,13 @@ const AddStudents = ({ onClose }) => {
       addstudentStore.formData.fullName ||
       addstudentStore.formData.stdPhone ||
       addstudentStore.formData.guard_Phone ||
-      addstudentStore.formData.Batch ||
       addstudentStore.selectedSubjects.length > 0
     ) {
       addstudentStore.editORsubmit = true;
       addstudentStore.RestrictAddAnother = true;
       addstudentStore.RestrictImportCSV = true;
     } else {
+      addstudentStore.editORsubmit = false;
       addstudentStore.RestrictAddAnother = false;
       addstudentStore.RestrictImportCSV = false;
     }
@@ -59,7 +59,7 @@ const AddStudents = ({ onClose }) => {
     e.preventDefault();
     // Validate form fields
     if (
-      !addstudentStore.formData.stdRollNo.trim() ||
+      !addstudentStore.formData.stdRollNo ||
       !addstudentStore.formData.fullName.trim() ||
       !addstudentStore.formData.gender.trim() ||
       !addstudentStore.formData.className.trim() ||
@@ -76,7 +76,8 @@ const AddStudents = ({ onClose }) => {
     }
     if (
       addstudentStore.formData.gender === "Select Gender" ||
-      addstudentStore.formData.className === "Select Class"
+      addstudentStore.formData.className === "Select Class" ||
+      addstudentStore.formData.Batch === "Select Batch"
     ) {
       validations.errors.gender = true;
       validations.errors.className = true;
@@ -123,25 +124,27 @@ const AddStudents = ({ onClose }) => {
               <label
                 className={`addForm-input-label ${
                   validations.errors.rollNo &&
-                  addstudentStore.formData.stdRollNo.trim() === ""
+                  !addstudentStore.formData.stdRollNo
                     ? "steric-error-msg"
                     : "normal-label"
                 }`}
               >
                 Roll No
                 {validations.errors.rollNo &&
-                  addstudentStore.formData.stdRollNo.trim() === "" && (
+                  !addstudentStore.formData.stdRollNo && (
                     <span className="steric-error-msg"> *</span>
                   )}
               </label>
               <input
-                type="text"
+                type="number"
                 className="addForm-input-type-text"
                 placeholder="RollNo"
                 value={formData.stdRollNo}
-                onChange={(e) =>
-                  addstudentStore.setFormData("stdRollNo", e.target.value)
-                }
+                onChange={(e) => {
+                  let value = parseInt(e.target.value);
+                  console.log("-->", value);
+                  addstudentStore.setFormData("stdRollNo", value);
+                }}
               />
             </div>
             <div className="add-form-group">
@@ -276,8 +279,8 @@ const AddStudents = ({ onClose }) => {
                 }
               >
                 <option>Select Class</option>
-                <option>1st year</option>
-                <option>2nd year</option>
+                <option>1st Year</option>
+                <option>2nd Year</option>
               </select>
             </div>
           </div>
@@ -286,32 +289,42 @@ const AddStudents = ({ onClose }) => {
               <label
                 className={`addForm-input-label ${
                   validations.errors.Batch &&
-                  addstudentStore.formData.Batch.trim() === ""
+                  addstudentStore.formData.Batch.trim() === "Select Batch"
                     ? "steric-error-msg"
                     : "normal-label"
                 }`}
               >
                 Batch
                 {validations.errors.Batch &&
-                  addstudentStore.formData.Batch.trim() === "" && (
+                  addstudentStore.formData.Batch.trim() === "Select Batch" && (
                     <span className="steric-error-msg"> *</span>
                   )}
               </label>
 
-              <InputMask
-                mask="9999-9999"
-                maskChar=""
+              <select
                 type="text"
                 className="addForm-input-type-text"
-                placeholder="2021-2025"
                 value={formData.Batch}
                 onChange={(e) =>
                   addstudentStore.setFormData("Batch", e.target.value)
                 }
-              />
+              >
+                <option>Select Batch</option>
+                <option>2022-2024</option>
+                <option>2023-2025</option>
+                <option>2024-2026</option>
+                <option>2025-2027</option>
+                <option>2026-2028</option>
+                <option>2027-2029</option>
+                <option>2028-2030</option>
+                <option>2029-3031</option>
+                <option>2030-2032</option>
+                <option>2031-2033</option>
+                <option>2032-2034</option>
+                <option>2033-2035</option>
+              </select>
             </div>
           </div>
-          {/* <h3 className="addForm-h3">Select Subjects</h3> */}
           <h3 className="addForm-h3">Select Subjects</h3>
           <div
             className={`addForm-h3 select-6-subjects ${
@@ -353,7 +366,7 @@ const AddStudents = ({ onClose }) => {
           </div>
 
           <div className="addForm-another-btn">
-            <button
+            <div
               className="add-another-form-text"
               onClick={handleAddAnotherClick}
               disabled={addstudentStore.RestrictAddAnother === true}
@@ -362,14 +375,11 @@ const AddStudents = ({ onClose }) => {
                 <IoMdAddCircle />
               </div>
               Add Another
-            </button>
-            {/* Add student Button */}
+            </div>
             <button className="add-form-button" type="submit">
-              <button className="add-Forms-button">
-                {addstudentStore.RestrictAddAnother === true
-                  ? "Update Now"
-                  : "Add Now"}
-              </button>
+              {addstudentStore.RestrictAddAnother === true
+                ? "Update Now"
+                : "Add Now"}
             </button>
           </div>
         </form>

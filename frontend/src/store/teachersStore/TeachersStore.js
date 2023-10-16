@@ -6,13 +6,15 @@ import { addTeacherStore } from "./AddTeacherStore";
 class TeachersStore {
   teachers = [];
   currentPage = 1;
-  rowsPerPage = 5;
+  rowsPerPage = 10;
   searchText = "";
   selectedFilter = "all";
   showEditModal = false;
   editingTeacher = null;
   totalPages = 1;
   loading = false;
+  FiltreClassName = "";
+  mouseHover = false;
 
   constructor() {
     makeObservable(this, {
@@ -24,10 +26,13 @@ class TeachersStore {
       showEditModal: observable,
       editingTeacher: observable,
       totalPages: observable,
+      FiltreClassName: observable,
+      mouseHover: observable,
       loading: observable,
       filteredTeachers: computed,
       setCurrentPage: action,
       setSearchText: action,
+      setrowsPerPage: action,
       setSelectedFilter: action,
       fetchData: action,
       handleEdit: action,
@@ -46,6 +51,13 @@ class TeachersStore {
 
   setSearchText(text) {
     this.searchText = text;
+    this.FiltreClassName = false;
+  }
+
+  setrowsPerPage(page) {
+    this.rowsPerPage = page;
+    this.fetchData();
+    console.log(this.rowsPerPage);
   }
 
   setSelectedFilter(filter) {
@@ -131,7 +143,7 @@ class TeachersStore {
     this.editingTeacher = teacher;
   }
 
-  handleSaveEdit(editedTeacher) {
+  handleSaveEdit() {
     const teachersInfo = {
       fullName: addTeacherStore.formData.fullName,
       gender: addTeacherStore.formData.gender,
@@ -163,16 +175,15 @@ class TeachersStore {
           updatedTeachers[editedTeacherIndex] = response.data;
           this.teachers = updatedTeachers;
           this.showEditModal = false;
-          this.showAlert("Updated Successfully...");
           this.fetchData();
           addTeacherStore.clearFormFields();
+          this.showAlert("Updated Successfully...");
         }
       })
       .catch((error) => {
         this.showAlert("Something went wrong");
         console.error("Error editing teacher:", error);
         addTeacherStore.clearFormFields();
-        
       });
   }
 

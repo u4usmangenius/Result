@@ -3,6 +3,32 @@ const router = express.Router();
 const db = require("../db/Sqlite").db;
 const crypto = require("crypto"); // Import the crypto module
 const { verifyToken } = require("./authMiddleware");
+// send data matched with ClassName
+router.post("/api/tests/ClassName", verifyToken, (req, res) => {
+  const { ClassName } = req.body;
+
+  db.all(
+    "SELECT * FROM tests WHERE ClassName = ?",
+    [ClassName],
+    (err, rows) => {
+      if (err) {
+        console.error("Error fetching result data:", err);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      } else {
+        if (rows.length === 0) {
+          res.status(404).json({
+            success: false,
+            message: "No results found for the provided ClassName",
+          });
+        } else {
+          res.json({ success: true, data: rows });
+        }
+      }
+    }
+  );
+});
 
 // search record api
 // Router to search and get paginated tests with validations
@@ -78,10 +104,10 @@ router.post("/api/tests/search", verifyToken, (req, res) => {
   });
 });
 
-// Adding a test
+// Adding test
 router.post("/api/tests", verifyToken, (req, res) => {
   const { SubjectName, TestName, TotalMarks, ClassName } = req.body;
-
+  console.log(req.body);
   // Check if SubjectName and userSubject are provided in the request body
   if (!SubjectName || !TestName || !TotalMarks || !ClassName) {
     return res.status(400).json({ error: "All Fields are required." });
@@ -89,7 +115,7 @@ router.post("/api/tests", verifyToken, (req, res) => {
 
   // Perform a lookup in the test table to check if the record already exists
   db.get(
-    "SELECT COUNT(*) as count FROM tests WHERE SubjectName = ? AND TestName = ? AND ClassName = ? AND TotalMarks = ?",
+    "SELECT COUNT(*) as count FROM tests WHERE LOWER(SubjectName) = LOWER(?) AND LOWER(TestName) = LOWER(?) AND LOWER(ClassName) = LOWER(?) AND LOWER(TotalMarks) = LOWER(?)",
     [SubjectName, TestName, ClassName, TotalMarks],
     (err, result) => {
       if (err) {
@@ -235,8 +261,6 @@ router.post("/api/test", verifyToken, (req, res) => {
 router.put("/api/tests/:testId", verifyToken, (req, res) => {
   const testId = req.params.testId;
   const { TestName, SubjectName, TotalMarks, ClassName } = req.body;
-
-  // Check if any required field is missing
   if (!TestName || !SubjectName || !TotalMarks || !ClassName) {
     res
       .status(400)

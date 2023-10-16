@@ -2,6 +2,7 @@
 import { makeObservable, observable, action, computed } from "mobx";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { addTestStore } from "./AddTestStore";
 
 class TestStore {
   currentPage = 1;
@@ -12,7 +13,11 @@ class TestStore {
   showEditModal = false;
   editingTest = null;
   loading = false;
+  isLoading = false;
+  dataNotFound = false;
   totalPages = 1;
+  mouseHover = false;
+  FiltreClassName = "";
 
   constructor() {
     makeObservable(this, {
@@ -20,13 +25,19 @@ class TestStore {
       rowsPerPage: observable,
       searchText: observable,
       selectedFilter: observable,
+      FiltreClassName: observable,
       tests: observable,
       showEditModal: observable,
       editingTest: observable,
+      mouseHover: observable,
       loading: observable,
+      isLoading: observable,
+      dataNotFound: observable,
       totalPages: observable,
       filteredTests: computed,
       getCurrentPageData: computed,
+      getDataByClassName: action,
+      setrowsPerPage: action,
       setSearchText: action,
       handleSearch: action,
       setSelectedFilter: action,
@@ -74,7 +85,30 @@ class TestStore {
       this.setLoading(false);
     }
   };
+  async getDataByClassName() {
+    const ClassName = this.FiltreClassName;
+    try {
+      const token = localStorage.getItem("bearer token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+      const response = await axios.post(
+        "http://localhost:8080/api/tests/ClassName",
+        { ClassName },
+        {
+          headers,
+        }
+      );
 
+      if (response.status === 200) {
+        this.setTests(response.data.data);
+      } else {
+        console.error("Error:", response.data.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
   get filteredTests() {
     const searchTextLower = this.searchText?.toLowerCase();
     return this.tests.filter((test) => {
@@ -118,10 +152,17 @@ class TestStore {
 
   setSearchText(text) {
     this.searchText = text;
+    this.FiltreClassName = false;
   }
 
   setSelectedFilter(filter) {
     this.selectedFilter = filter;
+  }
+
+  setrowsPerPage(page) {
+    this.rowsPerPage = page;
+    this.fetchDataFromBackend();
+    console.log(this.rowsPerPage);
   }
 
   setCurrentPage(page) {
@@ -137,16 +178,18 @@ class TestStore {
     this.editingTest = test;
   }
 
-  setLoading(loading) {
-    this.loading = loading;
-  }
-
   setTests(tests) {
     this.tests = tests;
   }
 
   setTotalPages(totalPages) {
     this.totalPages = totalPages;
+  }
+  setDataNotFound(dataNotFound) {
+    this.dataNotFound = dataNotFound;
+  }
+  setLoading(isLoading) {
+    this.loading = isLoading;
   }
 
   async fetchDataFromBackend(page) {
@@ -187,28 +230,48 @@ class TestStore {
     this.setEditingTest(test);
   }
 
-  handleSaveEdit(editedTest) {
+  handleSaveEdit() {
+    const testsInfo = {
+      TestName: addTestStore.formData.TestName,
+      SubjectName: addTestStore.formData.SubjectName,
+      ClassName: addTestStore.formData.ClassName,
+      TotalMarks: addTestStore.formData.TotalMarks,
+    };
+    const testId = addTestStore.testId;
     const token = localStorage.getItem("bearer token");
     const headers = {
       Authorization: `${token}`,
     };
     axios
-      .put(`http://localhost:8080/api/tests/${editedTest.testId}`, editedTest, {
-        headers,
-      })
+      .put(
+        `http://localhost:8080/api/tests/${testId}`,
+        {
+          TestName: testsInfo.TestName,
+          ClassName: testsInfo.ClassName,
+          SubjectName: testsInfo.SubjectName,
+          TotalMarks: testsInfo.TotalMarks,
+        },
+        {
+          headers,
+        }
+      )
       .then((response) => {
         if (response.status === 200) {
           const editedTestIndex = this.tests.findIndex(
-            (t) => t.testId === editedTest.testId
+            (t) => t.testId === testId
           );
           const updatedTests = [...this.tests];
           updatedTests[editedTestIndex] = response.data;
           this.setTests(updatedTests);
-          this.setShowEditModal(false);
+          // addTestStore.fetchData();
+          addTestStore.showAlert("Updated Successfully...");
           this.fetchDataFromBackend(1);
+          addTestStore.clearFormFields();
         }
       })
       .catch((error) => {
+        addTestStore.showAlert("Error while Updating...");
+        addTestStore.clearFormFields();
         console.error("Error editing test:", error);
       });
   }
@@ -236,8 +299,10 @@ class TestStore {
             );
             this.setTests(updatedTests);
             this.fetchDataFromBackend(1);
+            addTestStore.showAlert("Test Deleted Successfully..");
           } else {
             console.error("Error deleting test:", response.data.message);
+            addTestStore.showAlert("Error while deleting Test..");
           }
         })
         .catch((error) => {

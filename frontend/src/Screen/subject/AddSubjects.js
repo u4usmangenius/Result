@@ -15,11 +15,10 @@ const AddSubjects = observer(({ onClose }) => {
     ) {
       addSubjectStore.editORsubmit = true;
       addSubjectStore.RestrictAddAnother = true;
-      addSubjectStore.RestrictImportCSV = true;
       subjectStore.fetchData();
     } else {
+      addSubjectStore.editORsubmit = false;
       addSubjectStore.RestrictAddAnother = false;
-      addSubjectStore.RestrictImportCSV = false;
     }
     addSubjectStore.fetchSubjects();
   }, []);
@@ -130,7 +129,7 @@ const AddSubjects = observer(({ onClose }) => {
             </div>
           </div>
           <div className="addForm-another-btn">
-            <button
+            <div
               className="add-another-form-text"
               onClick={handleAddAnotherClick}
               disabled={addSubjectStore.RestrictAddAnother === true}
@@ -139,7 +138,7 @@ const AddSubjects = observer(({ onClose }) => {
                 <IoMdAddCircle />
               </div>
               Add Another
-            </button>
+            </div>
             <button type="submit" className="add-form-button">
               {addSubjectStore.RestrictAddAnother === true
                 ? "Update Now"

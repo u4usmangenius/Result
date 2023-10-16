@@ -5,6 +5,89 @@ const crypto = require("crypto"); // Import the crypto module
 const { verifyToken } = require("./authMiddleware");
 const PDFDocument = require("pdfkit");
 
+// send data matched with ClassName
+router.post("/api/results/ClassName", verifyToken, (req, res) => {
+  const { ClassName } = req.body;
+
+  db.all(
+    "SELECT * FROM result WHERE ClassName = ?",
+    [ClassName],
+    (err, rows) => {
+      if (err) {
+        console.error("Error fetching result data:", err);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      } else {
+        if (rows.length === 0) {
+          res.status(404).json({
+            success: false,
+            message: "No results found for the provided ClassName",
+          });
+        } else {
+          console.log("data===___>", { data: rows });
+          res.json({ success: true, data: rows });
+        }
+      }
+    }
+  );
+});
+
+// Endpoint for sending selected ClassName related test and student info
+
+router.post("/api/results/data", verifyToken, (req, res) => {
+  const { ClassName } = req.body;
+  if (!ClassName) {
+    return res
+      .status(400)
+      .json({ error: "Class name is required in the request body" });
+  }
+
+  // Create a SQL query to fetch student data
+  const studentSql = `
+    SELECT stdRollNo, fullName, studentId
+    FROM students
+    WHERE ClassName = ?
+  `;
+
+  // Create a SQL query to fetch tests data
+  const testsSql = `
+    SELECT *
+    FROM tests
+    WHERE ClassName = ?
+  `;
+
+  const studentData = [];
+  const testsData = [];
+
+  // Execute the student data query
+  db.all(studentSql, [ClassName], (err, studentRows) => {
+    if (err) {
+      console.error("Error fetching student data:", err);
+      return res
+        .status(500)
+        .json({ error: "An error occurred while fetching data" });
+    }
+
+    studentData.push(...studentRows);
+
+    // Execute the tests data query
+    db.all(testsSql, [ClassName], (err, testsRows) => {
+      if (err) {
+        console.error("Error fetching tests data:", err);
+        return res
+          .status(500)
+          .json({ error: "An error occurred while fetching data" });
+      }
+
+      testsData.push(...testsRows);
+
+      // Send both arrays in the response
+      res.json({ studentData, testsData });
+    });
+  });
+});
+
 // Search and get all data from the database with filtering and sorting
 router.post("/api/results/search", verifyToken, (req, res) => {
   const { searchText, selectedFilter, sortColumn, sortOrder } = req.body;
@@ -13,8 +96,7 @@ router.post("/api/results/search", verifyToken, (req, res) => {
   const offset = (page - 1) * pageSize;
 
   let query = `
-    SELECT resultId, fullName, stdRollNo, TestName, TotalMarks, SubjectName, ClassName, ObtainedMarks, Batch
-    FROM result
+    SELECT resultId, fullName, stdRollNo, TestName, TotalMarks, SubjectName, ClassName, ObtainedMarks, stdTestPercentage FROM result
     WHERE 1=1`;
 
   const params = [];
@@ -26,15 +108,13 @@ router.post("/api/results/search", verifyToken, (req, res) => {
     selectedFilter === "TotalMarks" ||
     selectedFilter === "SubjectName" ||
     selectedFilter === "ClassName" ||
-    selectedFilter === "ObtainedMarks" ||
-    selectedFilter === "Batch"
+    selectedFilter === "ObtainedMarks"
   ) {
     query += ` AND ${selectedFilter} LIKE ?`;
     params.push(`%${searchText}%`);
   } else {
-    query += ` AND (fullName LIKE ? OR stdRollNo LIKE ? OR TestName LIKE ? OR TotalMarks LIKE ? OR SubjectName LIKE ? OR ClassName LIKE ? OR ObtainedMarks LIKE ? OR Batch LIKE ?)`;
+    query += ` AND (fullName LIKE ? OR stdRollNo LIKE ? OR TestName LIKE ? OR TotalMarks LIKE ? OR SubjectName LIKE ? OR ClassName LIKE ? OR ObtainedMarks LIKE ?)`;
     params.push(
-      `%${searchText}%`,
       `%${searchText}%`,
       `%${searchText}%`,
       `%${searchText}%`,
@@ -64,7 +144,7 @@ router.post("/api/results/search", verifyToken, (req, res) => {
       const startIndex = offset;
       const endIndex = Math.min(startIndex + pageSize, totalCount);
       const pageResults = rows.slice(startIndex, endIndex);
-
+      console.log("pageResults", pageResults);
       res.json({
         success: true,
         results: pageResults,
@@ -87,8 +167,7 @@ router.post("/api/result", verifyToken, (req, res) => {
   const offset = (page - 1) * pageSize;
 
   let query = `
-            SELECT resultId, fullName, stdRollNo, TestName, TotalMarks, SubjectName, ClassName, ObtainedMarks, Batch
-            FROM result 
+            SELECT resultId, fullName, stdRollNo, TestName, TotalMarks, SubjectName, ClassName, ObtainedMarks, stdTestPercentage FROM result 
             WHERE 1=1`;
 
   const params = [];
@@ -100,15 +179,13 @@ router.post("/api/result", verifyToken, (req, res) => {
     filter === "TotalMarks" ||
     filter === "SubjectName" ||
     filter === "ClassName" ||
-    filter === "ObtainedMarks" ||
-    filter === "Batch"
+    filter === "ObtainedMarks"
   ) {
     query += ` AND ${filter} LIKE ?`;
     params.push(`%${search}%`);
   } else if (filter === "all") {
-    query += ` AND (fullName LIKE ? OR stdRollNo LIKE ? OR TestName LIKE ? OR TotalMarks LIKE ? OR SubjectName LIKE ? OR ClassName LIKE ? OR ObtainedMarks LIKE ? OR Batch LIKE ?)`;
+    query += ` AND (fullName LIKE ? OR stdRollNo LIKE ? OR TestName LIKE ? OR TotalMarks LIKE ? OR SubjectName LIKE ? OR ClassName LIKE ? OR ObtainedMarks LIKE ?)`;
     params.push(
-      `%${search}%`,
       `%${search}%`,
       `%${search}%`,
       `%${search}%`,
@@ -140,48 +217,61 @@ router.post("/api/result", verifyToken, (req, res) => {
     }
   });
 });
-
+// store result
 router.post("/api/results", verifyToken, (req, res) => {
-  const { stdRollNo, TestName, ObtainedMarks } = req.body;
-
-  if (!stdRollNo || !TestName || !ObtainedMarks) {
+  const { stdRollNo, TestName, ObtainedMarks, ClassName, stdTestPercentage } =
+    req.body;
+  console.log(req.body);
+  if (
+    !stdRollNo ||
+    !TestName ||
+    !ClassName ||
+    !ObtainedMarks ||
+    !stdTestPercentage
+  ) {
     return res.status(400).json({ error: "All Fields are required." });
   }
-
   db.get(
-    "SELECT COUNT(*) as count FROM result WHERE stdRollNo = ? AND TestName = ?",
-    [stdRollNo, TestName],
+    "SELECT COUNT(*) as count FROM result WHERE stdRollNo = ? AND TestName = ? AND ClassName= ? AND stdTestPercentage= ?",
+    [stdRollNo, TestName, ClassName, stdTestPercentage],
     (err, result) => {
       if (err) {
         console.error("Error checking if record exists:", err);
+        console.log("here 1");
         return res.status(500).json({ error: "Internal Server Error" });
       }
       const recordCount = result.count;
       if (recordCount > 0) {
         return res.status(409).json({ error: "Record already exists." });
       }
-
       db.get(
-        "SELECT testId, TotalMarks, SubjectName, ClassName FROM tests WHERE TestName = ?",
+        "SELECT testId, TotalMarks, SubjectName FROM tests WHERE TestName = ?",
         [TestName],
         (err, testRow) => {
           if (err) {
             console.error("Error checking if test exists:", err);
+            console.log("here 2");
             return res.status(500).json({ error: "Internal Server Error" });
           }
 
           if (!testRow) {
             return res.status(404).json({ error: "Test not found." });
           }
-
-          const { testId, TotalMarks, SubjectName, ClassName } = testRow;
+          const { testId, TotalMarks, SubjectName } = testRow;
+          if (ObtainedMarks > TotalMarks) {
+            return res.status(400).json({
+              error: "Obtained marks cannot be greater than TotalMarks.",
+            });
+          }
 
           db.get(
-            "SELECT studentId, Batch, fullName FROM students WHERE stdRollNo = ?",
+            "SELECT studentId, fullName FROM students WHERE stdRollNo = ?",
             [stdRollNo],
             (err, studentRow) => {
               if (err) {
                 console.error("Error checking if student exists:", err);
+                console.log("here 3");
+
                 return res.status(500).json({ error: "Internal Server Error" });
               }
 
@@ -189,24 +279,24 @@ router.post("/api/results", verifyToken, (req, res) => {
                 return res.status(404).json({ error: "Student not found." });
               }
 
-              const { studentId, Batch, fullName } = studentRow;
+              const { studentId, fullName } = studentRow;
 
               const resultId = crypto.randomUUID(); // Generate a random UUID
 
               db.run(
-                "INSERT INTO result (resultId, fullName, stdRollNo, TestName, ObtainedMarks, Batch, studentId, testId, TotalMarks, SubjectName, ClassName) VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO result (resultId, fullName, stdRollNo, TestName, ObtainedMarks, studentId, testId, TotalMarks, SubjectName, ClassName, stdTestPercentage) VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [
                   resultId,
                   fullName,
                   stdRollNo,
                   TestName,
                   ObtainedMarks,
-                  Batch,
                   studentId,
                   testId,
                   TotalMarks,
                   SubjectName,
                   ClassName,
+                  stdTestPercentage,
                 ],
                 (err) => {
                   if (err) {
@@ -214,6 +304,8 @@ router.post("/api/results", verifyToken, (req, res) => {
                       "Error inserting data into result table:",
                       err
                     );
+                    console.log("here 5");
+
                     return res
                       .status(500)
                       .json({ error: "Internal Server Error" });
@@ -231,86 +323,100 @@ router.post("/api/results", verifyToken, (req, res) => {
   );
 });
 // Update Result Api
-router.put("/api/results/:testId", verifyToken, (req, res) => {
-  const resultId = req.params.testId;
-  const {
-    fullName,
-    stdRollNo,
-    TestName,
-    TotalMarks,
-    SubjectName,
-    ClassName,
-    ObtainedMarks,
-    Batch,
-  } = req.body;
+router.put("/api/results/:resultId", verifyToken, (req, res) => {
+  const resultId = req.params.resultId;
+  const { stdRollNo, TestName, ClassName, ObtainedMarks, stdTestPercentage } =
+    req.body;
 
   if (
-    !fullName ||
     !stdRollNo ||
     !ObtainedMarks ||
-    !Batch ||
     !TestName ||
-    !SubjectName ||
-    !TotalMarks ||
-    !ClassName
+    !ClassName ||
+    !stdTestPercentage
   ) {
     res
       .status(400)
       .json({ success: false, message: "All fields are required" });
     return;
   }
-  db.get("SELECT * FROM result WHERE resultId = ?", [resultId], (err, row) => {
+
+  const studentSql = `
+    SELECT fullName, studentId
+    FROM students
+    WHERE ClassName = ? AND stdRollNo = ?
+  `;
+
+  const testsSql = `
+    SELECT testId, TotalMarks, SubjectName FROM tests WHERE TestName = ?
+  `;
+
+  db.all(studentSql, [ClassName, stdRollNo], (err, studentRows) => {
     if (err) {
-      console.error("Error checking test existence:", err);
-      res
+      console.error("Error fetching student data:", err);
+      return res
         .status(500)
-        .json({ success: false, message: "Internal server error" });
-    } else if (!row) {
-      res.status(404).json({ success: false, message: "result not found" });
+        .json({ error: "An error occurred while fetching data" });
     } else {
-      if (
-        fullName === row.fullName &&
-        stdRollNo === row.stdRollNo &&
-        TestName === row.TestName &&
-        ObtainedMarks === row.ObtainedMarks &&
-        SubjectName === row.SubjectName &&
-        Batch === row.Batch &&
-        TotalMarks === row.TotalMarks &&
-        ClassName === row.ClassName
-      ) {
-        res.status(400).json({
-          success: false,
-          message: "No changes detected. result data remains the same",
-        });
-      } else {
-        db.run(
-          "UPDATE result SET fullName=?, stdRollNo=?, TestName=?, TotalMarks=?, SubjectName=?, ObtainedMarks=?, Batch=?, ClassName=? WHERE resultId=?",
-          [
-            fullName,
-            stdRollNo,
-            TestName,
-            TotalMarks,
-            SubjectName,
-            ObtainedMarks,
-            Batch,
-            ClassName,
-            resultId,
-          ],
-          (err) => {
-            if (err) {
-              console.error("Error updating test:", err);
-              res
-                .status(500)
-                .json({ success: false, message: "Internal server error" });
-            } else {
-              res.json({
-                success: true,
-                message: "result updated successfully",
+      const studentData = studentRows;
+
+      db.all(testsSql, [TestName], (err, testsRows) => {
+        if (err) {
+          console.error("Error fetching tests data:", err);
+          return res
+            .status(500)
+            .json({ error: "An error occurred while fetching data" });
+        } else {
+          const testsData = testsRows;
+
+          // Now that you have the data, you can run the update query.
+          if (studentData.length > 0 && testsData.length > 0) {
+            const fullName = studentData[0].fullName;
+            const testId = testsData[0].testId;
+            const SubjectName = testsData[0].SubjectName;
+            const TotalMarks = testsData[0].TotalMarks;
+            if (ObtainedMarks > TotalMarks) {
+              res.status(400).json({
+                success: false,
+                message: "Obtained marks can never be greater than Total marks",
               });
+              return;
             }
+            db.run(
+              "UPDATE result SET fullName=?, stdRollNo=?, TestName=?, TotalMarks=?, SubjectName=?, ObtainedMarks=?, ClassName=?, stdTestPercentage=? WHERE resultId=?",
+              [
+                fullName,
+                stdRollNo,
+                TestName,
+                TotalMarks,
+                SubjectName,
+                ObtainedMarks,
+                ClassName,
+                stdTestPercentage,
+                resultId,
+              ],
+              (err) => {
+                if (err) {
+                  console.error("Error updating result:", err);
+                  res.status(500).json({
+                    success: false,
+                    message: "Internal server error",
+                  });
+                } else {
+                  res.json({
+                    success: true,
+                    message: "Result updated successfully",
+                  });
+                }
+              }
+            );
+          } else {
+            res
+              .status(404)
+              .json({ success: false, message: "Student or test not found" });
           }
-        );
-      }
+        }
+      });
     }
   });
 });
@@ -355,7 +461,7 @@ router.get("/api/results/download/pdf/:stdRollNo", verifyToken, (req, res) => {
   pdf.pipe(res);
 
   db.all(
-    "SELECT fullName, stdRollNo, TestName, TotalMarks, SubjectName, ClassName, ObtainedMarks, Batch FROM result WHERE stdRollNo = ?",
+    "SELECT fullName, stdRollNo, TestName, TotalMarks, SubjectName, ClassName, ObtainedMarks FROM result WHERE stdRollNo = ?",
     [stdRollNo],
     (err, results) => {
       if (err) {
@@ -372,7 +478,6 @@ router.get("/api/results/download/pdf/:stdRollNo", verifyToken, (req, res) => {
           pdf.text(`Test Name: ${result.TestName}`);
           pdf.text(`Subject Name: ${result.SubjectName}`);
           pdf.text(`Class Name: ${result.ClassName}`);
-          pdf.text(`Batch: ${result.Batch}`);
           pdf.text(`Obtained Marks: ${result.ObtainedMarks}`);
           pdf.text(`Total Marks: ${result.TotalMarks}`);
           pdf.moveDown(1); // Move down to the next line

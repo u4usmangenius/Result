@@ -1,3 +1,11 @@
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
 .add-form-heading {
   margin-top: 30px;
   text-align: left;
@@ -8,7 +16,7 @@
 .addForm-container-option {
   cursor: pointer;
   padding: 10px;
-  width: 93px;
+  width: 103px;
   border-radius: 5px;
   transition: background-color 0.3s ease;
   background: transparent;
@@ -16,7 +24,9 @@
 }
 
 .addForm-container-option:hover {
-  background-color: #007bff;
+  background-color: #001231;
+  letter-spacing: 1px;
+  transition: 0.2s ease-out;
   color: #fff;
 }
 .addForm-container-option[disabled] {
@@ -24,9 +34,11 @@
   background-color: transparent;
   color: #000;
   color: #b1adad;
+  letter-spacing: 0;
 }
 .addForm-form-active {
-  background-color: #007bff;
+  background-color: #03296b;
+  box-shadow: 4px 0 12px rgba(84, 97, 113, 0.24);
   color: #fff;
   cursor: default;
 }
@@ -43,7 +55,8 @@
   margin-bottom: 30px;
 }
 .form-active {
-  background-color: #007bff;
+  background-color: #03296b;
+  box-shadow: 4px 0 12px rgba(84, 97, 113, 0.24);
   color: #fff;
   cursor: default;
 }
@@ -153,15 +166,17 @@
   flex-direction: row;
   font-size: 15px;
   cursor: pointer;
-  border: none;
   background: transparent;
 }
 .add-another-form-text[disabled] {
+  border: none;
   cursor: not-allowed;
+  color: #ccc;
 }
 .add-another-text-icon-btn {
   font-size: 20px;
   margin-top: 6px;
+  border: none;
 }
 /* slected option */
 .option {
@@ -174,7 +189,8 @@
   cursor: pointer;
 }
 .form-active {
-  background-color: #007bff;
+  background-color: #03296b;
+  box-shadow: 4px 0 12px rgba(84, 97, 113, 0.24);
 }
 .add-Forms-button {
   background: transparent;
@@ -193,7 +209,8 @@
   height: 44px;
 }
 .add-form-button {
-  background-color: #007bff;
+  background-color: #03296b;
+  box-shadow: 4px 0 12px rgba(84, 97, 113, 0.24);
   border: none;
   text-align: center;
   color: #fff;
@@ -206,7 +223,9 @@
   width: 141px;
 }
 .add-form-button:hover {
-  background-color: #0056b3;
+  background-color: #001231;
+  letter-spacing: 1px !important;
+  transition: 0.2s ease-out;
 }
 .addForm-import-csv-btn {
   margin-top: 10px;
@@ -222,7 +241,8 @@
   display: flex;
 }
 .addForm-import-button::file-selector-button {
-  background-color: #007bff;
+  background-color: #03296b;
+  box-shadow: 4px 0 12px rgba(84, 97, 113, 0.24);
   color: #fff;
   padding: 10px 20px;
   border: none;
@@ -230,7 +250,9 @@
   cursor: pointer;
 }
 .addForm-import-button:hover::file-selector-button {
-  background-color: #0056b3;
+  background-color: #001231;
+  letter-spacing: 1px;
+  transition: 0.2s ease-out;
 }
 
 .addForm-list-content {

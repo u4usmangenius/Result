@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import "./Subject.css";
 import Modal from "../model/Modal.js";
 import Header from "../header/Header";
 import SubjectList from "./SubjectList";
 import AddSubjects from "./AddSubjects";
+import SubjectSearchInput from "./SubjectSearchInput.js";
 
 const Subject = () => {
   const [isPopupOpen,setPopupOpen] = useState(false);
@@ -19,11 +19,12 @@ const Subject = () => {
   return (
     <>
       <Header />
-      <div className="subject-container">
-        <div className="subject-header-row">
+      <div className="formlist-list-container">
+        <div className="formlist-header-row">
           <h1>Subjects</h1>
+          <SubjectSearchInput/>
           <button
-            className="add-subject-button"
+            className="formlist-click-add-button"
             onClick={openAddStudentsModal}
           >
             Add Subjects
