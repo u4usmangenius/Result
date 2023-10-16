@@ -234,9 +234,6 @@ class ResultStore {
   }
 
   handleSaveEdit() {
-    alert(addResultStore.formData.ObtainedMarks);
-    alert(addResultStore.formData.tempTotalMarks);
-    return;
     let percentage =
       (addResultStore.formData.ObtainedMarks / addResultStore.tempTotalMarks) *
       100;
@@ -251,7 +248,6 @@ class ResultStore {
     };
 
     alert(testsInfo.stdTestPercentage);
-    return;
     const resultId = addResultStore.resultId;
     const token = localStorage.getItem("bearer token");
     const headers = {

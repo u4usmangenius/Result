@@ -149,12 +149,6 @@ class AddResultStore {
       let percentage =
         (this.formData.ObtainedMarks / this.tempTotalMarks) * 100;
       this.formData.stdTestPercentage = percentage.toFixed(1);
-      console.log(
-        "percentage1=",
-        percentage,
-        "percentage=",
-        this.formData.stdTestPercentage
-      );
       const newResult = {
         stdRollNo: this.formData.stdRollNo,
         TestName: this.formData.TestName,

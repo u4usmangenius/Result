@@ -13,7 +13,7 @@ const ResultList = ({ openAddresultsModal }) => {
       resultStore.getDataByClassName();
     } else {
       resultStore.fetchDataFromBackend(1);
-      console.log("--->", resultStore.fetchDataFromBackend(1));
+      console.log("--->", resultStore.fetchDataFromBackend());
     }
   }, [FiltreClassName]);
 
