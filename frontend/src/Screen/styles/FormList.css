@@ -1,6 +1,3 @@
-::placeholder {
-  color: #007bff;
-}
 /* dashboard */
 .apexcharts-canvas .apexcharts-element-hidden,
 .apexcharts-datalabel.apexcharts-element-hidden,
@@ -139,6 +136,10 @@ body {
   color: #007bff;
   cursor: pointer;
 }
+.Form-search-bar input[type="text"]::placeholder   {
+  color: #007bff;
+}
+
 .Form-search-bar {
   display: flex;
   flex-direction: row;

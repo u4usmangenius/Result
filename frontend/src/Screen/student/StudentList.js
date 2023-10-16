@@ -7,9 +7,9 @@ import LoadingSpinner from "../../components/loaders/Spinner";
 import "../styles/FormList.css";
 import { addstudentStore } from "../../store/studentsStore/AddstudentsStore";
 
-const StudentList = ({ openAddstudentsModal }) => {
+const StudentList = ({ openAddstudentsModal}) => {
   const [studentSubjects, setStudentSubjects] = useState({});
-  const { FiltreClassName, filteredstudents } = { ...studentsStore };
+  const { FiltreClassName,filteredstudents } = { ...studentsStore };
   useEffect(() => {
     // Fetch student subjects when the component mounts
     const fetchStudentSubjects = async (studentId) => {
@@ -28,16 +28,17 @@ const StudentList = ({ openAddstudentsModal }) => {
         console.error("Error fetching subjects:", error);
       }
     };
+
+    // Iterate over your students and fetch subjects for each student
     studentsStore.filteredstudents.forEach((student) => {
       fetchStudentSubjects(student.studentId);
     });
-  }, [filteredstudents]);
+  }, [studentsStore.filteredstudents]);
 
   useEffect(() => {
     if (studentsStore.FiltreClassName !== "") {
       studentsStore.getDataByClassName();
-    } 
-    else {
+    } else {
       studentsStore.fetchData();
     }
   }, [FiltreClassName]);

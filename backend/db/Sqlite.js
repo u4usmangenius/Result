@@ -145,6 +145,7 @@ db.run(
     ClassName TEXT,
     studentId TEXT,
     subjectId TEXT,
+    TestDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (studentId) REFERENCES students(studentId),
     FOREIGN KEY (subjectId) REFERENCES subjects(subjectId)
   )
