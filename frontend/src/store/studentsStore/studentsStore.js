@@ -29,6 +29,7 @@ class StudentsStore {
       FiltreClassName: observable,
       mouseHover: observable,
       loading: observable,
+      getReportByStudent: action,
       getDataByClassName: action,
       setSearchText: action,
       setrowsPerPage: action,
@@ -68,6 +69,30 @@ class StudentsStore {
     this.dataNotFound = dataNotFound;
   }
 
+  async getReportByStudent(student) {
+    try {
+      console.log(student);
+      const token = localStorage.getItem("bearer token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+      const response = await axios.post(
+        "http://localhost:8080/api/students/report",
+        {
+          student: student,
+        },
+        {
+          headers,
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("status ok");
+      } else {
+        console.error("Error searching results:", response.error);
+      }
+    } catch (error) {}
+  }
   async getDataByClassName() {
     const ClassName = this.FiltreClassName;
     try {

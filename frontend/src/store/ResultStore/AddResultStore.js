@@ -101,9 +101,12 @@ class AddResultStore {
       );
 
       if (response.status === 200) {
-        const { studentData, testsData } = response.data;
-        this.StudentArrayData = [...studentData];
+        const { studentData, testsData, studentSubject } = response.data;
+        console.log("usman kesys ho", response.data);
+        // this.StudentArrayData = [...studentData];
+        this.StudentArrayData = studentData;
         this.TestsArrayData = [...testsData];
+        console.log("studentSubject==>", studentSubject);
         // testsData.map((TotalMarks) => {
         //   // <h1>{TotalMarks}</h1>;
         //   console.log(TotalMarks.TotalMarks,"-")
@@ -119,6 +122,7 @@ class AddResultStore {
 
   async addResultToBackend(result) {
     try {
+      console.log(result, `"""""""""""""'''`);
       const token = localStorage.getItem("bearer token");
       const headers = {
         Authorization: `${token}`,

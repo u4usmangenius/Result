@@ -1,4 +1,6 @@
 // Import the necessary modules and dependencies
+const crypto = require("crypto");
+
 const db = require("../db/Sqlite").db;
 
 // Helper function to check if a student_subject record with the same roll number and subject exists
@@ -153,7 +155,14 @@ async function updateStudent(studentId, updatedData) {
 }
 
 // Helper function to update student subjects in student_subject table
-async function updateStudentSubjects(studentId, subjects) {
+// when studnt subjects are updated, then std_subjectId is currently storing null, instead of storing previous with each one
+async function updateStudentSubjects(
+  studentId,
+  stdRollNo,
+  subjects,
+  subjectIds
+) {
+  console.log("helloooooooo", studentId, stdRollNo, subjects, subjectIds);
   return new Promise((resolve, reject) => {
     // Delete existing subjects for the student
     db.run(
@@ -161,16 +170,23 @@ async function updateStudentSubjects(studentId, subjects) {
       [studentId],
       (err) => {
         if (err) {
+          console.log(err);
           reject(err);
         } else {
           // Insert new subjects for the student
-          const placeholders = subjects.map(() => "(?, ?)").join(", ");
-          const values = subjects.flatMap((subject) => [studentId, subject]);
+          const placeholders = subjects.map(() => "(?, ?, ?, ?)").join(", ");
+          const values = subjects.flatMap((subject, index) => [
+            studentId,
+            stdRollNo,
+            subject,
+            subjectIds[index], // Use subjectIds array
+          ]);
 
-          const sql = `INSERT INTO student_subject (studentId, userSubject) VALUES ${placeholders}`;
+          const sql = `INSERT INTO student_subject (studentId, stdRollNo, userSubject, subjectId) VALUES ${placeholders}`;
 
           db.run(sql, values, (err) => {
             if (err) {
+              console.log(err);
               reject(err);
             } else {
               resolve();

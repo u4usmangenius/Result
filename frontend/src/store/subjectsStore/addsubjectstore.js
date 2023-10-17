@@ -57,8 +57,9 @@ class AddSubjectStore {
   setFormData(data) {
     this.formData = data;
     this.SubjectID = data.subjectId;
-    validations.editedFields.subjectName = addSubjectStore.formData.subjectName;
-    validations.editedFields.courseCode = addSubjectStore.formData.courseCode;
+    console.log("assadadsad", data);
+    // validations.editedFields.subjectName = addSubjectStore.formData.subjectName;
+    // validations.editedFields.courseCode = addSubjectStore.formData.courseCode;
   }
 
   setShowAddButton(value) {
@@ -90,7 +91,7 @@ class AddSubjectStore {
       const success = await this.addSubject(newSubject);
       if (success) {
         this.showAlert("Subject added successfully");
-        this.clearFormFields()
+        this.clearFormFields();
         this.setFormData({
           subjectName: "",
           courseCode: "",
@@ -102,7 +103,7 @@ class AddSubjectStore {
         this.showAlert("Failed to add subject. Please try again.");
       }
     } catch (error) {
-      this.clearFormFields(); 
+      this.clearFormFields();
       console.error("Error handling submit:", error);
       this.showAlert("An error occurred while processing the request.");
     }

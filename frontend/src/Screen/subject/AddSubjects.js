@@ -80,14 +80,9 @@ const AddSubjects = observer(({ onClose }) => {
                 placeholder="Subject"
                 value={addSubjectStore.formData.subjectName}
                 onChange={(e) => {
-                  const value = e.target.value;
                   addSubjectStore.setFormData({
                     ...addSubjectStore.formData,
                     subjectName: e.target.value,
-                  });
-                  validations.setEditedFields({
-                    ...validations.editedFields,
-                    subjectName: value,
                   });
                 }}
               />
@@ -115,14 +110,9 @@ const AddSubjects = observer(({ onClose }) => {
                 placeholder="CSC-321"
                 value={addSubjectStore.formData.courseCode}
                 onChange={(e) => {
-                  const value = e.target.value;
                   addSubjectStore.setFormData({
                     ...addSubjectStore.formData,
                     courseCode: e.target.value,
-                  });
-                  validations.setEditedFields({
-                    ...validations.editedFields,
-                    courseCode: value,
                   });
                 }}
               />

@@ -48,8 +48,8 @@ class ResultStore {
       handleSaveEdit: action,
       handleDelete: action,
       showConfirm: action,
-      downloadPdf: action,
       showAlert: action,
+      downloadPdf: action,
     });
   }
   handleSearch = async () => {

@@ -7,6 +7,7 @@ import { addstudentStore } from "../../store/studentsStore/AddstudentsStore.js";
 import { addTeacherStore } from "../../store/teachersStore/AddTeacherStore";
 import { addTestStore } from "../../store/TestStore/AddTestStore";
 import { addResultStore } from "../../store/ResultStore/AddResultStore";
+
 const Modal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
   const handleOnClose = () => {

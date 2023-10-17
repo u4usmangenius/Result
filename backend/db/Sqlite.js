@@ -145,7 +145,7 @@ db.run(
     ClassName TEXT,
     studentId TEXT,
     subjectId TEXT,
-    TestDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    TestDate DATE DEFAULT (date('now')),
     FOREIGN KEY (studentId) REFERENCES students(studentId),
     FOREIGN KEY (subjectId) REFERENCES subjects(subjectId)
   )
@@ -156,6 +156,7 @@ db.run(
     }
   }
 );
+
 // result table
 // Create a new table for result  with foreign keys to students and tests
 
@@ -173,6 +174,7 @@ db.run(
       fullName TEXT,
       studentId TEXT,
       testId TEXT,
+      TestDate TIMESTAMP,
       FOREIGN KEY (studentId) REFERENCES students(studentId),
       FOREIGN KEY (testId) REFERENCES tests(testtId)
     )

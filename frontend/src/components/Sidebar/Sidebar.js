@@ -1,4 +1,4 @@
-  import logo from "../../assests/logo.png"; // Replace with your logo image URL
+import logo from "../../assests/logo.png"; // Replace with your logo image URL
 import "./Sidebar.css";
 import React from "react";
 import { FaCheckCircle } from "react-icons/fa";
@@ -57,15 +57,15 @@ const Sidebar = () => {
             </NavLink>
           </li>
           <li>
+            <NavLink to="/sidebar/reports">
+              <FaChartBar /> Reports
+            </NavLink>
+          </li>{" "}
+          <li>
             <NavLink to="/sidebar/setting">
               <FaCog /> Settings
             </NavLink>
           </li>
-          <li>
-            <NavLink to="/sidebar/reports">
-              <FaChartBar /> Report
-            </NavLink>
-          </li>{" "}
           <li>
             <NavLink id="features" to="/sidebar/features">
               <FaStar /> Features

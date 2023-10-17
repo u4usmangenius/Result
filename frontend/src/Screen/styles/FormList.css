@@ -36,7 +36,8 @@ body {
   height: 60px; */
   color: #03296b;
   padding-left: 25px;
-  padding-bottom: 3.6px;
+  /* padding-bottom: 3.6px; */
+  margin-bottom: -11px;
 }
 .formlist-header-row h1 {
   display: flex;
@@ -229,7 +230,7 @@ body {
 .FormList-table table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 30px !important;
 }
 
 .Form-set-page {
@@ -268,7 +269,7 @@ body {
 
 .FormList-table th {
   background-color: #f2f2f2;
-  font-size: 15px;
+  font-size: 14.4px;
   font-weight: 1200;
   color: #03296b;
 }
@@ -405,6 +406,6 @@ body {
 .FormList-list {
   display: flex;
   flex-wrap: wrap;
-  width: 201px;
+  width: 184px;
   gap: 3px;
 }

@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import { FaFilePdf } from "react-icons/fa";
 import { resultStore } from "../../store/ResultStore/ResultStore";
 import { addResultStore } from "../../store/ResultStore/AddResultStore";
-
+import { reportsStore } from "../../store/ReportStore/ReportsStore";
 const ResultList = ({ openAddresultsModal }) => {
   const { FiltreClassName } = { ...resultStore };
   useEffect(() => {
@@ -71,6 +71,7 @@ const ResultList = ({ openAddresultsModal }) => {
                 <td>{result.ObtainedMarks}</td>
                 <td>{result.TotalMarks}</td>
                 <td>{result.stdTestPercentage}</td>
+
                 <td style={{ fontSize: "22px" }}>
                   <div
                     className="FormList-edit-icon"

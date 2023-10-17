@@ -6,10 +6,11 @@ import { studentsStore } from "../../store/studentsStore/studentsStore";
 import LoadingSpinner from "../../components/loaders/Spinner";
 import "../styles/FormList.css";
 import { addstudentStore } from "../../store/studentsStore/AddstudentsStore";
+import { FaChartBar } from "react-icons/fa";
 
-const StudentList = ({ openAddstudentsModal}) => {
+const StudentList = ({ openAddstudentsModal, openReportModal }) => {
   const [studentSubjects, setStudentSubjects] = useState({});
-  const { FiltreClassName,filteredstudents } = { ...studentsStore };
+  const { FiltreClassName, filteredstudents } = { ...studentsStore };
   useEffect(() => {
     // Fetch student subjects when the component mounts
     const fetchStudentSubjects = async (studentId) => {
@@ -83,6 +84,10 @@ const StudentList = ({ openAddstudentsModal}) => {
       studentsStore.fetchData();
     }
   };
+  const handleGetReportByStudent = async (student) => {
+    studentsStore.getReportByStudent(student);
+    openReportModal();
+  };
 
   return (
     <div className="Form-list-container">
@@ -117,6 +122,7 @@ const StudentList = ({ openAddstudentsModal}) => {
                 <th>Gender</th>
                 <th>Batch</th>
                 <th>Subjects</th>
+                <th>Reports</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -152,6 +158,14 @@ const StudentList = ({ openAddstudentsModal}) => {
                       </div>
                     </div>
                   </td>
+                  <td onClick={() => handleGetReportByStudent(student)}>
+                    <div className="FormList-edit-icon">
+                      <FaChartBar className="FormList-edit-icons" />
+                    </div>
+                  </td>
+
+                  {/* <td>Report</td> */}
+
                   <td className="FormList-edit-icon">
                     <div
                       onClick={() => handleEdit(student)}

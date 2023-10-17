@@ -11,7 +11,6 @@ const Result = () => {
   const openAddStudentsModal = () => {
     setIsAddStudentsModalOpen(true);
   };
-
   const closeAddStudentsModal = () => {
     setIsAddStudentsModalOpen(false);
   };
@@ -35,6 +34,7 @@ const Result = () => {
       <Modal isOpen={isAddStudentsModalOpen} onClose={closeAddStudentsModal}>
         <AddResult onClose={closeAddStudentsModal} />
       </Modal>
+
 
       <ResultList
         openAddresultsModal={openAddStudentsModal}

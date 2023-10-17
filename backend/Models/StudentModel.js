@@ -16,6 +16,29 @@ const {
   getStudentSubjects,
 } = require("./StudentHelper");
 
+router.post("/api/students/report", verifyToken, (req, res) => {
+  const { student } = req.body;
+  console.log("this is student", student);
+  console.log("<<<", student.stdRollNo, ">>>");
+
+  const studentId = student.studentId;
+  const query = `
+    SELECT TestDate
+    FROM result
+    WHERE studentId = ?
+  `;
+
+  db.all(query, [studentId], (err, rows) => {
+    if (err) {
+      console.error("Error querying result table:", err);
+      res.status(500).send({ error: "Internal Server Error" });
+    } else {
+      const dates = rows.map((row) => row.TestDate);
+      console.log("res.status(200)===>", dates);
+      res.status(200).send({ dates: dates });
+    }
+  });
+});
 // send data matched with ClassName
 router.post("/api/students/ClassName", verifyToken, (req, res) => {
   const { ClassName } = req.body;
@@ -172,7 +195,6 @@ router.post("/api/student", verifyToken, (req, res) => {
 router.post("/api/students", verifyToken, async (req, res) => {
   try {
     const { csvData } = req.body;
-    console.log(req.body);
     let uploadedCount = 0;
     let skippedCount = 0;
     let matchCount = 0; // Initialize matchCount to 0
@@ -321,7 +343,6 @@ router.post("/api/students", verifyToken, async (req, res) => {
 router.put("/api/students/:studentId", verifyToken, async (req, res) => {
   const studentId = req.params.studentId;
   const { student, subjects } = req.body;
-  console.log(student, subjects);
   if (
     !student.fullName ||
     !student.className ||
@@ -378,7 +399,12 @@ router.put("/api/students/:studentId", verifyToken, async (req, res) => {
       await updateStudent(studentId, student);
 
       // Update subjects in student_subject table
-      await updateStudentSubjects(studentId, subjects);
+      await updateStudentSubjects(
+        studentId,
+        student.stdRollNo,
+        subjects,
+        subjectIds
+      );
 
       res.json({
         success: true,

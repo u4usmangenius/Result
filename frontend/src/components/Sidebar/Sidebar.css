@@ -24,7 +24,7 @@ body {
   font-size: 15px;
   position: fixed;
   /* overflow-y: auto; */
-  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.5);
+  /* box-shadow: 4px 0 12px rgba(0, 0, 0, 0.5); */
   margin-bottom: 500px;
   z-index: 997;
 }

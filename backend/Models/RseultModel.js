@@ -49,7 +49,14 @@ router.post("/api/results/data", verifyToken, (req, res) => {
     FROM students
     WHERE ClassName = ?
   `;
-
+  // Create a SQL query to fetch student related subjects data
+  const subjectsSql = `
+    SELECT s.studentId, sub.subjectName
+    FROM students s
+    LEFT JOIN student_subject ss ON s.studentId = ss.studentId
+    LEFT JOIN subjects sub ON ss.subjectId = sub.subjectId
+    WHERE s.ClassName = ?
+  `;
   // Create a SQL query to fetch tests data
   const testsSql = `
     SELECT *
@@ -59,6 +66,7 @@ router.post("/api/results/data", verifyToken, (req, res) => {
 
   const studentData = [];
   const testsData = [];
+  const studentSubject = [];
 
   // Execute the student data query
   db.all(studentSql, [ClassName], (err, studentRows) => {
@@ -68,8 +76,23 @@ router.post("/api/results/data", verifyToken, (req, res) => {
         .status(500)
         .json({ error: "An error occurred while fetching data" });
     }
+    db.all(subjectsSql, [ClassName], (err, subjectsRows) => {
+      if (err) {
+        console.error("Error fetching subjects data:", err);
+        return res
+          .status(500)
+          .json({ error: "An error occurred while fetching data" });
+      }
+      studentRows.forEach((student) => {
+        const { studentId } = student;
+        const subjects = subjectsRows
+          .filter((subject) => subject.studentId === studentId)
+          .map((subject) => subject.subjectName);
 
-    studentData.push(...studentRows);
+        studentSubject.push({ studentId, subjects });
+      });
+      studentData.push(...studentRows);
+    });
 
     // Execute the tests data query
     db.all(testsSql, [ClassName], (err, testsRows) => {
@@ -83,7 +106,7 @@ router.post("/api/results/data", verifyToken, (req, res) => {
       testsData.push(...testsRows);
 
       // Send both arrays in the response
-      res.json({ studentData, testsData });
+      res.json({ studentData, testsData, studentSubject });
     });
   });
 });
@@ -245,7 +268,7 @@ router.post("/api/results", verifyToken, (req, res) => {
         return res.status(409).json({ error: "Record already exists." });
       }
       db.get(
-        "SELECT testId, TotalMarks, SubjectName FROM tests WHERE TestName = ?",
+        "SELECT testId, TotalMarks, SubjectName,TestDate FROM tests WHERE TestName = ?",
         [TestName],
         (err, testRow) => {
           if (err) {
@@ -257,7 +280,7 @@ router.post("/api/results", verifyToken, (req, res) => {
           if (!testRow) {
             return res.status(404).json({ error: "Test not found." });
           }
-          const { testId, TotalMarks, SubjectName } = testRow;
+          const { testId, TotalMarks, SubjectName, TestDate } = testRow;
           if (ObtainedMarks > TotalMarks) {
             return res.status(400).json({
               error: "Obtained marks cannot be greater than TotalMarks.",
@@ -284,7 +307,7 @@ router.post("/api/results", verifyToken, (req, res) => {
               const resultId = crypto.randomUUID(); // Generate a random UUID
 
               db.run(
-                "INSERT INTO result (resultId, fullName, stdRollNo, TestName, ObtainedMarks, studentId, testId, TotalMarks, SubjectName, ClassName, stdTestPercentage) VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO result (resultId, fullName, stdRollNo, TestName, ObtainedMarks, studentId, testId, TotalMarks, SubjectName, ClassName, stdTestPercentage,TestDate) VALUES (?,?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [
                   resultId,
                   fullName,
@@ -297,6 +320,7 @@ router.post("/api/results", verifyToken, (req, res) => {
                   SubjectName,
                   ClassName,
                   stdTestPercentage,
+                  TestDate,
                 ],
                 (err) => {
                   if (err) {

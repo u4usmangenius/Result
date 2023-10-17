@@ -122,11 +122,11 @@ const AddTest = ({ onClose }) => {
                 )}
             </label>
             <InputMask
-              mask="**-***"
+              mask="****-9999-*********************"
               maskChar=""
               type="text"
               className="addForm-input-type-text"
-              placeholder="T1-CSI"
+              placeholder="Test-year-SubjectName"
               value={addTestStore.formData.TestName}
               onChange={(e) =>
                 addTestStore.setFormData({ TestName: e.target.value })

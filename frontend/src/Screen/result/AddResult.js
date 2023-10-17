@@ -205,11 +205,11 @@ const AddResult = ({ onClose }) => {
               }
             >
               <option value="">Select RollNo</option>
-              {addResultStore.StudentArrayData.map((test) => (
-                <option key={test.testId} value={test.stdRollNo}>
-                  {test.stdRollNo}
+              {addResultStore.StudentArrayData.map((student) => (
+                <option key={student.studentId} value={student.stdRollNo}>
+                  {student.stdRollNo}
                 </option>
-              ))}
+              ))}{" "}
             </select>
           </div>
           <div className="add-form-group">
